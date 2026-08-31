@@ -1,0 +1,63 @@
+name: toolathlon-dev
+
+services:
+  controller:
+    image: "${WB_CONTROLLER_IMAGE:-daily-dev:dev-docker-claude-codex}"
+    pull_policy: never
+
+    # The controller proxy must listen on the host network so Harbor-created
+    # sibling containers can reach it through host.docker.internal.
+    network_mode: host
+
+    # The image already selects the intended non-root user. Add only the
+    # runtime group that owns the host Docker socket.
+    group_add:
+      - "${DOCKER_GID:?set DOCKER_GID to the docker.sock GID}"
+
+    hostname: toolathlon-dev
+    extra_hosts:
+      - "toolathlon-dev:127.0.1.1"
+
+    working_dir: "${REPO_ROOT:?set REPO_ROOT to the absolute host repository path}"
+    init: true
+    stdin_open: true
+    tty: true
+    stop_grace_period: 2m
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      http_proxy: ${http_proxy:-}
+      https_proxy: ${https_proxy:-}
+      no_proxy: ${no_proxy:-}
+      HTTP_PROXY: ${http_proxy:-}
+      HTTPS_PROXY: ${https_proxy:-}
+      NO_PROXY: ${no_proxy:-}
+
+    volumes:
+      # Keep the same absolute repository path inside and outside the
+      # controller because the host Docker daemon resolves Harbor bind mounts.
+      - type: bind
+        source: "${REPO_ROOT}"
+        target: "${REPO_ROOT}"
+        bind:
+          create_host_path: false
+
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        bind:
+          create_host_path: false
+
+      - type: bind
+        source: ${DEV_DATA_ROOT}/dot-claude
+        target: /agent-data/claude
+        bind:
+          create_host_path: false
+
+      - type: bind
+        source: ${DEV_DATA_ROOT}/dot-codex
+        target: /agent-data/codex
+        bind:
+          create_host_path: false
+
