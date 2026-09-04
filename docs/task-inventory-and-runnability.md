@@ -284,7 +284,7 @@ bash scripts/run_single_containerized.sh \
   finalpool/find-alita-paper quickstart ./results/dumps_quick_start <model-name>
 ```
 
-并行批跑（`scripts/run_parallel.sh` 中 `TASKS_FOLDER="finalpool"` 为硬编码）：
+并行批跑（`TASKS_FOLDER` 默认是 `finalpool`，也可通过环境变量覆盖）：
 
 ```bash
 TASK_LIST=./my_tasks.txt bash scripts/run_parallel.sh \

@@ -10,7 +10,7 @@
 # export TOOLATHLON_OPENAI_API_KEY
 
 # Configuration Variables - Modify as needed
-TASKS_FOLDER="finalpool"
+TASKS_FOLDER="${TASKS_FOLDER:-finalpool}"
 TAG="full"
 
 # Parse input arguments for model_name, provider and dump_path
