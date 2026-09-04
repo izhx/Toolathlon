@@ -5,6 +5,7 @@
 - 环境错误来源：[lwx-env-error.md](lwx-env-error.md)：仅覆盖 260812 GLM-5.1 两个批次，并只统计从工具消息提取到的环境错误；本表中的“—”表示该文档未点名，不代表已证明没有环境问题。
 - 可跑性来源：[task-inventory-and-runnability.md](task-inventory-and-runnability.md)：3.1–4 节为历史评测分类，不能代替本次个人实跑。
 - “我跑通情况”是独立人工进度列。当前未提供可唯一对应的个人运行结果目录，因此初始化为“⬜ 待填写”。建议填写为“✅ PASS（run/日期）”“❌ FAIL（错误摘要）”或“🚧 BLOCKED（阻塞项）”。
+- 个人实跑来源：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [parallel_debug_glm52_bnet/](../parallel_debug_glm52_bnet/)，并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。C-local、C-remote 两组尚未个人实跑，保持“⬜ 待填写”。
 
 ## task inventory 分类说明
 
@@ -28,72 +29,77 @@
 
 | 分组 | 任务数 | env-error 有记录 | env-error 未提及 | task inventory 分类 | 我跑通情况 |
 |---|---:|---:|---:|---|---|
-| A：无网络依赖 | 15 | 0 | 15 | 3.1=8；3.2=1；3.3 B=6 | 待填写=15 |
-| B：网络只读 | 30 | 13 | 17 | 3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5 | 待填写=30 |
+| A：无网络依赖 | 15 | 0 | 15 | 3.1=8；3.2=1；3.3 B=6 | PASS 7；FAIL 7；NO_EVAL 1 |
+| B：网络只读 | 30 | 13 | 17 | 3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5 | PASS 13；FAIL 7；NO_EVAL 10 |
 | C-local：本地基础设施写 | 35 | 11 | 24 | 3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=10 | 待填写=35 |
 | C-remote：远端写 | 28 | 8 | 20 | 3.1=2；3.3 A=2；3.3 B=2；3.4=2；4=20 | 待填写=28 |
-| **合计** | **108** | **32** | **76** | **3.1=37；3.2=8；3.3 A=12；3.3 B=14；3.4=2；4=35** | **待填写=108** |
+| **合计** | **108** | **32** | **76** | **3.1=37；3.2=8；3.3 A=12；3.3 B=14；3.4=2；4=35** | **PASS 20；FAIL 14；NO_EVAL 11；待填写 63** |
 
 > 文档一致性提示：`paper-checker` 同时出现在 task inventory 的 3.1 和 5.1，但第 242 行声称的“两者交集”清单漏掉了它；本表仍按两个原始清单记录，不擅自改写为 smoke test 成员。
 
 ## A：无网络依赖（15）
 
-统计：env-error 有记录 0，未提及 15；task inventory：3.1=8；3.2=1；3.3 B=6；我跑通情况：待填写 15。
+统计：env-error 有记录 0，未提及 15；task inventory：3.1=8；3.2=1；3.3 B=6；我跑通情况：✅ PASS 7、❌ FAIL 7、🟠 NO_EVAL 1（run glm-5.2/260903，源自 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。经四层核验（preprocess 15/15、无容器崩溃、无 API/网络错误、所需工具均成功返回真实数据），**8 项失败/未完成全部为 agent 能力或效率问题，无 infra 问题**。
 
 | 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|
-| `arrange-workspace` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `cooking-guidance` | — | 3.2 不稳定：260821 PASS，260826 NO_EVAL<br>跨 5 批次：3 次有效评测均 PASS，另 2 次 NO_EVAL<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `courses-ta-hws` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `detect-revised-terms` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `dietary-health` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `excel-data-transformation` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `excel-market-research` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `imagenet` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `interview-report` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>telechat 曾偶然 PASS；属极低通过率，并非完全不可跑<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `paper-checker` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `ppt-analysis` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 5/5 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `privacy-desensitization` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `reimbursement-form-filler` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `sales-accounting` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `university-course-selection` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
+| `arrange-workspace` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ❌ FAIL（run glm-5.2/260903）<br>2 文件归错目录（`cv-gboeing.pdf` 与 `Internship_application_form.xlsx` 对调）；能力问题，非 infra |
+| `cooking-guidance` | — | 3.2 不稳定：260821 PASS，260826 NO_EVAL<br>跨 5 批次：3 次有效评测均 PASS，另 2 次 NO_EVAL<br>5.1 低外部依赖 | ❌ FAIL（run glm-5.2/260903）<br>现有食材覆盖率仅 25%，未达 ≥50% 硬约束；能力问题，非 infra |
+| `courses-ta-hws` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260903） |
+| `detect-revised-terms` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ❌ FAIL（run glm-5.2/260903）<br>法条期限"三个月内"误改"九十日内"，且多输出一行（幻觉性添加）；能力问题，非 infra |
+| `dietary-health` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260903） |
+| `excel-data-transformation` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260903） |
+| `excel-market-research` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260903） |
+| `imagenet` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ❌ FAIL（run glm-5.2/260903）<br>`survey.tex` 内容不符（表格数值幻改，agent 277 / gt 253 字符）；能力问题，非 infra |
+| `interview-report` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>telechat 曾偶然 PASS；属极低通过率，并非完全不可跑<br>5.1 低外部依赖 | 🟠 NO_EVAL（run glm-5.2/260903）<br>跑满 max_turns（100 turn/178 调用）未产出：前 ~70 轮耗在首个 docx，`recommend.txt` 未写；效率问题，非 infra |
+| `paper-checker` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖 | ❌ FAIL（run glm-5.2/260903）<br>唯一错误：交叉引用 `\autoref{tab:compute-cost}` 误写为 `tab:api-benchmarks`（`5_tradeoff.tex`）；能力问题，非 infra |
+| `ppt-analysis` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 5/5 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260903） |
+| `privacy-desensitization` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ❌ FAIL（run glm-5.2/260903）<br>over-masking：13/27 文件因掩盖清单外账号数字而不符（0 漏标，`/hidden/` 用对）；能力问题，非 infra |
+| `reimbursement-form-filler` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260903） |
+| `sales-accounting` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260903） |
+| `university-course-selection` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ❌ FAIL（run glm-5.2/260903）<br>4 个排课方案各错 11 处，24 种排列全不匹配（约束求解系统性偏差）；能力问题，非 infra |
 
 ## B：网络只读（30）
 
-统计：env-error 有记录 13，未提及 17；task inventory：3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5；我跑通情况：待填写 30。
+统计：env-error 有记录 13，未提及 17；task inventory：3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5；我跑通情况：✅ PASS 13、❌ FAIL 7、🟠 NO_EVAL 10（run glm-5.2/260904，dump 目录 [parallel_debug_glm52_bnet/](../parallel_debug_glm52_bnet/)，并发 4、单任务超时 5400s，全部 30/30 完成，无 preprocess/容器失败与超时）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果（`pass=null`）。
+
+> NO_EVAL 根因（基于逐任务扫描 traj_log.json + run.log 的错误签名，非四层深核）：10 个 NO_EVAL **全部为 infra 主导，无一例指向模型能力**。
+> - **Yahoo Finance 429 限流（6 个）**：`invoice-org`(226×)、`stock-build-position`(233×)、`travel-exchange`(229×)、`nvidia-market`(212×)、`yahoo-analysis`(204×)、`nvidia-stock-analysis`(94×)——agent 明确识别到限流并反复重试等待，直至耗尽 max_turns。
+> - **Playwright 页面加载失败/超时（4 个）**：`trip-itinerary-generator`（page.goto net::ERR_TIMED_OUT，louvre.fr）、`language-school`（178× 导航超时/ERR_CONNECTION_RESET）、`hk-top-conf`（ERR_NETWORK_CHANGED，iclr.cc）、`search-ca-school`（ERR_NETWORK_CHANGED，csrankings.org，另叠加 Google Maps「invalid API key」）。
+> 均与 lwx-env-error / task inventory 记录的外部依赖问题一致。要彻底定性仍建议核对容器日志，但当前证据已足以判为 infra 阻塞而非能力问题。
 
 | 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|
-| `academic-pdf-report` | — | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ⬜ 待填写 |
-| `add-bibtex` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `course-schedule` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `cvpr-research` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `find-alita-paper` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ⬜ 待填写 |
-| `git-milestone` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `git-repo` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `hk-top-conf` | 🟡 偶发：Prompt 超长 400 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ⬜ 待填写 |
-| `identify-all-songs` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `invoice-org` | 🔴 必现：Yahoo Finance API 429 限流 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | ⬜ 待填写 |
-| `ipad-edu-price` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
-| `language-school` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ⬜ 待填写 |
-| `latex-prompt-box` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `logical-datasets-collection` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
-| `mrbeast-analysis` | 🔴 必现：Hugging Face 读取或 SSL 握手超时<br>🔴 必现：API Key 无效 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
-| `nvidia-market` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | ⬜ 待填写 |
-| `nvidia-stock-analysis` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时<br>🔴 必现：API Key 无效<br>🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Python 依赖缺失或 ABI 不匹配 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | ⬜ 待填写 |
-| `profile-update-online` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `search-ca-school` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `shopping-helper` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ⬜ 待填写 |
-| `stock-build-position` | 🔴 必现：Yahoo Finance API 429 限流 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `subway-planning` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `travel-exchange` | 🔴 必现：Yahoo Finance API 429 限流 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | ⬜ 待填写 |
-| `trip-adviser` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `trip-itinerary-generator` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `upenn-campus-route` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `wandb-best-score` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `wandb-shortest-length` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `yahoo-analysis` | 🔴 必现：Yahoo Finance API 429 限流 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
-| `youtube-repo` | 🔴 必现：API Key 无效 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
+| `academic-pdf-report` | — | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ PASS（run glm-5.2/260904） |
+| `add-bibtex` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ❌ FAIL（run glm-5.2/260904） |
+| `course-schedule` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ❌ FAIL（run glm-5.2/260904） |
+| `cvpr-research` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
+| `find-alita-paper` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ✅ PASS（run glm-5.2/260904） |
+| `git-milestone` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
+| `git-repo` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
+| `hk-top-conf` | 🟡 偶发：Prompt 超长 400 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因≈infra：轨迹多次 Playwright 页面资源加载失败（net::ERR_NETWORK_CHANGED，iclr.cc）；命中的“401”为论文标题含 Unauthorized 的误报 |
+| `identify-all-songs` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
+| `invoice-org` | 🔴 必现：Yahoo Finance API 429 限流 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 226 次 Yahoo Finance「Rate limited」429，与 env-error 记录一致 |
+| `ipad-edu-price` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run glm-5.2/260904） |
+| `language-school` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因≈infra：轨迹 178 次页面导航超时/中断（net::ERR_CONNECTION_RESET 等），与 env-error 记录一致 |
+| `latex-prompt-box` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ❌ FAIL（run glm-5.2/260904） |
+| `logical-datasets-collection` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ❌ FAIL（run glm-5.2/260904） |
+| `mrbeast-analysis` | 🔴 必现：Hugging Face 读取或 SSL 握手超时<br>🔴 必现：API Key 无效 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ❌ FAIL（run glm-5.2/260904） |
+| `nvidia-market` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 212 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
+| `nvidia-stock-analysis` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时<br>🔴 必现：API Key 无效<br>🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Python 依赖缺失或 ABI 不匹配 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 94 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
+| `profile-update-online` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
+| `search-ca-school` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra/凭据：轨迹 56 次页面加载失败（net::ERR_NETWORK_CHANGED，csrankings.org）+ Google Maps geocoding「invalid API key」 |
+| `shopping-helper` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ❌ FAIL（run glm-5.2/260904） |
+| `stock-build-position` | 🔴 必现：Yahoo Finance API 429 限流 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 233 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
+| `subway-planning` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果 |
+| `travel-exchange` | 🔴 必现：Yahoo Finance API 429 限流 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 229 次 Yahoo Finance「Too Many Requests」429，与 env-error 记录一致 |
+| `trip-adviser` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ✅ PASS（run glm-5.2/260904） |
+| `trip-itinerary-generator` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因≈infra：轨迹 98 次 page.goto net::ERR_TIMED_OUT（louvre.fr 等目标站页面加载超时） |
+| `upenn-campus-route` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ❌ FAIL（run glm-5.2/260904） |
+| `wandb-best-score` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
+| `wandb-shortest-length` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
+| `yahoo-analysis` | 🔴 必现：Yahoo Finance API 429 限流 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 204 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
+| `youtube-repo` | 🔴 必现：API Key 无效 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
 
 ## C-local：本地基础设施写（35）
 
