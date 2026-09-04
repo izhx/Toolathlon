@@ -5,7 +5,7 @@
 - 环境错误来源：[lwx-env-error.md](lwx-env-error.md)：仅覆盖 260812 GLM-5.1 两个批次，并只统计从工具消息提取到的环境错误；本表中的“—”表示该文档未点名，不代表已证明没有环境问题。
 - 可跑性来源：[task-inventory-and-runnability.md](task-inventory-and-runnability.md)：3.1–4 节为历史评测分类，不能代替本次个人实跑。
 - “我跑通情况”是独立人工进度列。当前未提供可唯一对应的个人运行结果目录，因此初始化为“⬜ 待填写”。建议填写为“✅ PASS（run/日期）”“❌ FAIL（错误摘要）”或“🚧 BLOCKED（阻塞项）”。
-- 个人实跑来源：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [parallel_debug_glm52_bnet/](../parallel_debug_glm52_bnet/)，并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。C-local、C-remote 两组尚未个人实跑，保持“⬜ 待填写”。
+- 个人实跑来源：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [parallel_debug_glm52_bnet/](../parallel_debug_glm52_bnet/)，并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。C-remote 组 28 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8；PASS 3/FAIL 3/NO_EVAL 22，其中 21 个为 preprocess 阶段失败/卡住、未进入 agent 执行）。C-local 组尚未个人实跑，保持“⬜ 待填写”。
 
 ## task inventory 分类说明
 
@@ -32,8 +32,8 @@
 | A：无网络依赖 | 15 | 0 | 15 | 3.1=8；3.2=1；3.3 B=6 | PASS 7；FAIL 7；NO_EVAL 1 |
 | B：网络只读 | 30 | 13 | 17 | 3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5 | PASS 13；FAIL 7；NO_EVAL 10 |
 | C-local：本地基础设施写 | 35 | 11 | 24 | 3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=10 | 待填写=35 |
-| C-remote：远端写 | 28 | 8 | 20 | 3.1=2；3.3 A=2；3.3 B=2；3.4=2；4=20 | 待填写=28 |
-| **合计** | **108** | **32** | **76** | **3.1=37；3.2=8；3.3 A=12；3.3 B=14；3.4=2；4=35** | **PASS 20；FAIL 14；NO_EVAL 11；待填写 63** |
+| C-remote：远端写 | 28 | 8 | 20 | 3.1=2；3.3 A=2；3.3 B=2；3.4=2；4=20 | PASS 3；FAIL 3；NO_EVAL 22 |
+| **合计** | **108** | **32** | **76** | **3.1=37；3.2=8；3.3 A=12；3.3 B=14；3.4=2；4=35** | **PASS 23；FAIL 17；NO_EVAL 33；待填写 35** |
 
 > 文档一致性提示：`paper-checker` 同时出现在 task inventory 的 3.1 和 5.1，但第 242 行声称的“两者交集”清单漏掉了它；本表仍按两个原始清单记录，不擅自改写为 smoke test 成员。
 
@@ -145,35 +145,43 @@
 
 ## C-remote：远端写（28）
 
-统计：env-error 有记录 8，未提及 20；task inventory：3.1=2；3.3 A=2；3.3 B=2；3.4=2；4=20；我跑通情况：待填写 28。
+统计：env-error 有记录 8，未提及 20；task inventory：3.1=2；3.3 A=2；3.3 B=2；3.4=2；4=20；我跑通情况：✅ PASS 3、❌ FAIL 3、🟠 NO_EVAL 22（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8）。
+
+> 说明与根因：本组 28 个任务里**只有 7 个真正进入 agent 执行**（过了 preprocess），其余 **21 个在 preprocess 阶段直接失败/卡住**，从未运行模型。
+> - **PASS 3**：`dataset-license-issue`、`sync-todo-to-readme`、`verl-dataset`。
+> - **FAIL 3（均能力问题，非 infra）**：`huggingface-upload`（漏传 figures/*.png）、`merge-hf-datasets`（工具参数类型字符串截断）、`personal-website-construct`（about.md 缺 “PhD candidate”）。
+> - **NO_EVAL 22（全部 infra/配置，非模型能力）**：其中 21 个为 preprocess 失败 + 1 个（`train-ticket-plan`）agent 启动时 MCP 仅连上 3/4（rail_12306 未连）。preprocess 失败按签名归类：缺 GCP 服务账号密钥 `configs/gcp-service_account.keys.json`（7 个）、缺 Notion `files/duplicated_page_id.txt`（4 个）、配置模板 `KeyError 'token'`（7 个）、Google OAuth 缺字段（`fillout-online-forms`）、generic returncode 1（`investment-decision-analysis`）、preprocess 卡住未完成（`notion-personal-website`）。
+> 补上 `configs/gcp-service_account.keys.json` 等凭据/配置文件后，这 21 个 preprocess-fail 任务应可重新进入执行。
+>
+> 注意：`results/glm-5.2/` 目录同时包含 A 组（run glm-5.2/260903）旧结果，脚本尾部聚合统计是 A+C 混合值；本表数字为按 `c-remote-write.txt` 清单逐任务读取 eval_res.json 单独统计所得。
 
 | 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|
-| `ab-testing` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `academic-warning` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `dataset-license-issue` | — | 3.4 无有效评测产出：5 批次均 NO_EVAL<br>第 6 节冲突约束：不可与 `huggingface-upload` 并发 | ⬜ 待填写 |
-| `experiments-recordings` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | ⬜ 待填写 |
-| `fillout-online-forms` | 🔴 必现：Google OAuth credentials 缺字段 | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `flagged-transactions` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `game-statistics` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `gdp-cr5-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `huggingface-upload` | 🟡 偶发：Python 依赖缺失或 ABI 不匹配 | 3.3 A 从未通过：环境/凭据问题为主<br>Hugging Face 客户端 read timeout 10/15s<br>第 6 节冲突约束：不可与 `dataset-license-issue` 并发 | ⬜ 待填写 |
-| `inter-final-performance-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `investment-decision-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `live-transactions` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `llm-training-dataset` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `machine-operating` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `merge-hf-datasets` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Hugging Face 客户端 read timeout 10/15s | ⬜ 待填写 |
-| `music-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `nhl-b2b-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `notion-movies` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | ⬜ 待填写 |
-| `notion-personal-website` | 🟡 偶发：preprocess 阶段卡死 | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | ⬜ 待填写 |
-| `oil-price` | 🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用<br>历史环境曾出现 preprocess fail | ⬜ 待填写 |
-| `personal-website-construct` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `price-comparison` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id<br>另有 466 个派生变体全部 NO_EVAL，疑似评测器问题 | ⬜ 待填写 |
-| `quantitative-financial-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `sync-todo-to-readme` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `task-tracker` | 🟡 偶发：preprocess 阶段卡死<br>🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock | ⬜ 待填写 |
-| `train-ticket-plan` | 🟡 偶发：MCP server 启动超时（rail_12306） | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `verl-dataset` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `vlm-history-completer` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
+| `ab-testing` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺凭据文件 `configs/gcp-service_account.keys.json`（GCP 服务账号密钥）；根因=infra |
+| `academic-warning` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `dataset-license-issue` | — | 3.4 无有效评测产出：5 批次均 NO_EVAL<br>第 6 节冲突约束：不可与 `huggingface-upload` 并发 | ✅ PASS（run glm-5.2/260904） |
+| `experiments-recordings` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
+| `fillout-online-forms` | 🔴 必现：Google OAuth credentials 缺字段 | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google OAuth 授权信息缺字段 client_id/client_secret；根因=infra/凭据 |
+| `flagged-transactions` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `game-statistics` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `gdp-cr5-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `huggingface-upload` | 🟡 偶发：Python 依赖缺失或 ABI 不匹配 | 3.3 A 从未通过：环境/凭据问题为主<br>Hugging Face 客户端 read timeout 10/15s<br>第 6 节冲突约束：不可与 `dataset-license-issue` 并发 | ✅ FAIL（run glm-5.2/260904）<br>仓库已建、README/config.json/pytorch_model.bin 均匹配，但漏传 figures/fig1–3.png；能力问题，非 infra |
+| `inter-final-performance-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `investment-decision-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败（returncode 1）；根因=infra |
+| `live-transactions` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `llm-training-dataset` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `machine-operating` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `merge-hf-datasets` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Hugging Face 客户端 read timeout 10/15s | ✅ FAIL（run glm-5.2/260904）<br>xlam_18 工具参数类型字符串被截断（`List[Union[int, float]]` 输出成 `List[Union[int`）；能力问题，非 infra |
+| `music-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `nhl-b2b-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `notion-movies` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
+| `notion-personal-website` | 🟡 偶发：preprocess 阶段卡死 | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 卡住未完成（超时/中断，status=running）；根因=infra |
+| `oil-price` | 🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用<br>历史环境曾出现 preprocess fail | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
+| `personal-website-construct` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ FAIL（run glm-5.2/260904）<br>远端 about.md 缺必需信息 “PhD candidate”；能力问题，非 infra |
+| `price-comparison` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id<br>另有 466 个派生变体全部 NO_EVAL，疑似评测器问题 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：GCP 默认凭据缺失（DefaultCredentialsError）；根因=infra |
+| `quantitative-financial-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `sync-todo-to-readme` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ PASS（run glm-5.2/260904） |
+| `task-tracker` | 🟡 偶发：preprocess 阶段卡死<br>🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
+| `train-ticket-plan` | 🟡 偶发：MCP server 启动超时（rail_12306） | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260904）<br>running failed：MCP 仅连上 3/4（rail_12306 未连接），agent 阶段直接失败；根因=infra（MCP 启动） |
+| `verl-dataset` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
+| `vlm-history-completer` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
