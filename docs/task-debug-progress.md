@@ -1,6 +1,7 @@
 # finalpool task debug 进展跟踪
 
 - 初始化日期：2026-09-04
+- 网页版：[可筛选任务总表](task-debug-progress.html)（STATUS 按 ✅ 判断任务能否跑通，与评测 PASS / FAIL 无关）。修改本文后运行 `python3 scripts/generate_task_debug_html.py`，仅更新 [CSV 数据](task-debug-progress.csv)；HTML 是固定模板，通过静态服务读取 CSV，刷新网页即可，无需重新生成 HTML。
 - 分组来源：[finalpool 四组 task list](../configs/task_lists/finalpool/)
 - 环境错误来源：[lwx-env-error.md](lwx-env-error.md)：仅覆盖 260812 GLM-5.1 两个批次，并只统计从工具消息提取到的环境错误；本表中的“—”表示该文档未点名，不代表已证明没有环境问题。
 - 可跑性来源：[task-inventory-and-runnability.md](task-inventory-and-runnability.md)：3.1–4 节为历史评测分类，不能代替本次个人实跑。
@@ -24,6 +25,25 @@
 | `第 6 节冲突约束` | 一对任务共享外部账户状态，不能并发执行 | 只限制调度方式，不代表任务本身 FAIL 或不可跑 |
 
 结果术语：`PASS` 表示 `eval_res.json` 中 `pass == true`；`FAIL` 表示 `pass == false`；`NO_EVAL` 表示缺少或无法读取有效评测结果，常见于 preprocess 失败、容器超时或评测器未启动。
+
+## Google 依赖与认证说明
+
+2026-09-05 按当前 `task_config.json`、MCP 配置及预处理/评测代码补充。以下数量按声明的 Google MCP 统计；逐任务的服务、凭据和使用阶段写在“task inventory 描述”列。依赖说明不代表当前凭据有效，也不代替“我跑通情况”中的实跑证据。
+
+| Google 工具 | 任务数 | 需要配置什么 | 常见使用阶段 |
+|---|---:|---|---|
+| `google_map` | 6 | Maps API Key：`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`；按任务调用启用地图相关 API | agent 查询地点/路线；部分评测也调用 Maps |
+| `google-cloud` | 8 | `gcp_project_id` + `gcp_service_account_path`；服务账号 JSON 默认 `configs/gcp-service_account.keys.json` | 预处理准备 BigQuery/Storage/Logging 数据，agent 访问，部分评测读取云端结果 |
+| `google_sheet` | 11 | OAuth 用户凭据 `configs/google_credentials.json`，需 Sheets + Drive 权限；MCP 路径字段为 `google_oauth2_credentials_path` / `google_oauth2_token_path`；文件夹由任务的 `google_sheets_folder_id` 指定 | 预处理准备文件夹/表格，agent 读写，评测读取 |
+| `google_calendar` | 2 | `configs/gcp-oauth.keys.json` + `configs/google_credentials.json`；容器启动脚本复制到容器用户的 `~/.calendar-mcp/`，后者改名为 `credentials.json`；需 Calendar 读写权限 | 预处理清理/初始化日程，agent 创建日程，评测查询 |
+| `google_forms` | 2 | OAuth 用户凭据 `configs/google_credentials.json`，需 Forms + Drive 权限；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token` | 预处理清理表单，agent 创建表单，评测读取 |
+| **合计** | **29** | **15 个 OAuth + 8 个服务账号 + 6 个 API Key** | 同类凭据可共用，无需逐任务认证 |
+
+另有 `fillout-online-forms`：agent 未声明 Google MCP，但预处理/评测使用 Forms 与 Drive，同样需要 OAuth；它未计入上面的 29 个。原先将这些任务一律标为“OAuth 缺字段”的记录已按实际依赖更正。9 个尚未实跑的 Google 相关任务标为“Google 配置待核”；网页版保留 `BLOCK=Google` 便于筛选，并在 BLOCK 说明中注明待核，不表示已经确认凭据缺失。
+
+Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`token_uri`、`client_id`、`client_secret`、`scopes` 六个字段；Forms 清理函数也读取同一组字段。仅补齐 OAuth 的三个身份/刷新字段仍可能报 `KeyError: token`。Cloud 任务还需具备对应云资源权限，MCP 的 `google_cloud_allowed_*` 按任务配置限制资源范围；Maps Key 和服务账号 JSON 不能替代 OAuth 用户凭据。
+
+依据：[任务清单认证分类](task-inventory-and-runnability.md)、[Maps](../configs/mcp_servers/google_map.yaml)、[Cloud](../configs/mcp_servers/google-cloud.yaml)、[Sheets](../configs/mcp_servers/google_sheet.yaml)、[Forms](../configs/mcp_servers/google_forms.yaml)、[Calendar](../configs/mcp_servers/google_calendar.yaml)、[Calendar 容器凭据复制](../scripts/run_single_containerized.sh)、[Sheets/Drive 凭据读取](../utils/app_specific/googlesheet/drive_helper.py)、[Forms 凭据读取](../utils/app_specific/google_form/ops.py)。
 
 ## 总体统计
 
@@ -88,14 +108,14 @@
 | `nvidia-market` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 212 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
 | `nvidia-stock-analysis` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时<br>🔴 必现：API Key 无效<br>🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Python 依赖缺失或 ABI 不匹配 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 94 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
 | `profile-update-online` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
-| `search-ca-school` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra/凭据：轨迹 56 次页面加载失败（net::ERR_NETWORK_CHANGED，csrankings.org）+ Google Maps geocoding「invalid API key」 |
-| `shopping-helper` | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ FAIL（run glm-5.2/260904）<br>评测器实时抓取 Amazon 成功，3 个商品提交价均与实时页价不符（364.63≠379.99；172.72≠180.0×2），0/3 通过；价格数据不符，非 infra |
+| `search-ca-school` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 使用 Maps 查学校位置/驾车距离 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra/凭据：轨迹 56 次页面加载失败（net::ERR_NETWORK_CHANGED，csrankings.org）+ Google Maps geocoding「invalid API key」 |
+| `shopping-helper` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ FAIL（run glm-5.2/260904）<br>评测器实时抓取 Amazon 成功，3 个商品提交价均与实时页价不符（364.63≠379.99；172.72≠180.0×2），0/3 通过；价格数据不符，非 infra |
 | `stock-build-position` | 🔴 必现：Yahoo Finance API 429 限流 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 233 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
-| `subway-planning` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ✅🟠 PASS（run glm-5.2/260904）<br>备注：agent 通过 playwright 抓取公开网页完成，未用上 Google Maps API（`google_cloud_console_api_key` 实为占位符 `"XX"`）；且任务只需 google_map/filesystem/playwright/fetch，不涉及 Google OAuth，inventory 的 OAuth-阻塞标注对本任务为误挂 |
+| `subway-planning` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 可使用 Maps 查询地铁站/路线；已有网页替代完成记录不代表 API Key 有效 | 🟠 PASS（run glm-5.2/260904）<br>当前阻塞：Google Maps API 尚未配置（BLOCK=Google）；按当前配置记为“不通”<br>备注：agent 通过 playwright 抓取公开网页完成，未用上 Google Maps API（`google_cloud_console_api_key` 实为占位符 `"XX"`）；且任务只需 google_map/filesystem/playwright/fetch，不涉及 Google OAuth，原 inventory 的 OAuth-阻塞误挂已更正为 Maps API Key 依赖 |
 | `travel-exchange` | 🔴 必现：Yahoo Finance API 429 限流 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 229 次 Yahoo Finance「Too Many Requests」429，与 env-error 记录一致 |
-| `trip-adviser` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ✅🟠 PASS（run glm-5.2/260904）<br>备注：agent 通过 playwright 抓取公开网页完成，未用上 Google Maps API（`google_cloud_console_api_key` 实为占位符 `"XX"`）；且任务只需 google_map/filesystem/playwright/fetch，不涉及 Google OAuth，inventory 的 OAuth-阻塞标注对本任务为误挂 |
-| `trip-itinerary-generator` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因≈infra：轨迹 98 次 page.goto net::ERR_TIMED_OUT（louvre.fr 等目标站页面加载超时） |
-| `upenn-campus-route` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ❌ FAIL（run glm-5.2/260904）<br>路线格式校验通过，但评测器获取步行时间的外部接口返回空（JSON decode error: line 1 col 0）→ "Failed to get walking time"，评测中断；根因=infra（评测侧外部地图接口），非模型能力 |
+| `trip-adviser` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 可使用 Maps 查地点/路线；当前评测的 GoogleMapsMCPClient 为本地模拟实现，PASS 不证明真实 Maps API 可用 | 🟠 PASS（run glm-5.2/260904）<br>当前阻塞：Google Maps API 尚未配置（BLOCK=Google）；按当前配置记为“不通”<br>备注：agent 通过 playwright 抓取公开网页完成，未用上 Google Maps API（`google_cloud_console_api_key` 实为占位符 `"XX"`）；且任务只需 google_map/filesystem/playwright/fetch，不涉及 Google OAuth，原 inventory 的 OAuth-阻塞误挂已更正为 Maps API Key 依赖 |
+| `trip-itinerary-generator` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent + 评测均使用 Maps；评测调用 maps_search_places / maps_place_details / maps_distance_matrix | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因≈infra：轨迹 98 次 page.goto net::ERR_TIMED_OUT（louvre.fr 等目标站页面加载超时） |
+| `upenn-campus-route` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent + 评测均使用 Maps；评测调用 maps_directions 取得步行时间 | ❌ FAIL（run glm-5.2/260904）<br>路线格式校验通过，但评测器获取步行时间的外部接口返回空（JSON decode error: line 1 col 0）→ "Failed to get walking time"，评测中断；根因=infra（评测侧外部地图接口），非模型能力 |
 | `wandb-best-score` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
 | `wandb-shortest-length` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
 | `yahoo-analysis` | 🔴 必现：Yahoo Finance API 429 限流 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 204 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
@@ -125,22 +145,22 @@
 | `k8s-mysql` | 🟡 偶发：MCP 工具执行错误 -32603 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
 | `k8s-pr-preview-testing` | 🟡 偶发：MCP 工具执行错误 -32603 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
 | `k8s-redis-helm-upgrade` | 🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Docker Registry 5xx / ImagePullBackOff<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>Docker Registry 5xx / ImagePullBackOff | ⬜ 待填写 |
-| `k8s-safety-audit` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
+| `k8s-safety-audit` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `landing-task-reminder` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
 | `meeting-assign` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `notion-find-job` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
+| `notion-find-job` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 使用 Maps 查地点/路线；另有 Notion 依赖<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `notion-hr` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | ⬜ 待填写 |
 | `payable-invoice-checker` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `set-conf-cr-ddl` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id<br>第 6 节冲突约束：不可与 `student-interview` 并发 | ⬜ 待填写 |
+| `set-conf-cr-ddl` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `student-interview` 并发 | ⬜ 待填写 |
 | `sla-timeout-monitor` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
-| `student-interview` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id<br>第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发 | ⬜ 待填写 |
+| `student-interview` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发 | ⬜ 待填写 |
 | `travel-expense-reimbursement` | — | 3.3 B 从未通过：模型能力/任务难度为主 | ⬜ 待填写 |
-| `update-material-inventory` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `woocommerce-customer-survey` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id<br>第 6 节冲突约束：不可与 `woocommerce-product-recall` 并发 | ⬜ 待填写 |
+| `update-material-inventory` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
+| `woocommerce-customer-survey` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）<br>凭据：OAuth `configs/google_credentials.json`；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token`<br>使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `woocommerce-product-recall` 并发 | ⬜ 待填写 |
 | `woocommerce-new-product` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>IMAP/SMTP 抖动或连接拒绝 | ⬜ 待填写 |
-| `woocommerce-new-welcome` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
-| `woocommerce-product-recall` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id<br>第 6 节冲突约束：不可与 `woocommerce-customer-survey` 并发 | ⬜ 待填写 |
-| `woocommerce-stock-alert` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | ⬜ 待填写 |
+| `woocommerce-new-welcome` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `woocommerce_crm`（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
+| `woocommerce-product-recall` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）<br>凭据：OAuth `configs/google_credentials.json`；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token`<br>使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `woocommerce-customer-survey` 并发 | ⬜ 待填写 |
+| `woocommerce-stock-alert` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `woocommerce-update-cover` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
 
 ## C-remote：远端写（28）
@@ -150,38 +170,38 @@
 > 说明与根因：本组 28 个任务里**只有 7 个真正进入 agent 执行**（过了 preprocess），其余 **21 个在 preprocess 阶段直接失败/卡住**，从未运行模型。
 > - **PASS 3**：`dataset-license-issue`、`sync-todo-to-readme`、`verl-dataset`。
 > - **FAIL 3（均能力问题，非 infra）**：`huggingface-upload`（漏传 figures/*.png）、`merge-hf-datasets`（工具参数类型字符串截断）、`personal-website-construct`（about.md 缺 “PhD candidate”）。
-> - **NO_EVAL 22（全部 infra/配置，非模型能力）**：其中 21 个为 preprocess 失败 + 1 个（`train-ticket-plan`）agent 启动时 MCP 仅连上 3/4（rail_12306 未连）。preprocess 失败按签名归类：缺 GCP 服务账号密钥 `configs/gcp-service_account.keys.json`（7 个）、缺 Notion `files/duplicated_page_id.txt`（4 个）、配置模板 `KeyError 'token'`（7 个）、Google OAuth 缺字段（`fillout-online-forms`）、generic returncode 1（`investment-decision-analysis`）、preprocess 卡住未完成（`notion-personal-website`）。
-> 补上 `configs/gcp-service_account.keys.json` 等凭据/配置文件后，这 21 个 preprocess-fail 任务应可重新进入执行。
+> - **NO_EVAL 22（全部 infra/配置，非模型能力）**：其中 21 个为 preprocess 失败 + 1 个（`train-ticket-plan`）agent 启动时 MCP 仅连上 3/4（rail_12306 未连）。preprocess 失败按签名归类：缺 GCP 服务账号密钥 `configs/gcp-service_account.keys.json`（7 个）、缺 Notion `files/duplicated_page_id.txt`（4 个）、Google Sheets/Drive 凭据缺 `token`（`KeyError 'token'`，7 个）、Google OAuth 缺字段（`fillout-online-forms`）、generic returncode 1（`investment-decision-analysis`）、preprocess 卡住未完成（`notion-personal-website`）。
+> Google 相关任务需分别补齐服务账号或 OAuth 用户凭据后重跑预处理；其他配置错误和卡住原因仍需逐项排查，不能由补齐一个凭据文件推断这 21 个任务全部恢复。
 >
 > 注意：`results/glm-5.2/` 目录同时包含 A 组（run glm-5.2/260903）旧结果，脚本尾部聚合统计是 A+C 混合值；本表数字为按 `c-remote-write.txt` 清单逐任务读取 eval_res.json 单独统计所得。
 
 | 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|
-| `ab-testing` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺凭据文件 `configs/gcp-service_account.keys.json`（GCP 服务账号密钥）；根因=infra |
-| `academic-warning` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `ab-testing` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `ab_testing` + Storage 桶 `promo-assets-for-b*` + Logging 日志桶（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺凭据文件 `configs/gcp-service_account.keys.json`（GCP 服务账号密钥）；根因=infra |
+| `academic-warning` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `academic_warning` + Logging 日志桶（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
 | `dataset-license-issue` | — | 3.4 无有效评测产出：5 批次均 NO_EVAL<br>第 6 节冲突约束：不可与 `huggingface-upload` 并发 | ✅ PASS（run glm-5.2/260904） |
 | `experiments-recordings` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
-| `fillout-online-forms` | 🔴 必现：Google OAuth credentials 缺字段 | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google OAuth 授权信息缺字段 client_id/client_secret；根因=infra/凭据 |
-| `flagged-transactions` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
-| `game-statistics` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
-| `gdp-cr5-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `fillout-online-forms` | 🔴 必现：Google OAuth credentials 缺字段 | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Forms 表单 + Drive 文件管理（未声明 Google MCP）<br>凭据：OAuth `configs/google_credentials.json`；需 Forms/Drive 权限<br>使用阶段：预处理创建表单、评测读取表单/回答；agent 通过浏览器填写<br>历史已知错误：OAuth 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google OAuth 授权信息缺字段 client_id/client_secret；根因=infra/凭据 |
+| `flagged-transactions` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `all_transactions`（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `game-statistics` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `game_analytics`（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `gdp-cr5-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
 | `huggingface-upload` | 🟡 偶发：Python 依赖缺失或 ABI 不匹配 | 3.3 A 从未通过：环境/凭据问题为主<br>Hugging Face 客户端 read timeout 10/15s<br>第 6 节冲突约束：不可与 `dataset-license-issue` 并发 | ✅ FAIL（run glm-5.2/260904）<br>仓库已建、README/config.json/pytorch_model.bin 均匹配，但漏传 figures/fig1–3.png；能力问题，非 infra |
-| `inter-final-performance-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
-| `investment-decision-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败（returncode 1）；根因=infra |
-| `live-transactions` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
-| `llm-training-dataset` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
-| `machine-operating` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `inter-final-performance-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
+| `investment-decision-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败（returncode 1）；根因=infra |
+| `live-transactions` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `transactions_analytics` + Storage 桶 + Logging 日志桶（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
+| `llm-training-dataset` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
+| `machine-operating` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `machine_operating` + Storage 桶（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
 | `merge-hf-datasets` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Hugging Face 客户端 read timeout 10/15s | ✅ FAIL（run glm-5.2/260904）<br>xlam_18 工具参数类型字符串被截断（`List[Union[int, float]]` 输出成 `List[Union[int`）；能力问题，非 infra |
-| `music-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
-| `nhl-b2b-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `music-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
+| `nhl-b2b-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
 | `notion-movies` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
 | `notion-personal-website` | 🟡 偶发：preprocess 阶段卡死 | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 卡住未完成（超时/中断，status=running）；根因=infra |
 | `oil-price` | 🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用<br>历史环境曾出现 preprocess fail | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
 | `personal-website-construct` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ FAIL（run glm-5.2/260904）<br>远端 about.md 缺必需信息 “PhD candidate”；能力问题，非 infra |
-| `price-comparison` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id<br>另有 466 个派生变体全部 NO_EVAL，疑似评测器问题 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：GCP 默认凭据缺失（DefaultCredentialsError）；根因=infra |
-| `quantitative-financial-analysis` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `price-comparison` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `bigquery_pricing_analysis`（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果<br>预处理缺服务账号时回退 ADC；需单独核对默认凭据<br>另有 466 个派生变体全部 NO_EVAL，需排查 GCP 凭据及预处理/评测流程 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：GCP 默认凭据缺失（DefaultCredentialsError）；根因=infra |
+| `quantitative-financial-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
 | `sync-todo-to-readme` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ PASS（run glm-5.2/260904） |
 | `task-tracker` | 🟡 偶发：preprocess 阶段卡死<br>🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
 | `train-ticket-plan` | 🟡 偶发：MCP server 启动超时（rail_12306） | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260904）<br>running failed：MCP 仅连上 3/4（rail_12306 未连接），agent 阶段直接失败；根因=infra（MCP 启动） |
 | `verl-dataset` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
-| `vlm-history-completer` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Google OAuth credentials 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：配置模板 KeyError `token`；根因=infra |
+| `vlm-history-completer` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |

@@ -165,7 +165,22 @@ woocommerce-new-welcome           woocommerce-product-recall
 woocommerce-stock-alert
 ```
 
-已知阻塞：Google OAuth credentials 缺 `refresh_token` / `client_secret` / `client_id` 字段，报错 `Authorized user info was not in the expected format`。这在历史环境中标记为**必现**问题 —— 只要跑到就失败。启用这 29 个任务的前提是重新走一遍 OAuth 生成完整的 credentials JSON。
+**认证分类补充（2026-09-05，按当前任务配置和代码核对）**：这 29 个任务都在 `task_config.json` 的 `needed_mcp_servers` 中声明了 Google 工具，但并非都使用 OAuth。
+
+| Google 工具 | 任务数 | 当前仓库所需凭据/配置 |
+|---|---:|---|
+| `google_map` | 6 | API Key：`google_cloud_console_api_key`，由 MCP 配置传入 `GOOGLE_MAPS_API_KEY` |
+| `google-cloud` | 8 | GCP 项目 ID：`gcp_project_id`；服务账号密钥：`gcp_service_account_path`，默认 `configs/gcp-service_account.keys.json` |
+| `google_sheet` | 11 | OAuth 用户凭据：`configs/google_credentials.json`，由 `google_oauth2_credentials_path` / `google_oauth2_token_path` 引用 |
+| `google_calendar` | 2 | OAuth 用户凭据；准备流程将 `configs/gcp-oauth.keys.json` 和 `configs/google_credentials.json` 复制到 `~/.calendar-mcp/`，后者命名为 `credentials.json` |
+| `google_forms` | 2 | OAuth 用户凭据中的 `client_id`、`client_secret`、`refresh_token`，通过对应配置字段传入 MCP |
+| **合计** | **29** | **15 个 OAuth + 8 个服务账号 + 6 个 API Key** |
+
+同类任务可以共用已配置的凭据，无需逐任务单独认证；对应 API 和权限范围仍需满足任务要求。配置完成只解决认证前提，不代表这些任务已跑通。
+
+历史记录中的 OAuth 缺 `refresh_token` / `client_secret` / `client_id` 字段错误，直接记录于 `fillout-online-forms`，不能推广为这 29 个任务的共同阻塞。原“重新生成 OAuth 即可解锁 29 个任务”的表述在此更正。
+
+配置依据：[Maps](../configs/mcp_servers/google_map.yaml)、[Cloud](../configs/mcp_servers/google-cloud.yaml)、[Sheets](../configs/mcp_servers/google_sheet.yaml)、[Forms](../configs/mcp_servers/google_forms.yaml)、[公共凭据字段](../configs/token_key_session_example.py)、[Calendar 凭据准备](../global_preparation/misc_configuartion.sh)。
 
 **Notion 系（5 个）**
 
@@ -178,9 +193,9 @@ notion-personal-website  oil-price
 
 **其他（1 个）**
 
-`fillout-online-forms` —— 同属 Google OAuth 阻塞。
+`fillout-online-forms` —— 历史记录存在 Google OAuth 凭据缺字段问题。它未声明 Google MCP，因此不计入上面的 29 个，但[预处理](../tasks/finalpool/fillout-online-forms/preprocess/main.py)会读取 `configs/google_credentials.json` 并调用 Google Forms API。**29 是声明 Google MCP 的任务数，不是所有涉及 Google 凭据的任务总数。**
 
-另有一个交叉项值得注意：`price-comparison` 在派生变体池里跑过 466 个变体，**全部 NO_EVAL**（见 4.2），说明它的评测器本身有问题，不只是 OAuth 阻塞。
+另有一个交叉项值得注意：`price-comparison` 在派生变体池里跑过 466 个变体，**全部 NO_EVAL**（见 4.2），需单独排查 GCP 凭据及预处理/评测流程，不能仅凭 NO_EVAL 断定评测器本身有问题，也不能统一归为 OAuth 字段缺失。
 
 ### 4.2 派生变体池的旁证数据
 
@@ -247,7 +262,7 @@ wandb-shortest-length
 |---|---|---|
 | emails | 24 | mcp.com 邮件服务并发限登录 → 单账户串行 + 指数退避 |
 | playwright_with_chunk | 24 | 超时与反爬 → 加大超时（>60s）、调整加载策略与 UA |
-| google 系 | 29 | OAuth credentials 字段缺失（必现）→ 重新生成完整 credentials JSON |
+| google 系（按声明的 MCP 统计） | 29 | 分类配置凭据：15 个 OAuth、8 个服务账号、6 个 API Key；另有未计入的 `fillout-online-forms` 在预处理使用 OAuth，详见第 4 节 |
 | yahoo-finance | 10 | 公共接口 IP 限流 → 令牌桶 + 共享缓存 |
 | woocommerce | 9 | 连接抖动 |
 | notion | 8 | refresh lock 争用 → 跑前清 `*.lock`，预热 token |
@@ -300,7 +315,7 @@ TASK_LIST=./my_tasks.txt bash scripts/run_parallel.sh \
 
 **要扩大可用任务量**，按投入产出排序：
 
-1. **修 Google OAuth credentials** —— 一次性解锁 29 个未验证任务，是单项收益最大的。需要重新走 OAuth 流程生成含 `refresh_token`/`client_secret`/`client_id` 的完整 credentials JSON。
+1. **按类型补齐 Google 凭据** —— 29 个声明 Google MCP 的任务中，15 个需要 OAuth、8 个需要 GCP 服务账号、6 个需要 Maps API Key；另需覆盖 `fillout-online-forms` 的预处理 OAuth。凭据可按类型共用，不能仅重新生成 OAuth 就视为 29 个任务全部可跑，仍需逐类验证。
 2. **修 HuggingFace read timeout 和 Yahoo Finance 限流** —— 直接影响 6 个已知失败任务，且派生池数据显示这些任务本身可解。
 3. **加大 Playwright 超时** —— 影响 4 个任务。
 4. **清理 Notion lock 机制** —— 解锁 5 个未验证任务 + 修复 `task-tracker`。

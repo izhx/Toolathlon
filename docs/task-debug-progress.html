@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Task Debug 进展 · Toolathlon</title>
+  <style>
+    :root { --ink:#1c302c; --muted:#66766f; --line:#dde4dd; --paper:#fff;
+      --accent:#176750; --soft:#edf5ee; --canvas:#f5f6f1; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--canvas); color:var(--ink);
+      font:14px/1.65 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    main { max-width:2000px; margin:auto; padding:36px 32px 24px; }
+    a { color:var(--accent); text-underline-offset:3px; }
+    .masthead { display:flex; align-items:center; gap:10px; font-size:11px;
+      font-weight:750; letter-spacing:1.8px; color:var(--accent); }
+    .mark { width:9px; height:9px; background:var(--accent); border-radius:2px; }
+    .masthead span:last-child { color:var(--muted); font-weight:500; }
+    .heading { display:flex; justify-content:space-between; align-items:center; gap:24px; margin:12px 0 22px; }
+    h1 { font-size:30px; font-weight:680; letter-spacing:-1px; margin:0 0 4px; line-height:1.35; }
+    .subtitle { margin:0; color:var(--muted); }
+    .source-link { border:1px solid var(--line); background:var(--paper); border-radius:8px;
+      padding:9px 14px; text-decoration:none; white-space:nowrap; font-size:13px; }
+    .stats { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:22px; }
+    .stat { background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:16px 20px; }
+    .stat small { color:var(--muted); font-size:12px; }
+    .stat strong { display:block; font-size:30px; line-height:1.5; font-variant-numeric:tabular-nums; font-weight:650; }
+    .stat span { display:block; font-size:11px; color:var(--muted); }
+    .stat.pass { border-top:3px solid var(--accent); padding-top:14px; }
+    .stat.pass strong { color:var(--accent); }
+    .stat.fail strong { color:#a45230; }
+    .filters { display:grid; grid-template-columns:1.15fr 1fr 1.25fr 1.7fr auto; align-items:end; gap:14px;
+      padding:20px; background:var(--paper); border:1px solid var(--line); border-radius:10px 10px 0 0; }
+    label { display:block; font-size:12px; font-weight:650; margin-bottom:6px; }
+    select,input,button { font:inherit; }
+    select,input[type="search"] { width:100%; height:40px; border:1px solid #cbd6ce; border-radius:6px;
+      background:var(--paper); color:var(--ink); padding:0 10px; }
+    button { height:40px; border:1px solid var(--line); border-radius:6px; padding:0 16px;
+      color:var(--ink); background:var(--canvas); cursor:pointer; white-space:nowrap; }
+    button:hover { background:var(--soft); border-color:var(--accent); }
+    :disabled { opacity:.6; cursor:wait; }
+    :focus-visible { outline:3px solid #8ac5b0; outline-offset:2px; }
+    .filter-note { padding:10px 20px; border:1px solid var(--line); border-top:0; background:#fbfcfa;
+      color:var(--muted); font-size:12px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    #result-count { color:var(--ink); font-weight:650; }
+    .legend { margin:14px 0; color:var(--muted); font-size:12px; }
+    summary { cursor:pointer; width:fit-content; font-weight:600; color:var(--ink); }
+    .legend p { margin:8px 0; max-width:1200px; }
+    .table-wrap { border:1px solid var(--line); border-radius:10px; background:var(--paper);
+      overflow:auto; max-height:73vh; scrollbar-color:#bfcec3 #f5f6f1; }
+    table { width:100%; min-width:1550px; table-layout:fixed; border-collapse:separate; border-spacing:0; font-size:12px; }
+    caption { text-align:left; padding:14px 16px; font-size:13px; font-weight:650; border-bottom:1px solid var(--line); }
+    col.category { width:132px; } col.status { width:76px; } col.block { width:174px; }
+    col.task { width:225px; } col.progress { width:auto; } col.environment { width:250px; }
+    col.inventory { width:285px; }
+    thead th { position:sticky; top:0; z-index:3; text-align:left; background:#edf1eb; color:#435a4d;
+      font-size:11px; letter-spacing:.3px; border-bottom:1px solid #cbd6ce; padding:12px; white-space:nowrap; }
+    tbody td,tbody th { padding:15px 12px; vertical-align:top; text-align:left; border-bottom:1px solid #e8ede6;
+      overflow-wrap:anywhere; background:var(--paper); }
+    tbody tr:nth-child(even) > * { background:#fcfdfb; }
+    tbody tr:hover > * { background:#f0f6ef; }
+    tbody tr:last-child > * { border-bottom:0; }
+    tbody tr[hidden] { display:none; }
+    .category strong { font-size:12px; font-weight:750; }
+    .category small { display:block; color:var(--muted); font-size:10px; margin-top:3px; }
+    .task-name { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12px; font-weight:650; }
+    .secondary { color:#627166; }
+    .badge { display:inline-block; vertical-align:middle; padding:3px 8px; border-radius:5px; white-space:nowrap;
+      line-height:1.5; font-size:10px; font-weight:650; margin-bottom:3px; }
+    .status-1 { background:#e0f1e6; color:#146545; min-width:30px; text-align:center; font-size:12px; }
+    .status-0 { background:#faeade; color:#994321; min-width:30px; text-align:center; font-size:12px; }
+    .status--1 { background:#edf0ee; color:#717b76; min-width:30px; text-align:center; font-size:12px; }
+    .block-none { background:#f0f2ef; color:#849087; min-width:27px; text-align:center; }
+    .block-yahoo { background:#fff0d9; color:#8c5a0b; }
+    .block-notion { background:#eee9f8; color:#665087; }
+    .block-google { background:#e5effb; color:#3b619a; }
+    .block-reason { display:block; font-size:10px; color:var(--muted); margin-top:4px; line-height:1.55; }
+    code { font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;
+      background:#eff2ed; border-radius:3px; padding:1px 3px; overflow-wrap:anywhere; }
+    .empty { padding:48px 20px; text-align:center; color:var(--muted); }
+    .empty strong { display:block; color:var(--ink); font-size:16px; margin-bottom:5px; }
+    footer { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-top:16px; color:var(--muted); font-size:11px; }
+    footer details p { margin:8px 0; }
+    noscript p { padding:12px; background:#fff0d9; }
+    .load-error { padding:14px 20px; background:#fff0d9; color:#994321; border-radius:8px; }
+    @media (min-width:1100px) {
+      tbody tr > :nth-child(1),tbody tr > :nth-child(2),tbody tr > :nth-child(3) { position:sticky; z-index:1; }
+      tr > :nth-child(1) { left:0; } tr > :nth-child(2) { left:132px; } tr > :nth-child(3) { left:208px; }
+      thead tr > :nth-child(-n+3) { z-index:4; }
+      tr > :nth-child(3) { border-right:1px solid var(--line); }
+    }
+    @media (max-width:900px) {
+      main { padding:22px 16px; } .heading { align-items:flex-start; } h1 { font-size:25px; }
+      .stats { grid-template-columns:repeat(3,1fr); gap:8px; } .stat { padding:12px; }
+      .stat.pass { padding-top:10px; } .stat strong { font-size:26px; }
+      .filters { grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; padding:16px; }
+      .search-control { grid-column:span 2; } .table-wrap { max-height:70vh; }
+    }
+    @media (max-width:520px) {
+      .heading { display:block; } .source-link { display:inline-block; margin-top:12px; }
+      .stats { grid-template-columns:repeat(2,1fr); } .stat:last-child { grid-column:span 2; }
+      .filters { grid-template-columns:1fr; } .search-control { grid-column:auto; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="masthead"><i class="mark" aria-hidden="true"></i> TOOLATHLON <span>/ FINALPOOL</span></div>
+    <div class="heading">
+      <div><h1>Task Debug 进展</h1><p class="subtitle">四类任务，一张总表。按任务类别、跑通状况与阻塞项筛选。</p></div>
+      <a class="source-link" href="task-debug-progress.md">查看原始文档 ↗</a>
+    </div>
+  </header>
+  <section class="stats" aria-label="当前筛选结果统计">
+    <div class="stat"><small>任务总数</small><strong id="stat-total">—</strong><span>当前筛选 / 全部 <span id="all-total" style="display:inline">—</span> 项</span></div>
+    <div class="stat pass"><small>跑通</small><strong id="stat-pass">—</strong><span>原记录有 ✅</span></div>
+    <div class="stat fail"><small>不通</small><strong id="stat-fail">—</strong><span>已填写，无 ✅</span></div>
+    <div class="stat"><small>没跑</small><strong id="stat-pending">—</strong><span>原记录为空或待填写</span></div>
+    <div class="stat"><small>已标注阻塞</small><strong id="stat-blocked">—</strong><span>Yahoo / Notion / Google</span></div>
+  </section>
+  <form class="filters" id="filters" aria-label="任务筛选">
+    <div><label for="filter-category">任务类别</label><select id="filter-category" name="category" disabled>
+      <option value="">全部类别</option><option value="A">A · 无网络依赖</option><option value="B">B · 网络只读</option><option value="C-local">C-local · 本地基础设施写</option><option value="C-remote">C-remote · 远端写</option>
+    </select></div>
+    <div><label for="filter-status">STATUS</label><select id="filter-status" name="status" disabled>
+      <option value="">全部状态</option><option value="1">跑通</option>
+      <option value="0">不通</option><option value="-1">没跑</option>
+    </select></div>
+    <div><label for="filter-block">BLOCK</label><select id="filter-block" name="block" disabled>
+      <option value="">全部阻塞标注</option><option value="0">0 · 未标注这三类阻塞</option>
+      <option value="blocked">所有已标注阻塞</option><option value="yahoo">Yahoo Finance 429</option>
+      <option value="notion">Notion（尚未配置）</option><option value="google">Google（尚未配置）</option>
+    </select></div>
+    <div class="search-control"><label for="filter-search">搜索任务或说明</label>
+      <input id="filter-search" name="q" type="search" placeholder="任务名、错误关键词…" autocomplete="off" disabled></div>
+    <button type="reset" disabled>重置筛选</button>
+  </form>
+  <div class="filter-note"><span id="result-count" role="status" aria-live="polite">正在读取任务数据…</span>
+    <span>各条件同时满足 · 顶部统计随筛选更新 · 表格可横向滚动</span></div>
+  <details class="legend">
+    <summary>STATUS / BLOCK 口径与历史分类说明</summary>
+    <p><b>STATUS 看对号：</b>原始“我跑通情况”首行含 ✅ 就记为“跑通”；因此 ✅ FAIL、✅ NO_EVAL、✅🟠 PASS 都为“跑通”。已填写但没有 ✅ 为“不通”；空白或待填写为“没跑”。它不表示评测是否 PASS。</p>
+    <p><b>BLOCK：</b>默认 0，仅标注 Yahoo Finance 429、Notion 和 Google 三类。0 表示未标注这三类，不代表没有其他阻塞。Google 包含 OAuth、GCP 与 Maps。Notion / Google 尚未配置为用户提供的环境背景；每行小字保留归类依据，接口失败或卡住的具体原因仍需核实。</p>
+    <p>本次记录优先于历史说明：有 ✅ 的任务 BLOCK 为 0；“没跑”任务沿用 inventory 中的“已知阻塞”，并标明个人尚未实跑。仅有 returncode 1 的 investment-decision-analysis 按 Google 预处理及历史凭据问题暂归类，标注待核。</p>
+    <p><b>历史 inventory 分类：</b>3.1 = 稳定可跑；3.2 = 不稳定；3.3 A = 从未通过，以环境／凭据问题为主；3.3 B = 从未通过，以能力／难度为主；3.4 = 无有效评测产出；4 = 未验证；5.1 = 低外部依赖。smoke test 为原文建议子集；第 6 节为并发冲突约束。这些历史分类与本表四类执行分组、个人 STATUS 是不同维度。</p>
+    <p>环境错误栏“—”表示来源文档未提及，不表示已确认没有环境问题。paper-checker 在原文 3.1 和 5.1 中均有记录，但未列入原文 smoke test 清单，本页保留原始标注。</p>
+  </details>
+  <noscript><p>请启用 JavaScript，以加载任务数据并使用筛选和搜索。</p></noscript>
+  <p class="load-error" id="load-error" role="alert" hidden></p>
+  <div class="table-wrap" role="region" aria-label="可滚动的任务总表" aria-busy="true" tabindex="0">
+    <table id="task-table">
+      <caption>finalpool 任务总表 <span id="table-count">· — 项</span></caption>
+      <colgroup><col class="category"><col class="status"><col class="block"><col class="task">
+        <col class="progress"><col class="environment"><col class="inventory"></colgroup>
+      <thead><tr><th scope="col">任务类别</th><th scope="col">STATUS</th><th scope="col">BLOCK</th>
+        <th scope="col">任务</th><th scope="col">我跑通情况 · 原始记录</th>
+        <th scope="col">lwx-env-error 描述</th><th scope="col">task inventory 描述</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="empty" id="empty-state" hidden><strong>没有符合条件的任务</strong>调整筛选条件，或点击“重置筛选”查看全部任务。</div>
+  </div>
+  <footer>
+    <span>来源：<a href="task-debug-progress.md">task debug</a> · <a href="lwx-env-error.md">环境错误</a> ·
+      <a href="task-inventory-and-runnability.md">历史可跑性</a> · <a href="task-debug-progress.csv" download>下载 CSV</a></span>
+    <details><summary>更新此页面</summary><p>编辑 <code>docs/task-debug-progress.md</code> 后，在仓库根目录运行：<br>
+      <code>python3 scripts/generate_task_debug_html.py</code><br>脚本仅更新 <code>docs/task-debug-progress.csv</code>。
+      通过静态服务访问本页并刷新，即可读取最新数据；HTML 模板无需重新生成。</p></details>
+  </footer>
+</main>
+<script>
+  "use strict";
+  const form = document.getElementById("filters");
+  const category = document.getElementById("filter-category");
+  const status = document.getElementById("filter-status");
+  const block = document.getElementById("filter-block");
+  const search = document.getElementById("filter-search");
+  const groups = {A:"无网络依赖", B:"网络只读", "C-local":"本地基础设施写", "C-remote":"远端写"};
+  const statuses = {"跑通":"1", "不通":"0", "没跑":"-1"};
+  const blocks = {"0":"0", "Yahoo Finance 429":"yahoo", Notion:"notion", Google:"google"};
+  const columns = ["任务类别", "STATUS", "BLOCK", "任务", "我跑通情况",
+    "lwx-env-error 描述", "task inventory 描述", "BLOCK 说明"];
+  let rows = [];
+
+  // CSV fields may contain commas, escaped quotes, CRLF and quoted line breaks.
+  function parseCSV(source) {
+    source = source.replace(/^\uFEFF/, "");
+    const records = [];
+    let record = [], field = "", quoted = false, closedQuote = false;
+    for (let i = 0; i < source.length; i++) {
+      const char = source[i];
+      if (quoted) {
+        if (char === '"') {
+          if (source[i + 1] === '"') { field += '"'; i++; }
+          else { quoted = false; closedQuote = true; }
+        } else field += char;
+      } else if (char === "," || char === "\n" || char === "\r") {
+        record.push(field);
+        field = "";
+        closedQuote = false;
+        if (char !== ",") {
+          if (record.some(value => value !== "")) records.push(record);
+          record = [];
+          if (char === "\r" && source[i + 1] === "\n") i++;
+        }
+      } else if (closedQuote) {
+        throw new Error("CSV 引号后有无效字符");
+      } else if (char === '"') {
+        if (field !== "") throw new Error("CSV 字段中的引号未转义");
+        quoted = true;
+      } else field += char;
+    }
+    if (quoted) throw new Error("CSV 引号未闭合");
+    if (field !== "" || record.length || closedQuote) {
+      record.push(field);
+      records.push(record);
+    }
+    const header = records.shift();
+    if (!header || new Set(header).size !== header.length || columns.some(name => !header.includes(name))) {
+      throw new Error("CSV 缺少必要列，或列名重复");
+    }
+    return records.map((values, index) => {
+      if (values.length !== header.length) throw new Error(`CSV 第 ${index + 1} 条记录列数不一致`);
+      return Object.fromEntries(header.map((name, i) => [name, values[i]]));
+    });
+  }
+
+  function node(tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== undefined) element.textContent = text;
+    return element;
+  }
+
+  function description(text, className) {
+    const cell = node("td", className);
+    text.split(/\r\n|\r|\n|<br\s*\/?>/i).forEach((line, lineIndex) => {
+      if (lineIndex) cell.append(document.createElement("br"));
+      line.split("`").forEach((part, index) => {
+        cell.append(index % 2 ? node("code", "", part) : document.createTextNode(part));
+      });
+    });
+    return cell;
+  }
+
+  function renderRows(data) {
+    const seen = new Set();
+    const rendered = data.map(item => {
+      const group = item["任务类别"], label = item.STATUS, task = item["任务"];
+      const blockLabels = item.BLOCK.split(";").map(value => value.trim());
+      if (!Object.hasOwn(groups, group) || !Object.hasOwn(statuses, label)
+          || !/^[a-z0-9-]+$/.test(task) || seen.has(task)
+          || blockLabels.some(value => !Object.hasOwn(blocks, value))
+          || (blockLabels.length > 1 && blockLabels.includes("0"))) {
+        throw new Error(`任务 ${task || "（空）"} 的类别、STATUS、BLOCK 或任务名无效／重复`);
+      }
+      seen.add(task);
+      const codes = blockLabels.map(value => blocks[value]);
+      const element = node("tr");
+      element.id = task;
+      element.dataset.group = group;
+      element.dataset.status = statuses[label];
+      element.dataset.block = codes.join(" ");
+      const categoryCell = node("td", "category");
+      categoryCell.append(node("strong", "", group), node("small", "", groups[group]));
+      const statusCell = node("td");
+      statusCell.append(node("span", `badge status-${statuses[label]}`, label));
+      const blockCell = node("td");
+      blockLabels.forEach((value, i) => {
+        if (i) blockCell.append(" ");
+        blockCell.append(node("span", `badge block-${blocks[value] === "0" ? "none" : blocks[value]}`, value));
+      });
+      if (item["BLOCK 说明"]) blockCell.append(node("small", "block-reason", item["BLOCK 说明"]));
+      const taskCell = node("th", "task-name", task);
+      taskCell.scope = "row";
+      element.append(categoryCell, statusCell, blockCell, taskCell,
+        description(item["我跑通情况"], "progress"),
+        description(item["lwx-env-error 描述"], "secondary"),
+        description(item["task inventory 描述"], "secondary"));
+      return {element, category:group, status:statuses[label], blocks:codes,
+        text:element.textContent.toLocaleLowerCase()};
+    });
+    document.querySelector("#task-table tbody").replaceChildren(...rendered.map(row => row.element));
+    rows = rendered;
+    document.getElementById("all-total").textContent = rows.length;
+    for (const option of category.options) {
+      if (option.value) option.textContent = `${option.value} · ${groups[option.value]}（${rows.filter(row => row.category === option.value).length}）`;
+    }
+  }
+
+  async function loadData() {
+    try {
+      if (location.protocol === "file:") throw new Error("请通过 localhost 静态服务访问本页");
+      const response = await fetch("task-debug-progress.csv", {cache:"no-store"});
+      if (!response.ok) throw new Error(`读取 task-debug-progress.csv 失败（HTTP ${response.status}）`);
+      renderRows(parseCSV(await response.text()));
+      for (const control of form.elements) control.disabled = false;
+      applyFilters();
+    } catch (error) {
+      const message = document.getElementById("load-error");
+      message.textContent = `任务数据加载失败：${error.message}。检查数据后刷新页面重试。`;
+      message.hidden = false;
+      document.getElementById("result-count").textContent = "任务数据加载失败";
+    } finally {
+      document.querySelector(".table-wrap").setAttribute("aria-busy", "false");
+    }
+  }
+  function applyFilters() {
+    const query = search.value.trim().toLocaleLowerCase();
+    let total = 0, pass = 0, fail = 0, pending = 0, blocked = 0;
+    for (const row of rows) {
+      const hasBlock = !row.blocks.includes("0");
+      const matches = (!category.value || row.category === category.value)
+        && (!status.value || row.status === status.value)
+        && (!block.value || (block.value === "blocked" ? hasBlock : row.blocks.includes(block.value)))
+        && (!query || row.text.includes(query));
+      row.element.hidden = !matches;
+      if (!matches) continue;
+      total++;
+      if (row.status === "1") pass++;
+      if (row.status === "0") fail++;
+      if (row.status === "-1") pending++;
+      if (hasBlock) blocked++;
+    }
+    for (const [id, value] of Object.entries({total, pass, fail, pending, blocked})) {
+      document.getElementById(`stat-${id}`).textContent = value;
+    }
+    document.getElementById("result-count").textContent = `显示 ${total} / ${rows.length} 个任务`;
+    document.getElementById("table-count").textContent = `· ${total} 项`;
+    document.getElementById("empty-state").hidden = total !== 0;
+  }
+  form.addEventListener("submit", event => event.preventDefault());
+  form.addEventListener("input", applyFilters);
+  form.addEventListener("change", applyFilters);
+  form.addEventListener("reset", () => {
+    category.value = status.value = block.value = search.value = "";
+    applyFilters();
+  });
+  loadData();
+</script>
+</body>
+</html>
