@@ -6,7 +6,7 @@
 - 环境错误来源：[lwx-env-error.md](lwx-env-error.md)：仅覆盖 260812 GLM-5.1 两个批次，并只统计从工具消息提取到的环境错误；本表中的“—”表示该文档未点名，不代表已证明没有环境问题。
 - 可跑性来源：[task-inventory-and-runnability.md](task-inventory-and-runnability.md)：3.1–4 节为历史评测分类，不能代替本次个人实跑。
 - “我跑通情况”是独立人工进度列。当前未提供可唯一对应的个人运行结果目录，因此初始化为“⬜ 待填写”。建议填写为“✅ PASS（run/日期）”“❌ FAIL（错误摘要）”或“🚧 BLOCKED（阻塞项）”。
-- 个人实跑来源：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [parallel_debug_glm52_bnet/](../results/parallel_debug_glm52_bnet/)，并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。C-remote 组 28 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8；PASS 3/FAIL 3/NO_EVAL 22，其中 21 个为 preprocess 阶段失败/卡住、未进入 agent 执行）。C-local 组尚未个人实跑，保持“⬜ 待填写”。
+- 个人实跑来源：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [results/glm-5.2/](../results/glm-5.2/)（已合并至总目录），并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。C-remote 组 28 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8；PASS 3/FAIL 3/NO_EVAL 22，其中 21 个为 preprocess 阶段失败/卡住、未进入 agent 执行）。C-local 组尚未个人实跑，保持“⬜ 待填写”。
 
 ## task inventory 分类说明
 
@@ -81,7 +81,7 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 
 ## B：网络只读（30）
 
-统计：env-error 有记录 13，未提及 17；task inventory：3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5；我跑通情况：✅ PASS 13、❌ FAIL 7、🟠 NO_EVAL 10（run glm-5.2/260904，dump 目录 [parallel_debug_glm52_bnet/](../results/parallel_debug_glm52_bnet/)，并发 4、单任务超时 5400s，全部 30/30 完成，无 preprocess/容器失败与超时）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果（`pass=null`）。
+统计：env-error 有记录 13，未提及 17；task inventory：3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5；我跑通情况：✅ PASS 13、❌ FAIL 7、🟠 NO_EVAL 10（run glm-5.2/260904，dump 目录 [results/glm-5.2/](../results/glm-5.2/)（已合并至总目录），并发 4、单任务超时 5400s，全部 30/30 完成，无 preprocess/容器失败与超时）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果（`pass=null`）。
 
 > NO_EVAL 根因（基于逐任务扫描 traj_log.json + run.log 的错误签名，非四层深核）：10 个 NO_EVAL **全部为 infra 主导，无一例指向模型能力**。
 > - **Yahoo Finance 429 限流（6 个）**：`invoice-org`(226×)、`stock-build-position`(233×)、`travel-exchange`(229×)、`nvidia-market`(212×)、`yahoo-analysis`(204×)、`nvidia-stock-analysis`(94×)——agent 明确识别到限流并反复重试等待，直至耗尽 max_turns。
@@ -97,11 +97,11 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `find-alita-paper` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ✅ PASS（run glm-5.2/260904） |
 | `git-milestone` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
 | `git-repo` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
-| `hk-top-conf` | 🟡 偶发：Prompt 超长 400 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ NO_EVAL（重跑 glm-5.2/results/debug）<br>agent 放弃预期 hover 方案、绕路逆向 papercopilot/GitHub 数据源，三会场分校计数已算出但耗尽 max_turns，未写 result.md/未 claim_done；能力/策略问题，非 infra（本次无网络故障，仅 2 次 terminal MCP 60s 超时） |
+| `hk-top-conf` | 🟡 偶发：Prompt 超长 400 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ NO_EVAL（重跑 glm-5.2（已并入 results/glm-5.2））<br>agent 放弃预期 hover 方案、绕路逆向 papercopilot/GitHub 数据源，三会场分校计数已算出但耗尽 max_turns，未写 result.md/未 claim_done；能力/策略问题，非 infra（本次无网络故障，仅 2 次 terminal MCP 60s 超时） |
 | `identify-all-songs` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
 | `invoice-org` | 🔴 必现：Yahoo Finance API 429 限流 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 226 次 Yahoo Finance「Rate limited」429，与 env-error 记录一致 |
 | `ipad-edu-price` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run glm-5.2/260904） |
-| `language-school` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ FAIL（重跑 glm-5.2/results/debug）<br>本次页面访问正常并产出结果；Toefl_min_score 填 95≠groundtruth 80（index 4 值不符）；内容/能力问题，非 infra（此前 NO_EVAL 的页面超时本次未复现） |
+| `language-school` | 🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ FAIL（重跑 glm-5.2（已并入 results/glm-5.2））<br>本次页面访问正常并产出结果；Toefl_min_score 填 95≠groundtruth 80（index 4 值不符）；内容/能力问题，非 infra（此前 NO_EVAL 的页面超时本次未复现） |
 | `latex-prompt-box` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ FAIL（run glm-5.2/260904）<br>填充内容不符合任一可接受的 Simple Prompt 渲染格式（起始不匹配）；能力问题，非 infra |
 | `logical-datasets-collection` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run glm-5.2/260904）<br>表格内容或格式与 groundtruth 不符（local check: Table content or format does not match）；能力问题，非 infra |
 | `mrbeast-analysis` | 🔴 必现：Hugging Face 读取或 SSL 握手超时<br>🔴 必现：API Key 无效 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run glm-5.2/260904）<br>Detail_Lists 表 duration_seconds 单值不符（agent 924 / gt 1019），其余 (32,7) 结构一致；数据准确性/能力问题，非 infra（youtube MCP 仅首次 init 超时后恢复） |
@@ -114,7 +114,7 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `subway-planning` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 可使用 Maps 查询地铁站/路线；已有网页替代完成记录不代表 API Key 有效 | 🟠 PASS（run glm-5.2/260904）<br>当前阻塞：Google Maps API 尚未配置（BLOCK=Google）；按当前配置记为“不通”<br>备注：agent 通过 playwright 抓取公开网页完成，未用上 Google Maps API（`google_cloud_console_api_key` 实为占位符 `"XX"`）；且任务只需 google_map/filesystem/playwright/fetch，不涉及 Google OAuth，原 inventory 的 OAuth-阻塞误挂已更正为 Maps API Key 依赖 |
 | `travel-exchange` | 🔴 必现：Yahoo Finance API 429 限流 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 229 次 Yahoo Finance「Too Many Requests」429，与 env-error 记录一致 |
 | `trip-adviser` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 可使用 Maps 查地点/路线；当前评测的 GoogleMapsMCPClient 为本地模拟实现，PASS 不证明真实 Maps API 可用 | 🟠 PASS（run glm-5.2/260904）<br>当前阻塞：Google Maps API 尚未配置（BLOCK=Google）；按当前配置记为“不通”<br>备注：agent 通过 playwright 抓取公开网页完成，未用上 Google Maps API（`google_cloud_console_api_key` 实为占位符 `"XX"`）；且任务只需 google_map/filesystem/playwright/fetch，不涉及 Google OAuth，原 inventory 的 OAuth-阻塞误挂已更正为 Maps API Key 依赖 |
-| `trip-itinerary-generator` | — | 第 4 节未验证：无历史实跑记录<br>**题目明确要求 Maps**：`task_config.needed_mcp_servers` = `[filesystem, google_map, playwright_with_chunk]`；题目需景点间最短步行距离 + 当日营业时间，正是 Maps 能力<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent + 评测均使用 Maps；评测调用 maps_search_places / maps_place_details / maps_distance_matrix | 🟠 NO_EVAL（重跑 glm-5.2/results/debug）<br>跑满 max_turns 未产出结果<br>根因=infra/凭据：`google_map` 的 API Key 无效（`google_cloud_console_api_key` 为占位符 `"XX"`），10/10 Maps 调用（search_places/geocode/distance_matrix）均返回「The provided API key is invalid.」；agent 被迫改用 playwright 手动抓 Google Maps/官网（79 次）逐个读营业时间，耗尽预算、未写 Paris_Itinerary.json。page.goto 超时（louvre.fr 等）为回退副产物，非根因（原文档误标为 Playwright 页面超时，已更正） |
+| `trip-itinerary-generator` | — | 第 4 节未验证：无历史实跑记录<br>**题目明确要求 Maps**：`task_config.needed_mcp_servers` = `[filesystem, google_map, playwright_with_chunk]`；题目需景点间最短步行距离 + 当日营业时间，正是 Maps 能力<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent + 评测均使用 Maps；评测调用 maps_search_places / maps_place_details / maps_distance_matrix | 🟠 NO_EVAL（重跑 glm-5.2（已并入 results/glm-5.2））<br>跑满 max_turns 未产出结果<br>根因=infra/凭据：`google_map` 的 API Key 无效（`google_cloud_console_api_key` 为占位符 `"XX"`），10/10 Maps 调用（search_places/geocode/distance_matrix）均返回「The provided API key is invalid.」；agent 被迫改用 playwright 手动抓 Google Maps/官网（79 次）逐个读营业时间，耗尽预算、未写 Paris_Itinerary.json。page.goto 超时（louvre.fr 等）为回退副产物，非根因（原文档误标为 Playwright 页面超时，已更正） |
 | `upenn-campus-route` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent + 评测均使用 Maps；评测调用 maps_directions 取得步行时间 | ❌ FAIL（run glm-5.2/260904）<br>路线格式校验通过，但评测器获取步行时间的外部接口返回空（JSON decode error: line 1 col 0）→ "Failed to get walking time"，评测中断；根因=infra（评测侧外部地图接口），非模型能力 |
 | `wandb-best-score` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
 | `wandb-shortest-length` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
@@ -173,7 +173,7 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 > - **NO_EVAL 22（全部 infra/配置，非模型能力）**：其中 21 个为 preprocess 失败 + 1 个（`train-ticket-plan`）agent 启动时 MCP 仅连上 3/4（rail_12306 未连）。preprocess 失败按签名归类：缺 GCP 服务账号密钥 `configs/gcp-service_account.keys.json`（7 个）、缺 Notion `files/duplicated_page_id.txt`（4 个）、Google Sheets/Drive 凭据缺 `token`（`KeyError 'token'`，7 个）、Google OAuth 缺字段（`fillout-online-forms`）、generic returncode 1（`investment-decision-analysis`）、preprocess 卡住未完成（`notion-personal-website`）。
 > Google 相关任务需分别补齐服务账号或 OAuth 用户凭据后重跑预处理；其他配置错误和卡住原因仍需逐项排查，不能由补齐一个凭据文件推断这 21 个任务全部恢复。
 >
-> 注意：`results/glm-5.2/` 目录同时包含 A 组（run glm-5.2/260903）旧结果，脚本尾部聚合统计是 A+C 混合值；本表数字为按 `c-remote-write.txt` 清单逐任务读取 eval_res.json 单独统计所得。
+> 注意：`results/glm-5.2/` 现为合并后的总目录，含 A 组（260903）+ B 组（260904）+ C-remote（260904）+ 4 个任务重跑（train-ticket-plan/hk-top-conf/language-school/trip-itinerary-generator，重跑版已覆盖旧版，旧版备份在 `_superseded_by_debug_rerun/`），共 73 个任务；`eval_stats.json` 已按 73 任务重算（24 pass / 18 fail / 31 null）。脚本尾部聚合为全 73 任务混合值；本表 C-remote 数字为按 `c-remote-write.txt` 清单逐任务读取 eval_res.json 单独统计所得。
 
 | 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|
@@ -202,6 +202,6 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `quantitative-financial-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
 | `sync-todo-to-readme` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ PASS（run glm-5.2/260904） |
 | `task-tracker` | 🟡 偶发：preprocess 阶段卡死<br>🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
-| `train-ticket-plan` | 🟡 偶发：MCP server 启动超时（rail_12306） | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（重跑 glm-5.2/results/debug）<br>本次 rail_12306 MCP 连接正常，preprocess/agent/评测全通过（上次 NO_EVAL 因 MCP 仅连 3/4，属 infra 抖动，重跑捞回） |
+| `train-ticket-plan` | 🟡 偶发：MCP server 启动超时（rail_12306） | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（重跑 glm-5.2（已并入 results/glm-5.2））<br>本次 rail_12306 MCP 连接正常，preprocess/agent/评测全通过（上次 NO_EVAL 因 MCP 仅连 3/4，属 infra 抖动，重跑捞回） |
 | `verl-dataset` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
 | `vlm-history-completer` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
