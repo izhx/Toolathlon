@@ -2,7 +2,7 @@ name: toolathlon-dev
 
 services:
   controller:
-    image: "${WB_CONTROLLER_IMAGE:-daily-dev:dev-docker-claude-codex}"
+    image: "${WB_CONTROLLER_IMAGE:-daily-dev:dev-docker}"
     pull_policy: never
 
     # The controller proxy must listen on the host network so Harbor-created
@@ -53,11 +53,22 @@ services:
           create_host_path: false
 
       - type: bind
+        source: ${SSH_SOURCE_DIR:-${HOME}/.ssh}
+        target: /opt/ssh-src
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${AGENT_BIN_DIR:-./agent-bin}
+        target: /opt/agent-bin-src
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
         source: ${DEV_DATA_ROOT}/dot-claude
         target: /agent-data/claude
         bind:
           create_host_path: false
-
       - type: bind
         source: ${DEV_DATA_ROOT}/dot-codex
         target: /agent-data/codex
