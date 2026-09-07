@@ -153,10 +153,10 @@ B,不通,Yahoo Finance 429,yahoo-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
 文档判断多为环境抖动，重跑可能捞回",本次记录中的服务／凭据阻塞
 B,跑通,0,youtube-repo,✅ PASS（run glm-5.2/260904）,🔴 必现：API Key 无效,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,跑通,0,apply-phd-email,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-C-local,不通,0,canvas-arrange-exam,"🟠 NO_EVAL（run glm-5.2/260905）
-跑满 max_turns 未产出可判定结果（status running=max_turn_exceeded）；轨迹错误签名稀疏，偏能力耗尽预算，非明显 infra（未四层核验）",🟡 偶发：IMAP 认证失败,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-C-local,不通,0,canvas-art-manager,"🟠 NO_EVAL（run glm-5.2/260905）
-跑满 max_turns 未产出可判定结果；轨迹多次 timeout + 5 次 429，疑 MCP/网络抖动叠加能力，根因未四层核验","🟡 偶发：IMAP 认证失败
+C-local,跑通,0,canvas-arrange-exam,"✅ FAIL（run glm-5.2/260907）
+`exam_schedule.xlsx` 多排 1 门：ENG101（入学考 ≥95 免考）不应列入，agent 10 行 / gt 9 行，9/10 完美匹配（90%）；能力问题，非 infra",🟡 偶发：IMAP 认证失败,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,canvas-art-manager,"✅ PASS（run glm-5.2/260907）
+此前 260905 因 max_turns NO_EVAL；本轮归档重跑后正常评测通过","🟡 偶发：IMAP 认证失败
 🟡 偶发：DNS 解析失败
 🟡 偶发：MCP 工具执行错误 -32603
 🟡 偶发：网络连接拒绝或中断",3.3 B 从未通过：模型能力/任务难度为主,
@@ -164,8 +164,8 @@ C-local,跑通,0,canvas-art-quiz,✅ PASS（run glm-5.2/260907）,—,"3.1 稳�
 跨全部 5 个批次 4/5 PASS
 5.1 低外部依赖
 列入文档 smoke test 集",
-C-local,不通,0,canvas-do-quiz,"🟠 NO_EVAL（run glm-5.2/260905）
-跑满 max_turns 未产出可判定结果；轨迹错误签名稀疏，偏能力耗尽预算，非明显 infra（未四层核验）",—,"3.3 B 从未通过：模型能力/任务难度为主
+C-local,跑通,0,canvas-do-quiz,"✅ FAIL（run glm-5.2/260907）
+14 个 quiz 中 13 个满分、漏 1 个未达满分（`Student did not achieve full score on all quizzes 13/14`）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
 5.1 低外部依赖
 第 6 节冲突约束：不可与 `canvas-submit-late-work` 并发",
 C-local,跑通,0,canvas-homework-grader-python,✅ PASS（run glm-5.2/260907）,🟡 偶发：IMAP 认证失败,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
@@ -189,10 +189,10 @@ C-local,跑通,0,inventory-sync,✅ PASS（run glm-5.2/260907）,🟡 偶发：P
 C-local,跑通,0,k8s-deployment-cleanup,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,跑通,0,k8s-mysql,✅ PASS（run glm-5.2/260905）,🟡 偶发：MCP 工具执行错误 -32603,"3.2 不稳定：260821 PASS，260826 FAIL
 文档判断多为环境抖动，重跑可能捞回",
-C-local,不通,0,k8s-pr-preview-testing,"🟠 NO_EVAL（run glm-5.2/260905）
-跑满 max_turns 未产出可判定结果；轨迹见 MCP -32603 + registry + 连接拒绝，疑 infra 干扰（与 env-error MCP -32603 记录一致），未四层核验",🟡 偶发：MCP 工具执行错误 -32603,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-C-local,不通,0,k8s-redis-helm-upgrade,"🟠 NO_EVAL（run glm-5.2/260905）
-跑满 max_turns 未产出可判定结果；轨迹 registry/ImagePull/连接拒绝/429 密集，根因偏 infra（Docker Registry / ImagePullBackOff，与 env-error 记录一致），未四层核验","🟡 偶发：MCP 工具执行错误 -32603
+C-local,不通,0,k8s-pr-preview-testing,"🟠 NO_EVAL（run glm-5.2/260907，归档重跑）
+再次跑满 max_turns 未产出评测（running=max_turn_exceeded）；preprocess done、infra 就绪，属 agent 未在 100 turn 内完成，非明显 infra 阻塞",🟡 偶发：MCP 工具执行错误 -32603,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,不通,0,k8s-redis-helm-upgrade,"🟠 NO_EVAL（run glm-5.2/260907，归档重跑）
+再次跑满 max_turns 未产出评测（running=max_turn_exceeded）；preprocess done，历史 env-error 记 Docker Registry/ImagePullBackOff，本轮根因未四层核验","🟡 偶发：MCP 工具执行错误 -32603
 🟡 偶发：Docker Registry 5xx / ImagePullBackOff
 🟡 偶发：网络连接拒绝或中断","3.3 A 从未通过：环境/凭据问题为主
 Docker Registry 5xx / ImagePullBackOff",
