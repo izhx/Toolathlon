@@ -6,7 +6,7 @@
 - 环境错误来源：[lwx-env-error.md](lwx-env-error.md)：仅覆盖 260812 GLM-5.1 两个批次，并只统计从工具消息提取到的环境错误；本表中的“—”表示该文档未点名，不代表已证明没有环境问题。
 - 可跑性来源：[task-inventory-and-runnability.md](task-inventory-and-runnability.md)：3.1–4 节为历史评测分类，不能代替本次个人实跑。
 - “我跑通情况”是独立人工进度列。当前未提供可唯一对应的个人运行结果目录，因此初始化为“⬜ 待填写”。建议填写为“✅ PASS（run/日期）”“❌ FAIL（错误摘要）”或“🚧 BLOCKED（阻塞项）”。
-- 个人实跑来源：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [results/glm-5.2/](../results/glm-5.2/)（已合并至总目录），并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。C-remote 组 28 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8；PASS 3/FAIL 3/NO_EVAL 22，其中 21 个为 preprocess 阶段失败/卡住、未进入 agent 执行）。C-local 组尚未个人实跑，保持“⬜ 待填写”。
+- 个人实跑来源：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [results/glm-5.2/](../results/glm-5.2/)（已合并至总目录），并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。C-remote 组 28 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8；PASS 3/FAIL 3/NO_EVAL 22，其中 21 个为 preprocess 阶段失败/卡住、未进入 agent 执行）。C-local 组已按 GLM-5.2 实跑结果填写 25/35 个任务（run glm-5.2/260905，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 10、单任务超时 5400s；PASS 9/FAIL 2/NO_EVAL 14，尚未做逐项四层核验）。其中 14 个 NO_EVAL = 9 个 preprocess 阶段本地容器未就绪失败（Canvas `:50001` 连接拒绝 5 个、WooCommerce `:50003` SSL/连接失败 4 个，未进入 agent 执行）+ 5 个跑满 max_turns（`pass=null`）。注：执行报告 [execution_report_finalpool_glm-5.2_full.json](../results/glm-5.2/execution_report_finalpool_glm-5.2_full.json) 按 pass≠true 口径记为 passed 9 / failed 7 / not_executed 9，本表按 A/B 组一致口径把 5 个 max_turns 归入 NO_EVAL。其余 10 个任务（多为 Notion/Google 依赖）本次未跑，保持“⬜ 待填写”。
 
 ## task inventory 分类说明
 
@@ -51,9 +51,9 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 |---|---:|---:|---:|---|---|
 | A：无网络依赖 | 15 | 0 | 15 | 3.1=8；3.2=1；3.3 B=6 | PASS 7；FAIL 7；NO_EVAL 1 |
 | B：网络只读 | 30 | 13 | 17 | 3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5 | PASS 13；FAIL 7；NO_EVAL 10 |
-| C-local：本地基础设施写 | 35 | 11 | 24 | 3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=10 | 待填写=35 |
+| C-local：本地基础设施写 | 35 | 11 | 24 | 3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=10 | PASS 9；FAIL 2；NO_EVAL 14；待填写 10 |
 | C-remote：远端写 | 28 | 8 | 20 | 3.1=2；3.3 A=2；3.3 B=2；3.4=2；4=20 | PASS 3；FAIL 3；NO_EVAL 22 |
-| **合计** | **108** | **32** | **76** | **3.1=37；3.2=8；3.3 A=12；3.3 B=14；3.4=2；4=35** | **PASS 23；FAIL 17；NO_EVAL 33；待填写 35** |
+| **合计** | **108** | **32** | **76** | **3.1=37；3.2=8；3.3 A=12；3.3 B=14；3.4=2；4=35** | **PASS 32；FAIL 19；NO_EVAL 47；待填写 10** |
 
 > 文档一致性提示：`paper-checker` 同时出现在 task inventory 的 3.1 和 5.1，但第 242 行声称的“两者交集”清单漏掉了它；本表仍按两个原始清单记录，不擅自改写为 smoke test 成员。
 
@@ -123,45 +123,50 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 
 ## C-local：本地基础设施写（35）
 
-统计：env-error 有记录 11，未提及 24；task inventory：3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=10；我跑通情况：待填写 35。
+统计：env-error 有记录 11，未提及 24；task inventory：3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=10；我跑通情况：✅ PASS 9、❌ FAIL 2、🟠 NO_EVAL 14、⬜ 待填写 10（run glm-5.2/260905，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 10、单任务超时 5400s）。本次实跑覆盖 [c-local task list](../configs/task_lists/finalpool/c-local-infrastructure-write.txt) 35 个中的 25 个（见 [tmp-c-local.txt](../configs/task_lists/finalpool/tmp-c-local.txt)）；未跑的 10 个多为 Notion/Google 依赖，保持“⬜ 待填写”。
+
+> C-local 本次执行画像（run glm-5.2/260905，25 个任务）：
+> - **9 PASS / 2 FAIL 是真进入了 agent+评测的结果**；`❌ FAIL` 两个均为能力问题（course-assistant 漏发 1 封学生邮件、sla-timeout-monitor 漏发经理提醒邮件），非 infra。
+> - **9 个 NO_EVAL 是 preprocess 阶段本地容器未就绪**、未进入 agent：Canvas API `localhost:50001` 连接拒绝（5 个：canvas-new-students-notification / canvas-art-quiz / canvas-homework-grader-python / canvas-submit-late-work / canvas-list-test），WooCommerce `localhost:50003` SSL/连接失败（4 个：woocommerce-new-product / filter-low-selling-products / inventory-sync / woocommerce-update-cover）。→ 需先起稳这两组容器再重跑，与模型能力无关。
+> - **5 个 NO_EVAL 是跑满 max_turns**（`pass=null`，`status.json` running=max_turn_exceeded）：canvas-arrange-exam / canvas-art-manager / canvas-do-quiz / k8s-pr-preview-testing / k8s-redis-helm-upgrade。轨迹错误签名扫描（非四层深核）显示 k8s-redis-helm-upgrade（registry/ImagePull/连接拒绝/429 密集）与 k8s-pr-preview-testing（MCP -32603 + registry + 连接拒绝）偏 infra，canvas-art-manager 有大量 timeout/429，canvas-arrange-exam / canvas-do-quiz 错误签名稀疏、更像能力耗尽预算；要定性仍需核对容器日志与轨迹。
 
 | 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|
-| `apply-phd-email` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `canvas-arrange-exam` | 🟡 偶发：IMAP 认证失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `canvas-art-manager` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：DNS 解析失败<br>🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：网络连接拒绝或中断 | 3.3 B 从未通过：模型能力/任务难度为主 | ⬜ 待填写 |
-| `canvas-art-quiz` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ⬜ 待填写 |
-| `canvas-do-quiz` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖<br>第 6 节冲突约束：不可与 `canvas-submit-late-work` 并发 | ⬜ 待填写 |
-| `canvas-homework-grader-python` | 🟡 偶发：IMAP 认证失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ⬜ 待填写 |
-| `canvas-list-test` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `canvas-new-students-notification` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖 | ⬜ 待填写 |
-| `canvas-submit-late-work` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>第 6 节冲突约束：不可与 `canvas-do-quiz` 并发 | ⬜ 待填写 |
-| `course-assistant` | 🟡 偶发：IMAP 认证失败 | 3.3 B 从未通过：模型能力/任务难度为主 | ⬜ 待填写 |
-| `email-paper-homepage` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `filter-low-selling-products` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `git-bug-hunt` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ⬜ 待填写 |
-| `inventory-sync` | 🟡 偶发：Prompt 超长 400 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `k8s-deployment-cleanup` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `k8s-mysql` | 🟡 偶发：MCP 工具执行错误 -32603 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
-| `k8s-pr-preview-testing` | 🟡 偶发：MCP 工具执行错误 -32603 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
-| `k8s-redis-helm-upgrade` | 🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Docker Registry 5xx / ImagePullBackOff<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>Docker Registry 5xx / ImagePullBackOff | ⬜ 待填写 |
+| `apply-phd-email` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
+| `canvas-arrange-exam` | 🟡 偶发：IMAP 认证失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260905）<br>跑满 max_turns 未产出可判定结果（status running=max_turn_exceeded）；轨迹错误签名稀疏，偏能力耗尽预算，非明显 infra（未四层核验） |
+| `canvas-art-manager` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：DNS 解析失败<br>🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：网络连接拒绝或中断 | 3.3 B 从未通过：模型能力/任务难度为主 | 🟠 NO_EVAL（run glm-5.2/260905）<br>跑满 max_turns 未产出可判定结果；轨迹多次 timeout + 5 次 429，疑 MCP/网络抖动叠加能力，根因未四层核验 |
+| `canvas-art-quiz` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞 |
+| `canvas-do-quiz` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖<br>第 6 节冲突约束：不可与 `canvas-submit-late-work` 并发 | 🟠 NO_EVAL（run glm-5.2/260905）<br>跑满 max_turns 未产出可判定结果；轨迹错误签名稀疏，偏能力耗尽预算，非明显 infra（未四层核验） |
+| `canvas-homework-grader-python` | 🟡 偶发：IMAP 认证失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞 |
+| `canvas-list-test` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：配置课程清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞 |
+| `canvas-new-students-notification` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖 | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞 |
+| `canvas-submit-late-work` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>第 6 节冲突约束：不可与 `canvas-do-quiz` 并发 | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：配置课程预清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞 |
+| `course-assistant` | 🟡 偶发：IMAP 认证失败 | 3.3 B 从未通过：模型能力/任务难度为主 | ❌ FAIL（run glm-5.2/260905）<br>学生 Michelle Brooks（michelle_brooks26@mcp.com）未收到主题 'nlp-course-emergency' 的通知邮件；其余正例学生与全部负例账户校验均通过；能力问题，非 infra |
+| `email-paper-homepage` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
+| `filter-low-selling-products` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：WooCommerce localhost:50003 SSL record layer failure / 连接失败，容器未就绪；infra 阻塞 |
+| `git-bug-hunt` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ✅ PASS（run glm-5.2/260905） |
+| `inventory-sync` | 🟡 偶发：Prompt 超长 400 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：WooCommerce API localhost:50003 SSL/连接失败，容器未就绪；infra 阻塞 |
+| `k8s-deployment-cleanup` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
+| `k8s-mysql` | 🟡 偶发：MCP 工具执行错误 -32603 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run glm-5.2/260905） |
+| `k8s-pr-preview-testing` | 🟡 偶发：MCP 工具执行错误 -32603 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260905）<br>跑满 max_turns 未产出可判定结果；轨迹见 MCP -32603 + registry + 连接拒绝，疑 infra 干扰（与 env-error MCP -32603 记录一致），未四层核验 |
+| `k8s-redis-helm-upgrade` | 🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Docker Registry 5xx / ImagePullBackOff<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>Docker Registry 5xx / ImagePullBackOff | 🟠 NO_EVAL（run glm-5.2/260905）<br>跑满 max_turns 未产出可判定结果；轨迹 registry/ImagePull/连接拒绝/429 密集，根因偏 infra（Docker Registry / ImagePullBackOff，与 env-error 记录一致），未四层核验 |
 | `k8s-safety-audit` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
-| `landing-task-reminder` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
-| `meeting-assign` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
+| `landing-task-reminder` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run glm-5.2/260905） |
+| `meeting-assign` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
 | `notion-find-job` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 使用 Maps 查地点/路线；另有 Notion 依赖<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `notion-hr` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | ⬜ 待填写 |
-| `payable-invoice-checker` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
+| `payable-invoice-checker` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
 | `set-conf-cr-ddl` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `student-interview` 并发 | ⬜ 待填写 |
-| `sla-timeout-monitor` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ⬜ 待填写 |
+| `sla-timeout-monitor` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ❌ FAIL（run glm-5.2/260905）<br>9 封客户道歉邮件与 6 个负例账户校验全部正确，但漏发经理提醒邮件：dhall@mcp.com（4 张工单）未收到 manager reminder；能力问题，非 infra |
 | `student-interview` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发 | ⬜ 待填写 |
-| `travel-expense-reimbursement` | — | 3.3 B 从未通过：模型能力/任务难度为主 | ⬜ 待填写 |
+| `travel-expense-reimbursement` | — | 3.3 B 从未通过：模型能力/任务难度为主 | ✅ PASS（run glm-5.2/260905） |
 | `update-material-inventory` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `woocommerce-customer-survey` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）<br>凭据：OAuth `configs/google_credentials.json`；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token`<br>使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `woocommerce-product-recall` 并发 | ⬜ 待填写 |
-| `woocommerce-new-product` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>IMAP/SMTP 抖动或连接拒绝 | ⬜ 待填写 |
+| `woocommerce-new-product` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>IMAP/SMTP 抖动或连接拒绝 | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：WooCommerce localhost:50003 SSL record layer failure，容器未就绪；infra 阻塞 |
 | `woocommerce-new-welcome` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `woocommerce_crm`（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `woocommerce-product-recall` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）<br>凭据：OAuth `configs/google_credentials.json`；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token`<br>使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `woocommerce-customer-survey` 并发 | ⬜ 待填写 |
 | `woocommerce-stock-alert` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
-| `woocommerce-update-cover` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ⬜ 待填写 |
+| `woocommerce-update-cover` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：WooCommerce localhost:50003 连接失败（多次重试耗尽），容器未就绪；infra 阻塞 |
 
 ## C-remote：远端写（28）
 
