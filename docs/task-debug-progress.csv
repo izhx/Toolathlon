@@ -190,9 +190,9 @@ C-local,跑通,0,k8s-deployment-cleanup,✅ PASS（run glm-5.2/260905）,—,3.1
 C-local,跑通,0,k8s-mysql,✅ PASS（run glm-5.2/260905）,🟡 偶发：MCP 工具执行错误 -32603,"3.2 不稳定：260821 PASS，260826 FAIL
 文档判断多为环境抖动，重跑可能捞回",
 C-local,不通,0,k8s-pr-preview-testing,"🟠 NO_EVAL（run glm-5.2/260907，归档重跑）
-再次跑满 max_turns 未产出评测（running=max_turn_exceeded）；preprocess done、infra 就绪，属 agent 未在 100 turn 内完成，非明显 infra 阻塞",🟡 偶发：MCP 工具执行错误 -32603,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+跑满 max_turns，**一手核实=agent 策略问题非 infra**：环境可用；死磕 port-forward 未改 NodePort:30123（service.yaml 仍 ClusterIP，Connection reset×14）＋用 Playwright 逐用例手动复现耗光 turn＋误删仓库＋未产出 filled-test-results-report.md。MCP -32603 仅 1 次为自身传参错误可自修",🟡 偶发：MCP 工具执行错误 -32603,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,不通,0,k8s-redis-helm-upgrade,"🟠 NO_EVAL（run glm-5.2/260907，归档重跑）
-再次跑满 max_turns 未产出评测（running=max_turn_exceeded）；preprocess done，历史 env-error 记 Docker Registry/ImagePullBackOff，本轮根因未四层核验","🟡 偶发：MCP 工具执行错误 -32603
+跑满 max_turns，**一手核实=agent 决策瘫痪非 infra**：ImagePullBackOff 真实 44 次但无 registry 5xx/TLS/timeout 签名（历史""Registry 5xx 故障""定性更正）；这是任务设计障碍（bitnami→bitnamilegacy 迁移），preprocess 已预加载 bitnamilegacy/redis:7.2.4-debian-12-r9，正确解离线可达。agent 最终拼对 override（bitnamilegacy+tag 7.2.4+allowInsecureImages）却被 207 处犹豫独白空耗 turn，撞上限前没跑完","🟡 偶发：MCP 工具执行错误 -32603
 🟡 偶发：Docker Registry 5xx / ImagePullBackOff
 🟡 偶发：网络连接拒绝或中断","3.3 A 从未通过：环境/凭据问题为主
 Docker Registry 5xx / ImagePullBackOff",
