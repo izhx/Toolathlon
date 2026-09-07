@@ -188,27 +188,39 @@ done
 # 6. Install WP-CLI
 echo "Installing WP-CLI..."
 
-# Check if local already has wp-cli.phar
+WP_CLI_CACHE="./deployment/woocommerce/cache/wp-cli.phar"
+WP_CLI_URL="https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar"
 mkdir -p deployment/woocommerce/cache
 
-if [ -f "./deployment/woocommerce/cache/wp-cli.phar" ]; then
+# Copy the cached phar into the container as /usr/local/bin/wp and verify it
+# actually runs.  A corrupted cache (e.g. truncated download or bytes written
+# over the trailing phar signature) makes `wp` die with
+# "PharException: broken signature", which silently cascades into every later
+# step (WooCommerce install, REST API key generation, multisite conversion),
+# so validate before trusting the cache.
+install_and_verify_wp_cli() {
+    $podman_or_docker cp "$WP_CLI_CACHE" $WOO_WP:/tmp/wp-cli.phar || return 1
+    $podman_or_docker exec $WOO_WP bash -c '
+        chmod +x /tmp/wp-cli.phar
+        mv /tmp/wp-cli.phar /usr/local/bin/wp
+        wp --allow-root --info >/dev/null 2>&1
+    '
+}
+
+if [ -f "$WP_CLI_CACHE" ] && install_and_verify_wp_cli; then
     echo "Using local wp-cli.phar..."
-    $podman_or_docker cp deployment/woocommerce/cache/wp-cli.phar $WOO_WP:/tmp/wp-cli.phar
-    $podman_or_docker exec $WOO_WP bash -c '
-        chmod +x /tmp/wp-cli.phar
-        mv /tmp/wp-cli.phar /usr/local/bin/wp
-    '
 else
+    if [ -f "$WP_CLI_CACHE" ]; then
+        echo "Cached wp-cli.phar is invalid (broken/unusable), re-downloading..."
+        rm -f "$WP_CLI_CACHE"
+    fi
     echo "Downloading wp-cli.phar..."
-    # Download to local first
-    curl -o deployment/woocommerce/cache/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-    
-    # Copy to container
-    $podman_or_docker cp deployment/woocommerce/cache/wp-cli.phar $WOO_WP:/tmp/wp-cli.phar
-    $podman_or_docker exec $WOO_WP bash -c '
-        chmod +x /tmp/wp-cli.phar
-        mv /tmp/wp-cli.phar /usr/local/bin/wp
-    '
+    curl -fsSL -o "$WP_CLI_CACHE" "$WP_CLI_URL"
+    if ! install_and_verify_wp_cli; then
+        echo "ERROR: wp-cli.phar is still unusable after download; aborting." >&2
+        rm -f "$WP_CLI_CACHE"
+        exit 1
+    fi
 fi
 
 # 7. Install WordPress
