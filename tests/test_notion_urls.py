@@ -2,6 +2,7 @@ import asyncio
 import importlib.util
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -112,17 +113,31 @@ class NotionUrlConsumersTest(unittest.TestCase):
         helper = helper_class(url=f"https://www.notion.so/{CHILD_ID}?v=123#block")
         self.assertEqual(helper.url, f"https://app.notion.com/{CHILD_ID}?v=123#block")
 
-    def test_headless_login_and_destination_navigation_use_new_domain(self):
-        helper = load_module("notion_login_helper").NotionLoginHelper(
-            url=f"https://www.notion.so/{CHILD_ID}"
-        )
-        page = Mock()
-        with patch("builtins.input", side_effect=["test@example.com", "123456"]):
-            helper._handle_headless_login(SimpleNamespace(pages=[page]))
-        self.assertEqual(page.goto.call_args_list, [
-            call("https://app.notion.com/login", wait_until="domcontentloaded"),
-            call(f"https://app.notion.com/{CHILD_ID}", wait_until="domcontentloaded"),
-        ])
+    def test_login_works_when_load_never_fires_without_reloading_login_page(self):
+        helper_class = load_module("notion_login_helper").NotionLoginHelper
+        for destination in (None, f"https://www.notion.so/{CHILD_ID}"):
+            with self.subTest(destination=destination), tempfile.TemporaryDirectory() as temp_dir:
+                helper = helper_class(url=destination, state_path=Path(temp_dir) / "state.json")
+                helper._playwright = Mock()
+                browser = helper._playwright.firefox.launch.return_value
+                context = browser.new_context.return_value
+                page = context.new_page.return_value
+                context.pages = [page]
+
+                def navigate(url, *, wait_until):
+                    if wait_until == "load":
+                        raise TimeoutError("External resources prevent the load event")
+
+                page.goto.side_effect = navigate
+                with patch("builtins.input", side_effect=["test@example.com", "123456"]):
+                    self.assertIs(helper.login(), context)
+                expected = [call("https://app.notion.com/login", wait_until="domcontentloaded")]
+                if destination:
+                    expected.append(call(f"https://app.notion.com/{CHILD_ID}", wait_until="domcontentloaded"))
+                self.assertEqual(page.goto.call_args_list, expected)
+                page.locator.return_value.wait_for.assert_any_call(state="visible", timeout=120_000)
+                context.storage_state.assert_called_once_with(path=str(helper.state_path))
+                helper.close()
 
     def test_child_page_url_from_api_is_normalized(self):
         duplicator = load_module("notion_page_duplicator").NotionPageDuplicator("test-key")

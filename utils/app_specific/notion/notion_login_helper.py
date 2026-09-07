@@ -88,8 +88,10 @@ class NotionLoginHelper:
         context = self._browser.new_context()
         page = context.new_page()
 
-        logger.info("Navigating to Notion URL: %s", self.url)
-        page.goto(self.url, wait_until="load")
+        start_url = f"{NOTION_WEB_BASE_URL}/login" if self.headless else self.url
+        logger.info("Navigating to Notion URL: %s", start_url)
+        # The form can be ready while unrelated resources still delay `load`.
+        page.goto(start_url, wait_until="domcontentloaded")
 
         if self.headless:
             self._handle_headless_login(context)
@@ -140,7 +142,6 @@ class NotionLoginHelper:
         """
         page: Page = context.pages[0]
         login_url = f"{NOTION_WEB_BASE_URL}/login"
-        page.goto(login_url, wait_until="domcontentloaded")
 
         email = input("Enter your Notion email address: ").strip()
         try:
