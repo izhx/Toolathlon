@@ -191,6 +191,8 @@ notion-personal-website  oil-price
 
 上面的 Google 类中，`notion-find-job` 和 `quantitative-financial-analysis` **也依赖 Notion**。因此这 35 个历史未验证任务中实际有 7 个使用 Notion；加上 3.4 节的 `task-tracker`，整个 finalpool 共 8 个，现统一归入独立的 [C-notion 清单](../configs/task_lists/finalpool/c-notion.txt)。当前执行分组为 A 15、B 30、C-local 33、C-remote 22、C-notion 8；这里的 29 + 5 + 1 是历史分类计数，不是互斥的服务依赖，也不是当前执行分组。
 
+[task debug 的 BLOCK](task-debug-progress.md#block-服务依赖标签) 现按服务依赖多标签维护，任务跑通后仍保留，不代表当前一定被阻塞。`quantitative-financial-analysis` 标为 `Yahoo Finance;Google;Notion`，`notion-find-job` 标为 `Google;Notion`，`oil-price` 标为 `Yahoo Finance;Notion`，`investment-decision-analysis` 标为 `Yahoo Finance;Google`。当前全池 Google 标签覆盖 30 个任务，包含本节 29 个声明 Google MCP 的任务及 `fillout-online-forms`；具体失败证据仍查个人实跑记录。
+
 `quantitative-financial-analysis` 使用 Yahoo Finance 获取行情，写入 Google Sheets，再在 Notion 的 `Quant Research` 页面写表格链接和评论。预处理先初始化 Google Drive/Sheets，再清理并复制 Notion 页面；评分读取表格和 Notion 两边的结果。除 `configs/google_credentials.json` 外，还需 Notion integration 配置、源/评测父页面，以及 `configs/.mcp-auth` 中的 OAuth 授权。进展表记录的 Google 凭据缺 `token` 发生在第一步，不代表后续 Notion 依赖已就绪；该任务无需 Poste 或完整本地服务部署。代码依据：[任务要求](../tasks/finalpool/quantitative-financial-analysis/docs/task.md)、[预处理](../tasks/finalpool/quantitative-financial-analysis/preprocess/main.py)、[评分](../tasks/finalpool/quantitative-financial-analysis/evaluation/check_content.py)。
 
 已知阻塞：Notion refresh lock 争用（`notion_official refresh lock contended for >600s`），`oil-price` 在历史环境中曾出现 preprocess fail。同池的 `task-tracker` preprocess 连续两次卡死，高度怀疑同一根因。缓解办法是跑前清理 `configs/.mcp-auth/*.lock`，批量跑之前预热 token。

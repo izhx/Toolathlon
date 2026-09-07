@@ -19,6 +19,8 @@
 
 `quantitative-financial-analysis` 的预处理先初始化 Google Drive/Sheets，再复制 Notion 的 `Quant Research` 页面；agent 写行情表格及 Notion 链接/评论，评分检查两边结果。它需要 Google OAuth 和 Notion 两套认证，不能因为历史记录先报 Google 凭据缺 `token` 就省略 Notion 配置。
 
+[task debug 的 BLOCK](task-debug-progress.md#block-服务依赖标签) 使用多项服务依赖标签：本组 8 个任务均包含 Notion；`quantitative-financial-analysis` 同时标注 `Yahoo Finance;Google;Notion`，`oil-price` 标注 `Yahoo Finance;Notion`，`notion-find-job` 标注 `Google;Notion`。跑通后也保留这些标签，具体失败阶段、配置待核情况另见实跑记录和说明。网页勾选多个服务时匹配任一项，执行分组和本组串行要求仍按本文规定。
+
 ## 部署与检查
 
 在仓库根目录执行：

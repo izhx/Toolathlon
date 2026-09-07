@@ -30,15 +30,22 @@
     .stat.pass { border-top:3px solid var(--accent); padding-top:14px; }
     .stat.pass strong { color:var(--accent); }
     .stat.fail strong { color:#a45230; }
-    .filters { display:grid; grid-template-columns:1.15fr 1fr 1.25fr 1.7fr auto; align-items:end; gap:14px;
+    .filters { display:grid; grid-template-columns:1.3fr .8fr 1.25fr 1.7fr auto; align-items:start; gap:14px;
       padding:20px; background:var(--paper); border:1px solid var(--line); border-radius:10px 10px 0 0; }
     label { display:block; font-size:12px; font-weight:650; margin-bottom:6px; }
-    select,input,button { font:inherit; }
-    select,input[type="search"] { width:100%; height:40px; border:1px solid #cbd6ce; border-radius:6px;
+    .multi-filter { margin:0; padding:0; border:0; min-width:0; }
+    .multi-filter legend { padding:0; margin-bottom:6px; font-size:12px; font-weight:650; }
+    .filter-options { display:flex; flex-wrap:wrap; gap:6px 12px; padding:8px 10px;
+      border:1px solid #cbd6ce; border-radius:6px; }
+    .filter-options label { display:flex; align-items:center; gap:5px; margin:0; font-weight:400; cursor:pointer; }
+    .filter-options input { margin:0; accent-color:var(--accent); }
+    input,button { font:inherit; }
+    input[type="search"] { width:100%; height:40px; border:1px solid #cbd6ce; border-radius:6px;
       background:var(--paper); color:var(--ink); padding:0 10px; }
     button { height:40px; border:1px solid var(--line); border-radius:6px; padding:0 16px;
       color:var(--ink); background:var(--canvas); cursor:pointer; white-space:nowrap; }
     button:hover { background:var(--soft); border-color:var(--accent); }
+    .filters > button { margin-top:26px; }
     :disabled { opacity:.6; cursor:wait; }
     :focus-visible { outline:3px solid #8ac5b0; outline-offset:2px; }
     .filter-note { padding:10px 20px; border:1px solid var(--line); border-top:0; background:#fbfcfa;
@@ -75,7 +82,7 @@
     .block-yahoo { background:#fff0d9; color:#8c5a0b; }
     .block-notion { background:#eee9f8; color:#665087; }
     .block-google { background:#e5effb; color:#3b619a; }
-    .block-reason { display:block; font-size:10px; color:var(--muted); margin-top:4px; line-height:1.55; }
+    .block-reason { display:block; font-size:10px; color:var(--muted); margin-top:4px; line-height:1.55; white-space:pre-line; }
     code { font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;
       background:#eff2ed; border-radius:3px; padding:1px 3px; overflow-wrap:anywhere; }
     .empty { padding:48px 20px; text-align:center; color:var(--muted); }
@@ -101,6 +108,7 @@
       .heading { display:block; } .source-link { display:inline-block; margin-top:12px; }
       .stats { grid-template-columns:repeat(2,1fr); } .stat:last-child { grid-column:span 2; }
       .filters { grid-template-columns:1fr; } .search-control { grid-column:auto; }
+      .filters > button { margin-top:0; }
     }
   </style>
 </head>
@@ -109,7 +117,7 @@
   <header>
     <div class="masthead"><i class="mark" aria-hidden="true"></i> TOOLATHLON <span>/ FINALPOOL</span></div>
     <div class="heading">
-      <div><h1>Task Debug 进展</h1><p class="subtitle">四类任务，一张总表。按任务类别、跑通状况与阻塞项筛选。</p></div>
+      <div><h1>Task Debug 进展</h1><p class="subtitle">五类任务，一张总表。按任务类别、跑通状况与服务依赖筛选。</p></div>
       <a class="source-link" href="task-debug-progress.md">查看原始文档 ↗</a>
     </div>
   </header>
@@ -118,32 +126,48 @@
     <div class="stat pass"><small>跑通</small><strong id="stat-pass">—</strong><span>原记录有 ✅</span></div>
     <div class="stat fail"><small>不通</small><strong id="stat-fail">—</strong><span>已填写，无 ✅</span></div>
     <div class="stat"><small>没跑</small><strong id="stat-pending">—</strong><span>原记录为空或待填写</span></div>
-    <div class="stat"><small>已标注阻塞</small><strong id="stat-blocked">—</strong><span>Yahoo / Notion / Google</span></div>
+    <div class="stat"><small>已标注依赖</small><strong id="stat-labeled">—</strong><span>Yahoo / Google / Notion，按任务去重</span></div>
   </section>
   <form class="filters" id="filters" aria-label="任务筛选">
-    <div><label for="filter-category">任务类别</label><select id="filter-category" name="category" disabled>
-      <option value="">全部类别</option><option value="A">A · 无网络依赖</option><option value="B">B · 网络只读</option><option value="C-local">C-local · 本地基础设施写</option><option value="C-remote">C-remote · 远端写</option><option value="C-notion">C-notion · Notion 写</option>
-    </select></div>
-    <div><label for="filter-status">STATUS</label><select id="filter-status" name="status" disabled>
-      <option value="">全部状态</option><option value="1">跑通</option>
-      <option value="0">不通</option><option value="-1">没跑</option>
-    </select></div>
-    <div><label for="filter-block">BLOCK</label><select id="filter-block" name="block" disabled>
-      <option value="">全部阻塞标注</option><option value="0">0 · 未标注这三类阻塞</option>
-      <option value="blocked">所有已标注阻塞</option><option value="yahoo">Yahoo Finance 429</option>
-      <option value="notion">Notion（尚未配置）</option><option value="google">Google（尚未配置）</option>
-    </select></div>
+    <fieldset class="multi-filter" id="filter-category" disabled>
+      <legend>任务类别（多选）</legend>
+      <div class="filter-options">
+        <label><input type="checkbox" name="category" value="A"><span>A · 无网络依赖</span></label>
+        <label><input type="checkbox" name="category" value="B"><span>B · 网络只读</span></label>
+        <label><input type="checkbox" name="category" value="C-local"><span>C-local · 本地基础设施写</span></label>
+        <label><input type="checkbox" name="category" value="C-remote"><span>C-remote · 远端写</span></label>
+        <label><input type="checkbox" name="category" value="C-notion"><span>C-notion · Notion 写</span></label>
+      </div>
+    </fieldset>
+    <fieldset class="multi-filter" id="filter-status" disabled>
+      <legend>STATUS（多选）</legend>
+      <div class="filter-options">
+        <label><input type="checkbox" name="status" value="1">跑通</label>
+        <label><input type="checkbox" name="status" value="0">不通</label>
+        <label><input type="checkbox" name="status" value="-1">没跑</label>
+      </div>
+    </fieldset>
+    <fieldset class="multi-filter" id="filter-block" disabled>
+      <legend>BLOCK · 服务依赖（多选）</legend>
+      <div class="filter-options">
+        <label><input type="checkbox" name="block" value="yahoo">Yahoo Finance</label>
+        <label><input type="checkbox" name="block" value="google">Google</label>
+        <label><input type="checkbox" name="block" value="notion">Notion</label>
+        <label><input type="checkbox" name="block" value="0">0 · 未标注这三类依赖</label>
+      </div>
+    </fieldset>
     <div class="search-control"><label for="filter-search">搜索任务或说明</label>
       <input id="filter-search" name="q" type="search" placeholder="任务名、错误关键词…" autocomplete="off" disabled></div>
     <button type="reset" disabled>重置筛选</button>
   </form>
   <div class="filter-note"><span id="result-count" role="status" aria-live="polite">正在读取任务数据…</span>
-    <span>各条件同时满足 · 顶部统计随筛选更新 · 表格可横向滚动</span></div>
+    <span>每组内多选匹配任一项，未选表示全部 · 不同筛选组及搜索同时满足 · 统计随筛选更新</span></div>
   <details class="legend">
     <summary>STATUS / BLOCK 口径与历史分类说明</summary>
     <p><b>STATUS 看对号：</b>原始“我跑通情况”首行含 ✅ 就记为“跑通”；因此 ✅ FAIL、✅ NO_EVAL、✅🟠 PASS 都为“跑通”。已填写但没有 ✅ 为“不通”；空白或待填写为“没跑”。它不表示评测是否 PASS。</p>
-    <p><b>BLOCK：</b>默认 0，仅标注 Yahoo Finance 429、Notion 和 Google 三类。0 表示未标注这三类，不代表没有其他阻塞。Google 包含 OAuth、GCP 与 Maps。Notion / Google 尚未配置为用户提供的环境背景；每行小字保留归类依据，接口失败或卡住的具体原因仍需核实。</p>
-    <p>本次记录优先于历史说明：有 ✅ 的任务 BLOCK 为 0；“没跑”任务沿用 inventory 中的“已知阻塞”，并标明个人尚未实跑。仅有 returncode 1 的 investment-decision-analysis 按 Google 预处理及历史凭据问题暂归类，标注待核。</p>
+    <p><b>BLOCK 是服务依赖标签：</b>可同时标注 Yahoo Finance、Google、Notion；Google 包含 OAuth、GCP 与 Maps。标签来自任务配置及预处理/评测依赖核对，由原始文档的 BLOCK 列维护。任务跑通后仍保留标签；标签不表示当前服务失败或尚未配置。0 表示未标注这三类依赖，不保证没有其他依赖或阻塞。</p>
+    <p>429、缺凭据、失败阶段及待核情况保留在每行说明和“我跑通情况”中。例如 quantitative-financial-analysis 同时依赖 Yahoo Finance、Google、Notion，但本次先失败在 Google 初始化，后续服务尚未验证。</p>
+    <p><b>多选筛选：</b>任务类别、STATUS、BLOCK 均可多选，每组内匹配任一选项，某组未选表示不限制该组。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，会显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 0 与服务选项互斥，勾选三个服务可查看所有已标注依赖的任务。搜索条件需同时满足；顶部统计按任务去重，重置会清空所有选择和搜索。</p>
     <p><b>历史 inventory 分类：</b>3.1 = 稳定可跑；3.2 = 不稳定；3.3 A = 从未通过，以环境／凭据问题为主；3.3 B = 从未通过，以能力／难度为主；3.4 = 无有效评测产出；4 = 未验证；5.1 = 低外部依赖。smoke test 为原文建议子集；第 6 节为并发冲突约束。这些历史分类与本表五类执行分组、个人 STATUS 是不同维度。C-notion 独立包含全部 8 个 Notion 任务，其中两个邮件任务仍依赖 Poste。</p>
     <p>环境错误栏“—”表示来源文档未提及，不表示已确认没有环境问题。paper-checker 在原文 3.1 和 5.1 中均有记录，但未列入原文 smoke test 清单，本页保留原始标注。</p>
   </details>
@@ -165,7 +189,7 @@
     <span>来源：<a href="task-debug-progress.md">task debug</a> · <a href="lwx-env-error.md">环境错误</a> ·
       <a href="task-inventory-and-runnability.md">历史可跑性</a> · <a href="task-debug-progress.csv" download>下载 CSV</a></span>
     <details><summary>更新此页面</summary><p>编辑 <code>docs/task-debug-progress.md</code> 后，在仓库根目录运行：<br>
-      <code>python3 scripts/generate_task_debug_html.py</code><br>脚本仅更新 <code>docs/task-debug-progress.csv</code>。
+      <code>python3 scripts/generate_task_debug_csv.py</code><br>脚本仅更新 <code>docs/task-debug-progress.csv</code>。
       通过静态服务访问本页并刷新，即可读取最新数据；HTML 模板无需重新生成。</p></details>
   </footer>
 </main>
@@ -178,7 +202,7 @@
   const search = document.getElementById("filter-search");
   const groups = {A:"无网络依赖", B:"网络只读", "C-local":"本地基础设施写", "C-remote":"远端写", "C-notion":"Notion 写"};
   const statuses = {"跑通":"1", "不通":"0", "没跑":"-1"};
-  const blocks = {"0":"0", "Yahoo Finance 429":"yahoo", Notion:"notion", Google:"google"};
+  const blocks = {"0":"0", "Yahoo Finance":"yahoo", Google:"google", Notion:"notion"};
   const columns = ["任务类别", "STATUS", "BLOCK", "任务", "我跑通情况",
     "lwx-env-error 描述", "task inventory 描述", "BLOCK 说明"];
   let rows = [];
@@ -252,6 +276,7 @@
       if (!Object.hasOwn(groups, group) || !Object.hasOwn(statuses, label)
           || !/^[a-z0-9-]+$/.test(task) || seen.has(task)
           || blockLabels.some(value => !Object.hasOwn(blocks, value))
+          || new Set(blockLabels).size !== blockLabels.length
           || (blockLabels.length > 1 && blockLabels.includes("0"))) {
         throw new Error(`任务 ${task || "（空）"} 的类别、STATUS、BLOCK 或任务名无效／重复`);
       }
@@ -284,8 +309,8 @@
     document.querySelector("#task-table tbody").replaceChildren(...rendered.map(row => row.element));
     rows = rendered;
     document.getElementById("all-total").textContent = rows.length;
-    for (const option of category.options) {
-      if (option.value) option.textContent = `${option.value} · ${groups[option.value]}（${rows.filter(row => row.category === option.value).length}）`;
+    for (const input of category.querySelectorAll("input")) {
+      input.nextElementSibling.textContent = `${input.value} · ${groups[input.value]}（${rows.filter(row => row.category === input.value).length}）`;
     }
   }
 
@@ -306,14 +331,20 @@
       document.querySelector(".table-wrap").setAttribute("aria-busy", "false");
     }
   }
+  function selectedValues(control) {
+    return [...control.querySelectorAll("input:checked")].map(input => input.value);
+  }
   function applyFilters() {
     const query = search.value.trim().toLocaleLowerCase();
-    let total = 0, pass = 0, fail = 0, pending = 0, blocked = 0;
+    const selectedCategories = selectedValues(category);
+    const selectedStatuses = selectedValues(status);
+    const selectedBlocks = selectedValues(block);
+    let total = 0, pass = 0, fail = 0, pending = 0, labeled = 0;
     for (const row of rows) {
       const hasBlock = !row.blocks.includes("0");
-      const matches = (!category.value || row.category === category.value)
-        && (!status.value || row.status === status.value)
-        && (!block.value || (block.value === "blocked" ? hasBlock : row.blocks.includes(block.value)))
+      const matches = (!selectedCategories.length || selectedCategories.includes(row.category))
+        && (!selectedStatuses.length || selectedStatuses.includes(row.status))
+        && (!selectedBlocks.length || selectedBlocks.some(value => row.blocks.includes(value)))
         && (!query || row.text.includes(query));
       row.element.hidden = !matches;
       if (!matches) continue;
@@ -321,20 +352,29 @@
       if (row.status === "1") pass++;
       if (row.status === "0") fail++;
       if (row.status === "-1") pending++;
-      if (hasBlock) blocked++;
+      if (hasBlock) labeled++;
     }
-    for (const [id, value] of Object.entries({total, pass, fail, pending, blocked})) {
+    for (const [id, value] of Object.entries({total, pass, fail, pending, labeled})) {
       document.getElementById(`stat-${id}`).textContent = value;
     }
     document.getElementById("result-count").textContent = `显示 ${total} / ${rows.length} 个任务`;
     document.getElementById("table-count").textContent = `· ${total} 项`;
     document.getElementById("empty-state").hidden = total !== 0;
   }
+  function filterChanged(event) {
+    if (block.contains(event.target) && event.target.checked) {
+      for (const input of block.querySelectorAll("input")) {
+        if (input !== event.target && (event.target.value === "0" || input.value === "0")) input.checked = false;
+      }
+    }
+    applyFilters();
+  }
   form.addEventListener("submit", event => event.preventDefault());
-  form.addEventListener("input", applyFilters);
-  form.addEventListener("change", applyFilters);
+  form.addEventListener("input", filterChanged);
+  form.addEventListener("change", filterChanged);
   form.addEventListener("reset", () => {
-    category.value = status.value = block.value = search.value = "";
+    search.value = "";
+    for (const input of form.querySelectorAll('input[type="checkbox"]')) input.checked = false;
     applyFilters();
   });
   loadData();
