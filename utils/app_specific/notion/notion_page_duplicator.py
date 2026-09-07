@@ -266,7 +266,7 @@ class NotionPageDuplicator:
         try:
             print("🔄 Refreshing page as last resort...")
             current_url = normalize_notion_url(page.url)
-            page.goto(current_url, wait_until="load", timeout=30_000)
+            page.goto(current_url, wait_until="domcontentloaded", timeout=30_000)
             time.sleep(3)
             print("✅ Page refreshed successfully")
             return True
@@ -305,11 +305,11 @@ class NotionPageDuplicator:
                 
                 attempt_num = 0
                 while attempt_num < 3:
-                    page.goto(source_page_url, wait_until="load", timeout=60_000)
+                    page.goto(source_page_url, wait_until="domcontentloaded", timeout=60_000)
                     
                     # Wait for navigation to complete and verify we actually navigated
                     time.sleep(3)
-                    page.wait_for_load_state("load", timeout=15_000)
+                    page.wait_for_load_state("domcontentloaded", timeout=15_000)
 
                     # Verify we navigated to the correct page
                     current_url = page.url
@@ -328,7 +328,7 @@ class NotionPageDuplicator:
 
                         # Try one more time with a direct navigation
                         print("Retrying navigation...")
-                        page.goto(source_page_url, wait_until="load", timeout=60_000)
+                        page.goto(source_page_url, wait_until="domcontentloaded", timeout=60_000)
                         time.sleep(25)
 
                         current_url = page.url
@@ -347,21 +347,25 @@ class NotionPageDuplicator:
                     page.wait_for_selector(PAGE_MENU_BUTTON_SELECTOR, state="visible", timeout=90_000)
                     page.click(PAGE_MENU_BUTTON_SELECTOR)
                     
-                    print("Clicking 'Duplicate'...")
-                    page.hover(DUPLICATE_MENU_ITEM_SELECTOR)
-                    page.click(DUPLICATE_MENU_ITEM_SELECTOR)
-                    
-                    # Wait for duplication to complete (URL will change)
+                    # Capture the source before clicking: duplication may navigate immediately.
                     original_url = page.url
                     original_page_id = self.extract_page_id_from_url(original_url)
                     source_parent_id = self.extract_page_id_from_url(parent_of_source_page_url)
                     print(f"Original page ID before duplication: {original_page_id}")
                     print(f"Source parent ID: {source_parent_id}")
+
+                    print("Clicking 'Duplicate'...")
+                    page.hover(DUPLICATE_MENU_ITEM_SELECTOR)
+                    page.click(DUPLICATE_MENU_ITEM_SELECTOR)
                     print("Waiting for duplication to complete...")
 
                     # Wait for URL to change from the original page
                     try:
-                        page.wait_for_url(lambda url: url != original_url, timeout=600_000)
+                        page.wait_for_url(
+                            lambda url: url != original_url,
+                            wait_until="domcontentloaded",
+                            timeout=600_000,
+                        )
                         print("We have go to the new page!")
                         break
                     except PlaywrightTimeoutError:
@@ -449,9 +453,9 @@ class NotionPageDuplicator:
                     print(f"Navigating to duplicated page: {duplicated_page_url}")
 
                     # Navigate to the duplicated page
-                    page.goto(duplicated_page_url, wait_until="load", timeout=60_000)
+                    page.goto(duplicated_page_url, wait_until="domcontentloaded", timeout=60_000)
                     time.sleep(3)
-                    page.wait_for_load_state("load", timeout=15_000)
+                    page.wait_for_load_state("domcontentloaded", timeout=15_000)
 
                     # Verify we're now on the correct page
                     current_url = page.url

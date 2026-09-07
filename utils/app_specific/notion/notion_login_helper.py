@@ -10,9 +10,11 @@ which can be used for subsequent automated tasks.
 import argparse
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlsplit
 
 from playwright.sync_api import (
     BrowserContext,
+    Error as PlaywrightError,
     Page,
     TimeoutError as PlaywrightTimeoutError,
     sync_playwright,
@@ -72,20 +74,21 @@ class NotionLoginHelper:
 
     def login(self) -> BrowserContext:
         """
-        Launches a browser, performs login, and saves the session state.
+        Reuses a valid saved session, otherwise logs in and saves a new one.
         """
-        if self.state_path.exists():
-            try:
-                self.state_path.unlink()
-            except OSError as e:
-                logger.warning("Unable to remove existing state file: %s", e)
-
         if self._playwright is None:
             self._playwright = sync_playwright().start()
 
         browser_type = getattr(self._playwright, self.browser_name)
         self._browser = browser_type.launch(headless=self.headless)
+        if self.state_path.exists():
+            context = self._check_saved_session()
+            if context is not None:
+                logger.info("Saved Notion login is valid; skipping login: %s", self.state_path)
+                return context
+
         context = self._browser.new_context()
+        self._browser_context = context
         page = context.new_page()
 
         start_url = f"{NOTION_WEB_BASE_URL}/login" if self.headless else self.url
@@ -105,7 +108,9 @@ class NotionLoginHelper:
             initial_url = page.url
             input()
             try:
-                page.wait_for_url(lambda u: u != initial_url, timeout=10_000)
+                page.wait_for_url(
+                    lambda u: u != initial_url, wait_until="domcontentloaded", timeout=10_000
+                )
             except PlaywrightTimeoutError:
                 pass  # It's okay if the URL doesn't change
 
@@ -117,8 +122,52 @@ class NotionLoginHelper:
         context.storage_state(path=str(self.state_path))
         logger.info("✅ Login successful! Session state saved to %s", self.state_path)
 
-        self._browser_context = context
         return context
+
+    def _check_saved_session(self) -> Optional[BrowserContext]:
+        """Check the workspace UI with saved cookies, not just cookie expiry."""
+        logger.info("Checking saved Notion login: %s", self.state_path)
+        try:
+            context = self._browser.new_context(storage_state=str(self.state_path))
+        except (OSError, ValueError, PlaywrightError) as exc:
+            # Playwright validation errors may include cookie values; log only the type.
+            logger.warning("Cannot load saved login (%s); starting a new login.", type(exc).__name__)
+            return None
+
+        self._browser_context = context
+        page = context.new_page()
+        try:
+            response = page.goto(f"{NOTION_WEB_BASE_URL}/", wait_until="domcontentloaded", timeout=30_000)
+            if response is not None and response.status >= 400:
+                raise RuntimeError(
+                    f"Saved login check returned HTTP {response.status}; existing state was retained."
+                )
+            status = page.wait_for_function(
+                r"""() => {
+                    const atLogin = location.pathname.replace(/\/+$/, '') === '/login';
+                    if (atLogin && document.querySelector('input[type="email"]')) return 'expired';
+                    if (!atLogin && document.querySelector('.notion-sidebar, .notion-sidebar-container')) {
+                        return 'valid';
+                    }
+                    return false;
+                }""",
+                timeout=30_000,
+            ).json_value()
+        except PlaywrightTimeoutError as exc:
+            raise RuntimeError(
+                "Could not verify saved Notion login before timeout; existing state was retained. "
+                "Retry when the workspace or login page can finish loading."
+            ) from exc
+
+        if status == "valid":
+            if self.url != f"{NOTION_WEB_BASE_URL}/login":
+                page.goto(self.url, wait_until="domcontentloaded")
+            return context
+
+        context.close()
+        self._browser_context = None
+        logger.info("Saved Notion login has expired; starting a new login.")
+        return None
 
     def close(self) -> None:
         """Closes the underlying browser and Playwright instance."""
@@ -161,6 +210,7 @@ class NotionLoginHelper:
             code_input.wait_for(state="visible", timeout=120_000)
             code = input("Enter the verification code from your email: ").strip()
             code_input.fill(code)
+            logger.info("Submitting verification code; waiting for login redirect (up to 180 seconds)...")
             code_input.press("Enter")
         except PlaywrightTimeoutError:
             raise RuntimeError("Timed out waiting for the verification code input.")
@@ -168,15 +218,27 @@ class NotionLoginHelper:
             page.get_by_role("button", name="Continue", exact=True).click()
 
         try:
-            page.wait_for_url(lambda url: url != login_url, timeout=180_000)
-        except PlaywrightTimeoutError:
-            logger.warning("Login redirect timed out, but proceeding to save state.")
+            page.wait_for_url(
+                lambda url: urlsplit(url).path.rstrip("/") != "/login",
+                wait_until="domcontentloaded",
+                timeout=180_000,
+            )
+        except PlaywrightTimeoutError as exc:
+            raise RuntimeError(
+                "Login redirect timed out after 180 seconds; session state was not saved. "
+                f"Current page path: {urlsplit(page.url).path}. "
+                "Check whether the verification code was accepted and login completed."
+            ) from exc
 
         if self.url and self.url != login_url:
             page.goto(self.url, wait_until="domcontentloaded")
 
     def __enter__(self) -> "NotionLoginHelper":
-        self.login()
+        try:
+            self.login()
+        except BaseException:
+            self.close()
+            raise
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -206,6 +268,7 @@ def main():
         help="The path to save the authenticated session state.",
     )
     args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     helper = NotionLoginHelper(headless=args.headless, browser=args.browser, state_path=args.state_path)
     with helper:

@@ -56,6 +56,8 @@ bash global_preparation/deploy_notion_containers.sh false
 
 若启用 `notion_preprocess_with_playwright=True`，旧 `.so` 登录状态可能不适用于新域名，可运行 `uv run utils/app_specific/notion/notion_login_helper.py --headless` 重新生成 `configs/notion_state.json`。这与 `configs/.mcp-auth` 中的 MCP OAuth 授权分开；默认 MCP 预处理无需浏览器登录状态。
 
+登录助手会先加载已有状态并打开 Notion 工作区检查：能进入工作区则直接退出，不再要求邮箱或验证码，也不改写文件；回到登录页则重新登录，完成后覆盖保存。文件无法读取时也会重新登录。检查遇到网络错误或超时会报错并保留原文件，不把它判为登录失效。
+
 Notion 任务共享 OAuth 刷新状态与页面操作流程，并发可能造成刷新锁等待超时和状态竞争。按以下命令逐个运行任务：
 
 ```bash
