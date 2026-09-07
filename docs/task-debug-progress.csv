@@ -160,8 +160,7 @@ C-local,不通,0,canvas-art-manager,"🟠 NO_EVAL（run glm-5.2/260905）
 🟡 偶发：DNS 解析失败
 🟡 偶发：MCP 工具执行错误 -32603
 🟡 偶发：网络连接拒绝或中断",3.3 B 从未通过：模型能力/任务难度为主,
-C-local,不通,0,canvas-art-quiz,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞",—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+C-local,跑通,0,canvas-art-quiz,✅ PASS（run glm-5.2/260907）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
 跨全部 5 个批次 4/5 PASS
 5.1 低外部依赖
 列入文档 smoke test 集",
@@ -169,28 +168,24 @@ C-local,不通,0,canvas-do-quiz,"🟠 NO_EVAL（run glm-5.2/260905）
 跑满 max_turns 未产出可判定结果；轨迹错误签名稀疏，偏能力耗尽预算，非明显 infra（未四层核验）",—,"3.3 B 从未通过：模型能力/任务难度为主
 5.1 低外部依赖
 第 6 节冲突约束：不可与 `canvas-submit-late-work` 并发",
-C-local,不通,0,canvas-homework-grader-python,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞",🟡 偶发：IMAP 认证失败,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+C-local,跑通,0,canvas-homework-grader-python,✅ PASS（run glm-5.2/260907）,🟡 偶发：IMAP 认证失败,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
 跨全部 5 个批次 4/5 PASS",
-C-local,不通,0,canvas-list-test,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：配置课程清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞",—,"3.3 B 从未通过：模型能力/任务难度为主
+C-local,跑通,0,canvas-list-test,"✅ FAIL（run glm-5.2/260907）
+`quiz_info.csv` 行数不符：agent 10 行 / groundtruth 13 行（列完整、`assignment_info.csv` 完全匹配）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
 5.1 低外部依赖",
-C-local,不通,0,canvas-new-students-notification,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞",—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+C-local,跑通,0,canvas-new-students-notification,✅ PASS（run glm-5.2/260907）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
 5.1 低外部依赖",
-C-local,不通,0,canvas-submit-late-work,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：配置课程预清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞","🟡 偶发：IMAP 认证失败
+C-local,跑通,0,canvas-submit-late-work,✅ PASS（run glm-5.2/260907）,"🟡 偶发：IMAP 认证失败
 🟡 偶发：SMTP 发送失败","3.1 稳定可跑：GLM-5.3 两轮均 PASS
 第 6 节冲突约束：不可与 `canvas-do-quiz` 并发",
 C-local,跑通,0,course-assistant,"✅ FAIL（run glm-5.2/260905）
 学生 Michelle Brooks（michelle_brooks26@mcp.com）未收到主题 'nlp-course-emergency' 的通知邮件；其余正例学生与全部负例账户校验均通过；能力问题，非 infra",🟡 偶发：IMAP 认证失败,3.3 B 从未通过：模型能力/任务难度为主,
 C-local,跑通,0,email-paper-homepage,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-C-local,不通,0,filter-low-selling-products,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：WooCommerce localhost:50003 SSL record layer failure / 连接失败，容器未就绪；infra 阻塞",—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,filter-low-selling-products,"✅ FAIL（run glm-5.2/260907）
+5 个低销商品仅 1 个移入 Outlet/Clearance，漏移 4 个（Charger v11、Old Sneakers 2022、Tablet Case、Bluetooth Headphone）；能力问题，非 infra",—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,跑通,0,git-bug-hunt,✅ PASS（run glm-5.2/260905）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
 跨全部 5 个批次 4/5 PASS",
-C-local,不通,0,inventory-sync,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：WooCommerce API localhost:50003 SSL/连接失败，容器未就绪；infra 阻塞",🟡 偶发：Prompt 超长 400,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,inventory-sync,✅ PASS（run glm-5.2/260907）,🟡 偶发：Prompt 超长 400,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,跑通,0,k8s-deployment-cleanup,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,跑通,0,k8s-mysql,✅ PASS（run glm-5.2/260905）,🟡 偶发：MCP 工具执行错误 -32603,"3.2 不稳定：260821 PASS，260826 FAIL
 文档判断多为环境抖动，重跑可能捞回",
@@ -238,8 +233,8 @@ Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）
 使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限
 Google 配置待核：个人尚未实跑
 第 6 节冲突约束：不可与 `woocommerce-product-recall` 并发",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,不通,0,woocommerce-new-product,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：WooCommerce localhost:50003 SSL record layer failure，容器未就绪；infra 阻塞","🟡 偶发：IMAP 认证失败
+C-local,跑通,0,woocommerce-new-product,"✅ FAIL（run glm-5.2/260907）
+商品检测正常（3 新品+4 促销品），但折扣邮件 0/40 未发（要求给全部 40 客户各发 1 封）；agent 漏做群发邮件动作，非 infra","🟡 偶发：IMAP 认证失败
 🟡 偶发：SMTP 发送失败
 🟡 偶发：网络连接拒绝或中断","3.3 A 从未通过：环境/凭据问题为主
 IMAP/SMTP 抖动或连接拒绝",
@@ -259,8 +254,7 @@ Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
 使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定
 Google 配置待核：个人尚未实跑",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,不通,0,woocommerce-update-cover,"🟠 NO_EVAL（run glm-5.2/260905）
-preprocess 失败未进入 agent：WooCommerce localhost:50003 连接失败（多次重试耗尽），容器未就绪；infra 阻塞",—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,woocommerce-update-cover,✅ PASS（run glm-5.2/260907）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-remote,不通,Google,ab-testing,"🟠 NO_EVAL（run glm-5.2/260904）
 preprocess 失败：缺凭据文件 `configs/gcp-service_account.keys.json`（GCP 服务账号密钥）；根因=infra",—,"第 4 节未验证：无历史实跑记录
 Google 依赖：BigQuery 数据集 `ab_testing` + Storage 桶 `promo-assets-for-b*` + Logging 日志桶（`google-cloud`）
