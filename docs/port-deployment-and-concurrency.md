@@ -13,6 +13,8 @@ Toolathlon 当前将端口分为两类：
 
 多代码目录可以通过独立端口段、`instance_prefix` 和 `instance_suffix` 隔离。同一代码目录目前只有一份 `ports_config.yaml` 和一套被改写的源码，不能让两个并发评测分别使用不同端口配置；完整多模型并发应使用独立 checkout/worktree，或先完成运行时端口配置改造。
 
+执行清单现为五组：A 15、B 30、C-local 33、C-remote 22、C-notion 8。33 个直接登记宿主端口的任务分布为 C-local 31 个、C-notion 2 个；后两者是 `notion-find-job` 和 `notion-hr`，与 C-local 共用 Poste 客户端端口。只运行 C-notion 时可复用已有 Poste，或通过 `global_preparation/deploy_notion_containers.sh` 准备邮件服务；任一组使用 Poste 时都不能重建它。详见 [分组评测](finalpool-grouped-evaluation.md) 和 [Notion 评测](notion-evaluation.md)。
+
 ## 二、端口清单
 
 当前默认端口及本 checkout 在 `configs/ports_config.yaml` 中配置的目标端口如下：
@@ -226,4 +228,3 @@ ss -ltnp
 - 没有其他实例使用相同容器、网络或 Kind 名称；
 - 本次运行使用新的 dump 目录；
 - 部署完成后不再执行 deploy 或 restore，直到评测结束。
-

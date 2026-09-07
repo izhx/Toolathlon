@@ -18,6 +18,7 @@ GROUPS = {
     "B": "网络只读",
     "C-local": "本地基础设施写",
     "C-remote": "远端写",
+    "C-notion": "Notion 写",
 }
 STATUS_LABELS = {1: "跑通", 0: "不通", -1: "没跑"}
 BLOCK_LABELS = {"yahoo": "Yahoo Finance 429", "notion": "Notion", "google": "Google"}
@@ -66,6 +67,8 @@ def blocks_of(task, status, progress, inventory):
 
     # These preprocessing scripts call get_google_service(), whose first credential
     # lookup is cred_data['token'] in utils/app_specific/googlesheet/drive_helper.py.
+    # quantitative-financial-analysis also depends on Notion, initialized after
+    # Google. BLOCK records the observed failure; full dependencies are in inventory.
     google_token_tasks = {
         "gdp-cr5-analysis", "inter-final-performance-analysis", "llm-training-dataset",
         "music-analysis", "nhl-b2b-analysis", "quantitative-financial-analysis",
@@ -91,7 +94,7 @@ def read_rows():
     group = None
     seen = set()
     for number, line in enumerate(SOURCE.read_text(encoding="utf-8").splitlines(), 1):
-        heading = re.match(r"^## (A|B|C-local|C-remote)：", line)
+        heading = re.match(r"^## (A|B|C-local|C-remote|C-notion)：", line)
         if heading:
             group = heading[1]
         elif line.startswith("## "):
@@ -112,7 +115,7 @@ def read_rows():
                          inventory=inventory, progress=progress, status=status,
                          blocks=blocks, reason=reason))
     if {row["group"] for row in rows} != set(GROUPS):
-        raise ValueError("Expected all four task groups in the Markdown source")
+        raise ValueError("Expected all five task groups in the Markdown source")
     return rows
 
 

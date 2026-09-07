@@ -122,7 +122,7 @@
   </section>
   <form class="filters" id="filters" aria-label="任务筛选">
     <div><label for="filter-category">任务类别</label><select id="filter-category" name="category" disabled>
-      <option value="">全部类别</option><option value="A">A · 无网络依赖</option><option value="B">B · 网络只读</option><option value="C-local">C-local · 本地基础设施写</option><option value="C-remote">C-remote · 远端写</option>
+      <option value="">全部类别</option><option value="A">A · 无网络依赖</option><option value="B">B · 网络只读</option><option value="C-local">C-local · 本地基础设施写</option><option value="C-remote">C-remote · 远端写</option><option value="C-notion">C-notion · Notion 写</option>
     </select></div>
     <div><label for="filter-status">STATUS</label><select id="filter-status" name="status" disabled>
       <option value="">全部状态</option><option value="1">跑通</option>
@@ -144,7 +144,7 @@
     <p><b>STATUS 看对号：</b>原始“我跑通情况”首行含 ✅ 就记为“跑通”；因此 ✅ FAIL、✅ NO_EVAL、✅🟠 PASS 都为“跑通”。已填写但没有 ✅ 为“不通”；空白或待填写为“没跑”。它不表示评测是否 PASS。</p>
     <p><b>BLOCK：</b>默认 0，仅标注 Yahoo Finance 429、Notion 和 Google 三类。0 表示未标注这三类，不代表没有其他阻塞。Google 包含 OAuth、GCP 与 Maps。Notion / Google 尚未配置为用户提供的环境背景；每行小字保留归类依据，接口失败或卡住的具体原因仍需核实。</p>
     <p>本次记录优先于历史说明：有 ✅ 的任务 BLOCK 为 0；“没跑”任务沿用 inventory 中的“已知阻塞”，并标明个人尚未实跑。仅有 returncode 1 的 investment-decision-analysis 按 Google 预处理及历史凭据问题暂归类，标注待核。</p>
-    <p><b>历史 inventory 分类：</b>3.1 = 稳定可跑；3.2 = 不稳定；3.3 A = 从未通过，以环境／凭据问题为主；3.3 B = 从未通过，以能力／难度为主；3.4 = 无有效评测产出；4 = 未验证；5.1 = 低外部依赖。smoke test 为原文建议子集；第 6 节为并发冲突约束。这些历史分类与本表四类执行分组、个人 STATUS 是不同维度。</p>
+    <p><b>历史 inventory 分类：</b>3.1 = 稳定可跑；3.2 = 不稳定；3.3 A = 从未通过，以环境／凭据问题为主；3.3 B = 从未通过，以能力／难度为主；3.4 = 无有效评测产出；4 = 未验证；5.1 = 低外部依赖。smoke test 为原文建议子集；第 6 节为并发冲突约束。这些历史分类与本表五类执行分组、个人 STATUS 是不同维度。C-notion 独立包含全部 8 个 Notion 任务，其中两个邮件任务仍依赖 Poste。</p>
     <p>环境错误栏“—”表示来源文档未提及，不表示已确认没有环境问题。paper-checker 在原文 3.1 和 5.1 中均有记录，但未列入原文 smoke test 清单，本页保留原始标注。</p>
   </details>
   <noscript><p>请启用 JavaScript，以加载任务数据并使用筛选和搜索。</p></noscript>
@@ -176,7 +176,7 @@
   const status = document.getElementById("filter-status");
   const block = document.getElementById("filter-block");
   const search = document.getElementById("filter-search");
-  const groups = {A:"无网络依赖", B:"网络只读", "C-local":"本地基础设施写", "C-remote":"远端写"};
+  const groups = {A:"无网络依赖", B:"网络只读", "C-local":"本地基础设施写", "C-remote":"远端写", "C-notion":"Notion 写"};
   const statuses = {"跑通":"1", "不通":"0", "没跑":"-1"};
   const blocks = {"0":"0", "Yahoo Finance 429":"yahoo", Notion:"notion", Google:"google"};
   const columns = ["任务类别", "STATUS", "BLOCK", "任务", "我跑通情况",

@@ -1,4 +1,4 @@
-# finalpool group C-local: writes state and uses local shared infrastructure (35 tasks)
+# finalpool group C-local: non-Notion tasks using local shared infrastructure (33 tasks)
 apply-phd-email
 canvas-arrange-exam
 canvas-art-manager
@@ -20,8 +20,6 @@ k8s-redis-helm-upgrade
 k8s-safety-audit
 landing-task-reminder
 meeting-assign
-notion-find-job
-notion-hr
 payable-invoice-checker
 set-conf-cr-ddl
 sla-timeout-monitor

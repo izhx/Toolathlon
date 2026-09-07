@@ -1,8 +1,7 @@
-# finalpool group C-remote: writes external state without local shared infrastructure (28 tasks)
+# finalpool group C-remote: non-Notion tasks writing external state without local shared infrastructure (22 tasks)
 ab-testing
 academic-warning
 dataset-license-issue
-experiments-recordings
 fillout-online-forms
 flagged-transactions
 game-statistics
@@ -16,14 +15,9 @@ machine-operating
 merge-hf-datasets
 music-analysis
 nhl-b2b-analysis
-notion-movies
-notion-personal-website
-oil-price
 personal-website-construct
 price-comparison
-quantitative-financial-analysis
 sync-todo-to-readme
-task-tracker
 train-ticket-plan
 verl-dataset
 vlm-history-completer

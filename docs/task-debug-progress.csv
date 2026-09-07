@@ -182,7 +182,7 @@ C-local,不通,0,canvas-submit-late-work,"🟠 NO_EVAL（run glm-5.2/260905）
 preprocess 失败未进入 agent：配置课程预清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞","🟡 偶发：IMAP 认证失败
 🟡 偶发：SMTP 发送失败","3.1 稳定可跑：GLM-5.3 两轮均 PASS
 第 6 节冲突约束：不可与 `canvas-do-quiz` 并发",
-C-local,不通,0,course-assistant,"❌ FAIL（run glm-5.2/260905）
+C-local,跑通,0,course-assistant,"✅ FAIL（run glm-5.2/260905）
 学生 Michelle Brooks（michelle_brooks26@mcp.com）未收到主题 'nlp-course-emergency' 的通知邮件；其余正例学生与全部负例账户校验均通过；能力问题，非 infra",🟡 偶发：IMAP 认证失败,3.3 B 从未通过：模型能力/任务难度为主,
 C-local,跑通,0,email-paper-homepage,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,不通,0,filter-low-selling-products,"🟠 NO_EVAL（run glm-5.2/260905）
@@ -210,13 +210,6 @@ C-local,跑通,0,landing-task-reminder,✅ PASS（run glm-5.2/260905）,—,"3.2
 文档判断多为环境抖动，重跑可能捞回",
 C-local,跑通,0,meeting-assign,✅ PASS（run glm-5.2/260905）,"🟡 偶发：IMAP 认证失败
 🟡 偶发：SMTP 发送失败",3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-C-local,没跑,Google,notion-find-job,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
-Google 依赖：Maps 地图（`google_map`）
-凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
-使用阶段：agent 使用 Maps 查地点/路线；另有 Notion 依赖
-Google 配置待核：个人尚未实跑",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,没跑,Notion,notion-hr,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
-已知阻塞：Notion refresh lock 争用",历史已知阻塞；个人尚未实跑
 C-local,跑通,0,payable-invoice-checker,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,没跑,Google,set-conf-cr-ddl,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Calendar 日历（`google_calendar`）
@@ -224,7 +217,7 @@ Google 依赖：Calendar 日历（`google_calendar`）
 使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限
 Google 配置待核：个人尚未实跑
 第 6 节冲突约束：不可与 `student-interview` 并发",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,不通,0,sla-timeout-monitor,"❌ FAIL（run glm-5.2/260905）
+C-local,跑通,0,sla-timeout-monitor,"✅ FAIL（run glm-5.2/260905）
 9 封客户道歉邮件与 6 个负例账户校验全部正确，但漏发经理提醒邮件：dhall@mcp.com（4 张工单）未收到 manager reminder；能力问题，非 infra",—,"3.2 不稳定：260821 FAIL，260826 PASS
 文档判断多为环境抖动，重跑可能捞回",
 C-local,没跑,Google,student-interview,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
@@ -280,9 +273,6 @@ Google 依赖：BigQuery 数据集 `academic_warning` + Logging 日志桶（`goo
 使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果",本次记录中的服务／凭据阻塞
 C-remote,跑通,0,dataset-license-issue,✅ PASS（run glm-5.2/260904）,—,"3.4 无有效评测产出：5 批次均 NO_EVAL
 第 6 节冲突约束：不可与 `huggingface-upload` 并发",
-C-remote,不通,Notion,experiments-recordings,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",—,"第 4 节未验证：无历史实跑记录
-已知阻塞：Notion refresh lock 争用",本次记录中的服务／凭据阻塞
 C-remote,不通,Google,fillout-online-forms,"🟠 NO_EVAL（run glm-5.2/260904）
 preprocess 失败：Google OAuth 授权信息缺字段 client_id/client_secret；根因=infra/凭据",🔴 必现：Google OAuth credentials 缺字段,"第 4 节未验证：无历史实跑记录
 Google 依赖：Forms 表单 + Drive 文件管理（未声明 Google MCP）
@@ -346,16 +336,6 @@ preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直
 Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
 使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
-C-remote,不通,Notion,notion-movies,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",—,"第 4 节未验证：无历史实跑记录
-已知阻塞：Notion refresh lock 争用",本次记录中的服务／凭据阻塞
-C-remote,不通,Notion,notion-personal-website,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 卡住未完成（超时/中断，status=running）；根因=infra",🟡 偶发：preprocess 阶段卡死,"第 4 节未验证：无历史实跑记录
-已知阻塞：Notion refresh lock 争用",Notion 预处理卡住；具体原因待核
-C-remote,不通,Notion,oil-price,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",🟡 偶发：Notion refresh lock 争用（含疑似间接影响）,"第 4 节未验证：无历史实跑记录
-已知阻塞：Notion refresh lock 争用
-历史环境曾出现 preprocess fail",本次记录中的服务／凭据阻塞
 C-remote,跑通,0,personal-website-construct,"✅ FAIL（run glm-5.2/260904）
 远端 about.md 缺必需信息 “PhD candidate”；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
 5.1 低外部依赖",
@@ -366,16 +346,8 @@ Google 依赖：BigQuery 数据集 `bigquery_pricing_analysis`（`google-cloud`�
 使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果
 预处理缺服务账号时回退 ADC；需单独核对默认凭据
 另有 466 个派生变体全部 NO_EVAL，需排查 GCP 凭据及预处理/评测流程",本次记录中的服务／凭据阻塞
-C-remote,不通,Google,quantitative-financial-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
-Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
-凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
-使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
 C-remote,跑通,0,sync-todo-to-readme,✅ PASS（run glm-5.2/260904）,—,"3.3 B 从未通过：模型能力/任务难度为主
 5.1 低外部依赖",
-C-remote,不通,Notion,task-tracker,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra","🟡 偶发：preprocess 阶段卡死
-🟡 偶发：Notion refresh lock 争用（含疑似间接影响）",3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock,本次记录中的服务／凭据阻塞
 C-remote,跑通,0,train-ticket-plan,"✅ PASS（重跑 glm-5.2（已并入 results/glm-5.2））
 本次 rail_12306 MCP 连接正常，preprocess/agent/评测全通过（上次 NO_EVAL 因 MCP 仅连 3/4，属 infra 抖动，重跑捞回）",🟡 偶发：MCP server 启动超时（rail_12306）,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-remote,跑通,0,verl-dataset,✅ PASS（run glm-5.2/260904）,🔴 必现：Hugging Face 读取或 SSL 握手超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
@@ -384,3 +356,33 @@ preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直
 Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
 使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
+C-notion,不通,Notion,experiments-recordings,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用",本次记录中的服务／凭据阻塞
+C-notion,没跑,Google,notion-find-job,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Maps 地图（`google_map`）
+凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
+使用阶段：agent 使用 Maps 查地点/路线；另有 Notion 依赖
+Google 配置待核：个人尚未实跑",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-notion,没跑,Notion,notion-hr,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用",历史已知阻塞；个人尚未实跑
+C-notion,不通,Notion,notion-movies,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用",本次记录中的服务／凭据阻塞
+C-notion,不通,Notion,notion-personal-website,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 卡住未完成（超时/中断，status=running）；根因=infra",🟡 偶发：preprocess 阶段卡死,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用",Notion 预处理卡住；具体原因待核
+C-notion,不通,Notion,oil-price,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",🟡 偶发：Notion refresh lock 争用（含疑似间接影响）,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用
+历史环境曾出现 preprocess fail",本次记录中的服务／凭据阻塞
+C-notion,不通,Google,quantitative-financial-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+依赖：Yahoo Finance 行情 + Google Sheets/Drive + Notion（`Quant Research` 页面）
+Google 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+Notion 配置：integration key、源/评测父页面，以及 `configs/.mcp-auth` 中供 `notion_official` 复制页面使用的 OAuth 授权
+使用阶段：预处理先准备 Drive 文件夹，再清理/复制 Notion 页面；agent 写行情表格，并在 Notion 写入表格链接和指定评论；评测检查两边结果；`google_sheets_folder_id` 由任务配置指定
+本次记录失败在 Google 初始化阶段，尚未执行 Notion 初始化；修好 Google 凭据后仍需验证 Notion；不依赖 Poste",Google 凭据缺 token；已核对预处理代码
+C-notion,不通,Notion,task-tracker,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra","🟡 偶发：preprocess 阶段卡死
+🟡 偶发：Notion refresh lock 争用（含疑似间接影响）",3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock,本次记录中的服务／凭据阻塞

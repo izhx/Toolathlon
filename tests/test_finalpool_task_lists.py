@@ -1,3 +1,4 @@
+import csv
 import json
 import re
 import unittest
@@ -14,6 +15,7 @@ TASK_LISTS = {
     "b": TASK_LIST_ROOT / "b-network-read-only.txt",
     "c-local": TASK_LIST_ROOT / "c-local-infrastructure-write.txt",
     "c-remote": TASK_LIST_ROOT / "c-remote-write.txt",
+    "c-notion": TASK_LIST_ROOT / "c-notion.txt",
 }
 LOCAL_INFRASTRUCTURE_SERVERS = {"canvas", "emails", "woocommerce", "k8s"}
 
@@ -61,23 +63,47 @@ class FinalpoolTaskListsTest(unittest.TestCase):
         self.assertEqual(set(seen), finalpool_tasks)
         self.assertEqual(len(seen), 108)
 
-    def test_lists_match_risk_classification_and_local_split(self) -> None:
+    def test_lists_match_risk_classification_and_notion_first_split(self) -> None:
         self.assertEqual(set(self.groups["a"]), self.classified["a"])
         self.assertEqual(set(self.groups["b"]), self.classified["b"])
 
         expected_local = set()
+        expected_notion = set()
         for task in self.classified["c"]:
             config = json.loads(
                 (FINALPOOL_ROOT / task / "task_config.json").read_text(encoding="utf-8")
             )
-            if LOCAL_INFRASTRUCTURE_SERVERS.intersection(
+            if "notion" in config.get("needed_mcp_servers", []):
+                expected_notion.add(task)
+            elif LOCAL_INFRASTRUCTURE_SERVERS.intersection(
                 config.get("needed_mcp_servers", [])
             ):
                 expected_local.add(task)
 
         self.assertEqual(set(self.groups["c-local"]), expected_local)
+        self.assertEqual(set(self.groups["c-notion"]), expected_notion)
         self.assertEqual(
-            set(self.groups["c-remote"]), self.classified["c"] - expected_local
+            set(self.groups["c-remote"]),
+            self.classified["c"] - expected_local - expected_notion,
+        )
+
+    def test_five_group_sizes(self) -> None:
+        self.assertEqual(
+            {name: len(tasks) for name, tasks in self.groups.items()},
+            {"a": 15, "b": 30, "c-local": 33, "c-remote": 22, "c-notion": 8},
+        )
+
+    def test_tracker_csv_matches_current_task_groups(self) -> None:
+        with (REPO_ROOT / "docs/task-debug-progress.csv").open(
+            encoding="utf-8-sig", newline=""
+        ) as source:
+            rows = list(csv.DictReader(source))
+        expected = {
+            task: name.lower() for name, tasks in self.groups.items() for task in tasks
+        }
+        self.assertEqual(len(rows), len(expected))
+        self.assertEqual(
+            {row["任务"]: row["任务类别"].lower() for row in rows}, expected
         )
 
     def test_declared_conflicts_do_not_cross_task_lists(self) -> None:

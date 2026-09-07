@@ -380,7 +380,7 @@ Host Agent 只能通过 MCP gateway 调用容器内任务工具；任务环境�
 
 README 明确建议在正式并行评测前重新部署所需应用，见 `README.md:247-256`。`run_parallel.sh` 本身不会部署或重置这些服务。
 
-当前四组 `task_conflict.json` 锁只能缓解已经登记、且处于同一个 `run_parallel.py` 进程中的冲突。多模型、多进程或多个 checkout 同时运行时，这些锁不起作用。
+当前 `task_conflict.json` 的四个显式冲突组只能缓解已经登记、且处于同一个 `run_parallel.py` 进程中的冲突。执行清单另分为 A、B、C-local、C-remote、C-notion 五组；其中 C-notion 的两个邮件任务仍与 C-local 共享 Poste。多模型、多进程或多个 checkout 同时运行时，进程内锁不能协调这些跨进程访问。详见 [分组评测](finalpool-grouped-evaluation.md)。
 
 ### 10.3 重跑与聚合可能混入历史结果
 

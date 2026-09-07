@@ -2,15 +2,15 @@
 
 - 初始化日期：2026-09-04
 - 网页版：[可筛选任务总表](task-debug-progress.html)（STATUS 按 ✅ 判断任务能否跑通，与评测 PASS / FAIL 无关）。修改本文后运行 `python3 scripts/generate_task_debug_html.py`，仅更新 [CSV 数据](task-debug-progress.csv)；HTML 是固定模板，通过静态服务读取 CSV，刷新网页即可，无需重新生成 HTML。
-- 分组来源：[finalpool 四组 task list](../configs/task_lists/finalpool/)
+- 分组来源：[finalpool 五组 task list](../configs/task_lists/finalpool/)
 - 环境错误来源：[lwx-env-error.md](lwx-env-error.md)：仅覆盖 260812 GLM-5.1 两个批次，并只统计从工具消息提取到的环境错误；本表中的“—”表示该文档未点名，不代表已证明没有环境问题。
 - 可跑性来源：[task-inventory-and-runnability.md](task-inventory-and-runnability.md)：3.1–4 节为历史评测分类，不能代替本次个人实跑。
-- “我跑通情况”是独立人工进度列。当前未提供可唯一对应的个人运行结果目录，因此初始化为“⬜ 待填写”。建议填写为“✅ PASS（run/日期）”“❌ FAIL（错误摘要）”或“🚧 BLOCKED（阻塞项）”。
-- 个人实跑来源：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [results/glm-5.2/](../results/glm-5.2/)（已合并至总目录），并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。C-remote 组 28 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8；PASS 3/FAIL 3/NO_EVAL 22，其中 21 个为 preprocess 阶段失败/卡住、未进入 agent 执行）。C-local 组已按 GLM-5.2 实跑结果填写 25/35 个任务（run glm-5.2/260905，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 10、单任务超时 5400s；PASS 9/FAIL 2/NO_EVAL 14，尚未做逐项四层核验）。其中 14 个 NO_EVAL = 9 个 preprocess 阶段本地容器未就绪失败（Canvas `:50001` 连接拒绝 5 个、WooCommerce `:50003` SSL/连接失败 4 个，未进入 agent 执行）+ 5 个跑满 max_turns（`pass=null`）。注：执行报告 [execution_report_finalpool_glm-5.2_full.json](../results/glm-5.2/execution_report_finalpool_glm-5.2_full.json) 按 pass≠true 口径记为 passed 9 / failed 7 / not_executed 9，本表按 A/B 组一致口径把 5 个 max_turns 归入 NO_EVAL。其余 10 个任务（多为 Notion/Google 依赖）本次未跑，保持“⬜ 待填写”。
+- “我跑通情况”是独立人工进度列。图标表示任务链路是否跑通，后面的 `PASS` / `FAIL` / `NO_EVAL` 保留实际评测结果；已确认仅为能力、策略或效率问题的任务标为 `✅ FAIL` 或 `✅ NO_EVAL`，环境/基础设施阻塞保留 `❌` / `🟠` / `🚧`，未跑任务填“⬜ 待填写”。各组统计按评测结果计数。
+- 历史批次来源（以下数量沿用拆分前口径，当前分组统计见下表）：A 组 15 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260903，结果目录 [results/glm-5.2/](../results/glm-5.2/)，分析见 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。B 组 30 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 目录 [results/glm-5.2/](../results/glm-5.2/)（已合并至总目录），并发 4；PASS 13/FAIL 7/NO_EVAL 10，尚未做逐项四层核验）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果。原 C-remote 组 28 个任务已按 GLM-5.2 实跑结果填写（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8；PASS 3/FAIL 3/NO_EVAL 22，其中 21 个为 preprocess 阶段失败/卡住、未进入 agent 执行）。原 C-local 组已按 GLM-5.2 实跑结果填写 25/35 个任务（run glm-5.2/260905，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 10、单任务超时 5400s；PASS 9/FAIL 2/NO_EVAL 14，尚未做逐项四层核验）。其中 14 个 NO_EVAL = 9 个 preprocess 阶段本地容器未就绪失败（Canvas `:50001` 连接拒绝 5 个、WooCommerce `:50003` SSL/连接失败 4 个，未进入 agent 执行）+ 5 个跑满 max_turns（`pass=null`）。注：执行报告 [execution_report_finalpool_glm-5.2_full.json](../results/glm-5.2/execution_report_finalpool_glm-5.2_full.json) 按 pass≠true 口径记为 passed 9 / failed 7 / not_executed 9，本表按 A/B 组一致口径把 5 个 max_turns 归入 NO_EVAL。其余 10 个任务（多为 Notion/Google 依赖）本次未跑，保持“⬜ 待填写”。
 
 ## task inventory 分类说明
 
-表格里的 `3.1`、`3.2` 等编号，指向 [task-inventory-and-runnability.md](task-inventory-and-runnability.md) 的章节，是根据历史评测结果划分的**可跑性分类**。它和本文的 A、B、C-local、C-remote **执行分组不是同一个维度**：执行分组描述网络、写操作和共享基础设施风险，可跑性分类描述历史运行结果。
+表格里的 `3.1`、`3.2` 等编号，指向 [task-inventory-and-runnability.md](task-inventory-and-runnability.md) 的章节，是根据历史评测结果划分的**可跑性分类**。它和本文的 A、B、C-local、C-remote、C-notion **执行分组不是同一个维度**：执行分组描述网络、写操作和共享基础设施风险，可跑性分类描述历史运行结果。
 
 | 标记 | 具体含义 | 使用时应如何理解 |
 |---|---|---|
@@ -47,19 +47,22 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 
 ## 总体统计
 
+2026-09-07 起使用五个互斥 task list；下表按当前逐任务记录重算，包含已记录的重跑结果。原批次的结果目录和运行记录没有移动。
+
 | 分组 | 任务数 | env-error 有记录 | env-error 未提及 | task inventory 分类 | 我跑通情况 |
 |---|---:|---:|---:|---|---|
 | A：无网络依赖 | 15 | 0 | 15 | 3.1=8；3.2=1；3.3 B=6 | PASS 7；FAIL 7；NO_EVAL 1 |
-| B：网络只读 | 30 | 13 | 17 | 3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5 | PASS 13；FAIL 7；NO_EVAL 10 |
-| C-local：本地基础设施写 | 35 | 11 | 24 | 3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=10 | PASS 9；FAIL 2；NO_EVAL 14；待填写 10 |
-| C-remote：远端写 | 28 | 8 | 20 | 3.1=2；3.3 A=2；3.3 B=2；3.4=2；4=20 | PASS 3；FAIL 3；NO_EVAL 22 |
-| **合计** | **108** | **32** | **76** | **3.1=37；3.2=8；3.3 A=12；3.3 B=14；3.4=2；4=35** | **PASS 32；FAIL 19；NO_EVAL 47；待填写 10** |
+| B：网络只读 | 30 | 13 | 17 | 3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5 | PASS 13；FAIL 8；NO_EVAL 9 |
+| C-local：本地基础设施写 | 33 | 11 | 22 | 3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=8 | PASS 9；FAIL 2；NO_EVAL 14；待填写 8 |
+| C-remote：远端写 | 22 | 5 | 17 | 3.1=2；3.3 A=2；3.3 B=2；3.4=1；4=15 | PASS 4；FAIL 3；NO_EVAL 15 |
+| C-notion：Notion 写 | 8 | 3 | 5 | 3.4=1；4=7 | NO_EVAL 6；待填写 2 |
+| **合计** | **108** | **32** | **76** | **3.1=37；3.2=8；3.3 A=12；3.3 B=14；3.4=2；4=35** | **PASS 33；FAIL 20；NO_EVAL 45；待填写 10** |
 
 > 文档一致性提示：`paper-checker` 同时出现在 task inventory 的 3.1 和 5.1，但第 242 行声称的“两者交集”清单漏掉了它；本表仍按两个原始清单记录，不擅自改写为 smoke test 成员。
 
 ## A：无网络依赖（15）
 
-统计：env-error 有记录 0，未提及 15；task inventory：3.1=8；3.2=1；3.3 B=6；我跑通情况：✅ PASS 7、❌ FAIL 7、🟠 NO_EVAL 1（run glm-5.2/260903，源自 [ANALYSIS_glm-5.2.md](../results/glm-5.2/ANALYSIS_glm-5.2.md)）。经四层核验（preprocess 15/15、无容器崩溃、无 API/网络错误、所需工具均成功返回真实数据），**8 项失败/未完成全部为 agent 能力或效率问题，无 infra 问题**。
+统计：env-error 有记录 0，未提及 15；task inventory：3.1=8；3.2=1；3.3 B=6；我跑通情况：PASS 7；FAIL 7；NO_EVAL 1。
 
 | 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|
@@ -81,7 +84,7 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 
 ## B：网络只读（30）
 
-统计：env-error 有记录 13，未提及 17；task inventory：3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5；我跑通情况：✅ PASS 13、❌ FAIL 7、🟠 NO_EVAL 10（run glm-5.2/260904，dump 目录 [results/glm-5.2/](../results/glm-5.2/)（已合并至总目录），并发 4、单任务超时 5400s，全部 30/30 完成，无 preprocess/容器失败与超时）。`🟠 NO_EVAL` 表示跑满 max_turns 未产出可判定结果（`pass=null`）。
+统计：env-error 有记录 13，未提及 17；task inventory：3.1=12；3.2=4；3.3 A=8；3.3 B=1；4=5；我跑通情况：PASS 13；FAIL 8；NO_EVAL 9。
 
 > NO_EVAL 根因（基于逐任务扫描 traj_log.json + run.log 的错误签名，非四层深核）：10 个 NO_EVAL **全部为 infra 主导，无一例指向模型能力**。
 > - **Yahoo Finance 429 限流（6 个）**：`invoice-org`(226×)、`stock-build-position`(233×)、`travel-exchange`(229×)、`nvidia-market`(212×)、`yahoo-analysis`(204×)、`nvidia-stock-analysis`(94×)——agent 明确识别到限流并反复重试等待，直至耗尽 max_turns。
@@ -121,12 +124,12 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `yahoo-analysis` | 🔴 必现：Yahoo Finance API 429 限流 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 204 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
 | `youtube-repo` | 🔴 必现：API Key 无效 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
 
-## C-local：本地基础设施写（35）
+## C-local：本地基础设施写（33）
 
-统计：env-error 有记录 11，未提及 24；task inventory：3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=10；我跑通情况：✅ PASS 9、❌ FAIL 2、🟠 NO_EVAL 14、⬜ 待填写 10（run glm-5.2/260905，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 10、单任务超时 5400s）。本次实跑覆盖 [c-local task list](../configs/task_lists/finalpool/c-local-infrastructure-write.txt) 35 个中的 25 个（见 [tmp-c-local.txt](../configs/task_lists/finalpool/tmp-c-local.txt)）；未跑的 10 个多为 Notion/Google 依赖，保持“⬜ 待填写”。
+统计：env-error 有记录 11，未提及 22；task inventory：3.1=15；3.2=3；3.3 A=2；3.3 B=5；4=8；我跑通情况：PASS 9；FAIL 2；NO_EVAL 14；待填写 8。
 
 > C-local 本次执行画像（run glm-5.2/260905，25 个任务）：
-> - **9 PASS / 2 FAIL 是真进入了 agent+评测的结果**；`❌ FAIL` 两个均为能力问题（course-assistant 漏发 1 封学生邮件、sla-timeout-monitor 漏发经理提醒邮件），非 infra。
+> - **9 PASS / 2 FAIL 是真进入了 agent+评测的结果**；`✅ FAIL` 两个均为能力问题（course-assistant 漏发 1 封学生邮件、sla-timeout-monitor 漏发经理提醒邮件），非 infra。
 > - **9 个 NO_EVAL 是 preprocess 阶段本地容器未就绪**、未进入 agent：Canvas API `localhost:50001` 连接拒绝（5 个：canvas-new-students-notification / canvas-art-quiz / canvas-homework-grader-python / canvas-submit-late-work / canvas-list-test），WooCommerce `localhost:50003` SSL/连接失败（4 个：woocommerce-new-product / filter-low-selling-products / inventory-sync / woocommerce-update-cover）。→ 需先起稳这两组容器再重跑，与模型能力无关。
 > - **5 个 NO_EVAL 是跑满 max_turns**（`pass=null`，`status.json` running=max_turn_exceeded）：canvas-arrange-exam / canvas-art-manager / canvas-do-quiz / k8s-pr-preview-testing / k8s-redis-helm-upgrade。轨迹错误签名扫描（非四层深核）显示 k8s-redis-helm-upgrade（registry/ImagePull/连接拒绝/429 密集）与 k8s-pr-preview-testing（MCP -32603 + registry + 连接拒绝）偏 infra，canvas-art-manager 有大量 timeout/429，canvas-arrange-exam / canvas-do-quiz 错误签名稀疏、更像能力耗尽预算；要定性仍需核对容器日志与轨迹。
 
@@ -141,7 +144,7 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `canvas-list-test` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：配置课程清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞 |
 | `canvas-new-students-notification` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖 | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞 |
 | `canvas-submit-late-work` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>第 6 节冲突约束：不可与 `canvas-do-quiz` 并发 | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：配置课程预清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞 |
-| `course-assistant` | 🟡 偶发：IMAP 认证失败 | 3.3 B 从未通过：模型能力/任务难度为主 | ❌ FAIL（run glm-5.2/260905）<br>学生 Michelle Brooks（michelle_brooks26@mcp.com）未收到主题 'nlp-course-emergency' 的通知邮件；其余正例学生与全部负例账户校验均通过；能力问题，非 infra |
+| `course-assistant` | 🟡 偶发：IMAP 认证失败 | 3.3 B 从未通过：模型能力/任务难度为主 | ✅ FAIL（run glm-5.2/260905）<br>学生 Michelle Brooks（michelle_brooks26@mcp.com）未收到主题 'nlp-course-emergency' 的通知邮件；其余正例学生与全部负例账户校验均通过；能力问题，非 infra |
 | `email-paper-homepage` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
 | `filter-low-selling-products` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：WooCommerce localhost:50003 SSL record layer failure / 连接失败，容器未就绪；infra 阻塞 |
 | `git-bug-hunt` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ✅ PASS（run glm-5.2/260905） |
@@ -153,11 +156,9 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `k8s-safety-audit` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `landing-task-reminder` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run glm-5.2/260905） |
 | `meeting-assign` | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
-| `notion-find-job` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 使用 Maps 查地点/路线；另有 Notion 依赖<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
-| `notion-hr` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | ⬜ 待填写 |
 | `payable-invoice-checker` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
 | `set-conf-cr-ddl` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `student-interview` 并发 | ⬜ 待填写 |
-| `sla-timeout-monitor` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ❌ FAIL（run glm-5.2/260905）<br>9 封客户道歉邮件与 6 个负例账户校验全部正确，但漏发经理提醒邮件：dhall@mcp.com（4 张工单）未收到 manager reminder；能力问题，非 infra |
+| `sla-timeout-monitor` | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run glm-5.2/260905）<br>9 封客户道歉邮件与 6 个负例账户校验全部正确，但漏发经理提醒邮件：dhall@mcp.com（4 张工单）未收到 manager reminder；能力问题，非 infra |
 | `student-interview` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发 | ⬜ 待填写 |
 | `travel-expense-reimbursement` | — | 3.3 B 从未通过：模型能力/任务难度为主 | ✅ PASS（run glm-5.2/260905） |
 | `update-material-inventory` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
@@ -168,24 +169,23 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `woocommerce-stock-alert` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `woocommerce-update-cover` | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260905）<br>preprocess 失败未进入 agent：WooCommerce localhost:50003 连接失败（多次重试耗尽），容器未就绪；infra 阻塞 |
 
-## C-remote：远端写（28）
+## C-remote：远端写（22）
 
-统计：env-error 有记录 8，未提及 20；task inventory：3.1=2；3.3 A=2；3.3 B=2；3.4=2；4=20；我跑通情况：✅ PASS 3、❌ FAIL 3、🟠 NO_EVAL 22（run glm-5.2/260904，dump 到 [results/glm-5.2/](../results/glm-5.2/)，并发 8）。
+统计：env-error 有记录 5，未提及 17；task inventory：3.1=2；3.3 A=2；3.3 B=2；3.4=1；4=15；我跑通情况：PASS 4；FAIL 3；NO_EVAL 15。
 
-> 说明与根因：本组 28 个任务里**只有 7 个真正进入 agent 执行**（过了 preprocess），其余 **21 个在 preprocess 阶段直接失败/卡住**，从未运行模型。
+> 原 C-remote 批次画像（拆分前 28 个任务，保留历史来源口径）：**只有 7 个真正进入 agent 执行**（过了 preprocess），其余 **21 个在 preprocess 阶段直接失败/卡住**，从未运行模型。
 > - **PASS 3**：`dataset-license-issue`、`sync-todo-to-readme`、`verl-dataset`。
 > - **FAIL 3（均能力问题，非 infra）**：`huggingface-upload`（漏传 figures/*.png）、`merge-hf-datasets`（工具参数类型字符串截断）、`personal-website-construct`（about.md 缺 “PhD candidate”）。
 > - **NO_EVAL 22（全部 infra/配置，非模型能力）**：其中 21 个为 preprocess 失败 + 1 个（`train-ticket-plan`）agent 启动时 MCP 仅连上 3/4（rail_12306 未连）。preprocess 失败按签名归类：缺 GCP 服务账号密钥 `configs/gcp-service_account.keys.json`（7 个）、缺 Notion `files/duplicated_page_id.txt`（4 个）、Google Sheets/Drive 凭据缺 `token`（`KeyError 'token'`，7 个）、Google OAuth 缺字段（`fillout-online-forms`）、generic returncode 1（`investment-decision-analysis`）、preprocess 卡住未完成（`notion-personal-website`）。
 > Google 相关任务需分别补齐服务账号或 OAuth 用户凭据后重跑预处理；其他配置错误和卡住原因仍需逐项排查，不能由补齐一个凭据文件推断这 21 个任务全部恢复。
 >
-> 注意：`results/glm-5.2/` 现为合并后的总目录，含 A 组（260903）+ B 组（260904）+ C-remote（260904）+ 4 个任务重跑（train-ticket-plan/hk-top-conf/language-school/trip-itinerary-generator，重跑版已覆盖旧版，旧版备份在 `_superseded_by_debug_rerun/`），共 73 个任务；`eval_stats.json` 已按 73 任务重算（24 pass / 18 fail / 31 null）。脚本尾部聚合为全 73 任务混合值；本表 C-remote 数字为按 `c-remote-write.txt` 清单逐任务读取 eval_res.json 单独统计所得。
+> 注意：`results/glm-5.2/` 现为合并后的总目录，含 A 组（260903）+ B 组（260904）+ C-remote（260904）+ 4 个任务重跑（train-ticket-plan/hk-top-conf/language-school/trip-itinerary-generator，重跑版已覆盖旧版，旧版备份在 `_superseded_by_debug_rerun/`），共 73 个任务；`eval_stats.json` 已按 73 任务重算（24 pass / 18 fail / 31 null）。脚本尾部聚合为全 73 任务混合值；这段为历史批次汇总；当前表格已将其中 6 个任务移入 C-notion，当前分组数字按下方逐任务记录重算。
 
 | 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|
 | `ab-testing` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `ab_testing` + Storage 桶 `promo-assets-for-b*` + Logging 日志桶（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺凭据文件 `configs/gcp-service_account.keys.json`（GCP 服务账号密钥）；根因=infra |
 | `academic-warning` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `academic_warning` + Logging 日志桶（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
 | `dataset-license-issue` | — | 3.4 无有效评测产出：5 批次均 NO_EVAL<br>第 6 节冲突约束：不可与 `huggingface-upload` 并发 | ✅ PASS（run glm-5.2/260904） |
-| `experiments-recordings` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
 | `fillout-online-forms` | 🔴 必现：Google OAuth credentials 缺字段 | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Forms 表单 + Drive 文件管理（未声明 Google MCP）<br>凭据：OAuth `configs/google_credentials.json`；需 Forms/Drive 权限<br>使用阶段：预处理创建表单、评测读取表单/回答；agent 通过浏览器填写<br>历史已知错误：OAuth 缺 refresh_token / client_secret / client_id | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google OAuth 授权信息缺字段 client_id/client_secret；根因=infra/凭据 |
 | `flagged-transactions` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `all_transactions`（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
 | `game-statistics` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `game_analytics`（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra |
@@ -199,14 +199,28 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `merge-hf-datasets` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Hugging Face 客户端 read timeout 10/15s | ✅ FAIL（run glm-5.2/260904）<br>xlam_18 工具参数类型字符串被截断（`List[Union[int, float]]` 输出成 `List[Union[int`）；能力问题，非 infra |
 | `music-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
 | `nhl-b2b-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
-| `notion-movies` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
-| `notion-personal-website` | 🟡 偶发：preprocess 阶段卡死 | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 卡住未完成（超时/中断，status=running）；根因=infra |
-| `oil-price` | 🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用<br>历史环境曾出现 preprocess fail | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
 | `personal-website-construct` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ FAIL（run glm-5.2/260904）<br>远端 about.md 缺必需信息 “PhD candidate”；能力问题，非 infra |
 | `price-comparison` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `bigquery_pricing_analysis`（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果<br>预处理缺服务账号时回退 ADC；需单独核对默认凭据<br>另有 466 个派生变体全部 NO_EVAL，需排查 GCP 凭据及预处理/评测流程 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：GCP 默认凭据缺失（DefaultCredentialsError）；根因=infra |
-| `quantitative-financial-analysis` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
 | `sync-todo-to-readme` | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ PASS（run glm-5.2/260904） |
-| `task-tracker` | 🟡 偶发：preprocess 阶段卡死<br>🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
 | `train-ticket-plan` | 🟡 偶发：MCP server 启动超时（rail_12306） | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（重跑 glm-5.2（已并入 results/glm-5.2））<br>本次 rail_12306 MCP 连接正常，preprocess/agent/评测全通过（上次 NO_EVAL 因 MCP 仅连 3/4，属 infra 抖动，重跑捞回） |
 | `verl-dataset` | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
 | `vlm-history-completer` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
+
+## C-notion：Notion 写（8）
+
+统计：env-error 有记录 3，未提及 5；task inventory：3.4=1；4=7；我跑通情况：NO_EVAL 6；待填写 2。
+
+原 C-local 的 `notion-find-job`、`notion-hr` 与原 C-remote 的其余 6 个任务已移入本组，逐任务描述和个人结果保持原记录。本组 6 个已有记录均为 preprocess 失败/卡住，另 2 个待填写；这些是原批次结果，未因重新分组而重新运行。
+
+只有 `notion-find-job`、`notion-hr` 需要 Poste；它们仍与 C-local 共享邮件服务。部署和并发说明见 [Notion 评测](notion-evaluation.md)。
+
+| 任务 | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
+|---|---|---|---|
+| `experiments-recordings` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
+| `notion-find-job` | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 使用 Maps 查地点/路线；另有 Notion 依赖<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
+| `notion-hr` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | ⬜ 待填写 |
+| `notion-movies` | — | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
+| `notion-personal-website` | 🟡 偶发：preprocess 阶段卡死 | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 卡住未完成（超时/中断，status=running）；根因=infra |
+| `oil-price` | 🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 第 4 节未验证：无历史实跑记录<br>已知阻塞：Notion refresh lock 争用<br>历史环境曾出现 preprocess fail | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |
+| `quantitative-financial-analysis` | — | 第 4 节未验证：无历史实跑记录<br>依赖：Yahoo Finance 行情 + Google Sheets/Drive + Notion（`Quant Research` 页面）<br>Google 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>Notion 配置：integration key、源/评测父页面，以及 `configs/.mcp-auth` 中供 `notion_official` 复制页面使用的 OAuth 授权<br>使用阶段：预处理先准备 Drive 文件夹，再清理/复制 Notion 页面；agent 写行情表格，并在 Notion 写入表格链接和指定评论；评测检查两边结果；`google_sheets_folder_id` 由任务配置指定<br>本次记录失败在 Google 初始化阶段，尚未执行 Notion 初始化；修好 Google 凭据后仍需验证 Notion；不依赖 Poste | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra |
+| `task-tracker` | 🟡 偶发：preprocess 阶段卡死<br>🟡 偶发：Notion refresh lock 争用（含疑似间接影响） | 3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra |

@@ -11,6 +11,8 @@
 
 某任务只要触到任一「写」操作即归 C；B 里只读任务的 github / youtube / wandb 等均未开写。
 
+本文 A/B/C/D 是风险分类，执行时使用 [五个互斥 task list](finalpool-grouped-evaluation.md)：A 15、B 30、C-local 33、C-remote 22、C-notion 8。C 中所有声明 `notion` 的任务优先归入独立的 `c-notion.txt`；剩余任务再按本地基础设施依赖拆成 C-local 和 C-remote。C-notion 中两个邮件任务仍需要 Poste，归组不改变服务依赖。
+
 ---
 
 ## A. 无网络依赖（15）
@@ -128,7 +130,7 @@
 | payable-invoice-checker | emails, snowflake | 邮件, 库 | 更新库表+发信 |
 | personal-website-construct | memory, github | github | fork 并填主页 |
 | price-comparison | google-cloud | GCP/BigQuery | 写结果表 |
-| quantitative-financial-analysis | yahoo-finance, google_sheet, notion | gsheet, notion | 写行情+写 notion |
+| quantitative-financial-analysis | yahoo-finance, google_sheet, notion | gsheet, notion | 写行情表格，并在 Notion 的 Quant Research 页面写表格链接和评论；需 Google OAuth 和 Notion integration/OAuth 配置 |
 | set-conf-cr-ddl | emails, google_calendar | 邮件, 日历 | 读邮件写日历 |
 | sla-timeout-monitor | emails, snowflake | 邮件, 库 | 查库发信 |
 | student-interview | emails, google_calendar | 邮件, 日历 | 排面试写日历 |
