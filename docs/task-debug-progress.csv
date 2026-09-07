@@ -1,0 +1,388 @@
+﻿任务类别,STATUS,BLOCK,任务,我跑通情况,lwx-env-error 描述,task inventory 描述,BLOCK 说明
+A,跑通,0,arrange-workspace,"✅ FAIL（run glm-5.2/260903）
+2 文件归错目录（`cv-gboeing.pdf` 与 `Internship_application_form.xlsx` 对调）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+A,跑通,0,cooking-guidance,"✅ FAIL（run glm-5.2/260903）
+现有食材覆盖率仅 25%，未达 ≥50% 硬约束；能力问题，非 infra",—,"3.2 不稳定：260821 PASS，260826 NO_EVAL
+跨 5 批次：3 次有效评测均 PASS，另 2 次 NO_EVAL
+5.1 低外部依赖",
+A,跑通,0,courses-ta-hws,✅ PASS（run glm-5.2/260903）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+A,跑通,0,detect-revised-terms,"✅ FAIL（run glm-5.2/260903）
+法条期限""三个月内""误改""九十日内""，且多输出一行（幻觉性添加）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+A,跑通,0,dietary-health,✅ PASS（run glm-5.2/260903）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+A,跑通,0,excel-data-transformation,✅ PASS（run glm-5.2/260903）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+A,跑通,0,excel-market-research,✅ PASS（run glm-5.2/260903）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+A,跑通,0,imagenet,"✅ FAIL（run glm-5.2/260903）
+`survey.tex` 内容不符（表格数值幻改，agent 277 / gt 253 字符）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+A,跑通,0,interview-report,"✅ NO_EVAL（run glm-5.2/260903）
+跑满 max_turns（100 turn/178 调用）未产出：前 ~70 轮耗在首个 docx，`recommend.txt` 未写；效率问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
+telechat 曾偶然 PASS；属极低通过率，并非完全不可跑
+5.1 低外部依赖",
+A,跑通,0,paper-checker,"✅ FAIL（run glm-5.2/260903）
+唯一错误：交叉引用 `\autoref{tab:compute-cost}` 误写为 `tab:api-benchmarks`（`5_tradeoff.tex`）；能力问题，非 infra",—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖",
+A,跑通,0,ppt-analysis,✅ PASS（run glm-5.2/260903）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+跨全部 5 个批次 5/5 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+A,跑通,0,privacy-desensitization,"✅ FAIL（run glm-5.2/260903）
+over-masking：13/27 文件因掩盖清单外账号数字而不符（0 漏标，`/hidden/` 用对）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+A,跑通,0,reimbursement-form-filler,✅ PASS（run glm-5.2/260903）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+A,跑通,0,sales-accounting,✅ PASS（run glm-5.2/260903）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+A,跑通,0,university-course-selection,"✅ FAIL（run glm-5.2/260903）
+4 个排课方案各错 11 处，24 种排列全不匹配（约束求解系统性偏差）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+B,跑通,0,academic-pdf-report,✅ PASS（run glm-5.2/260904）,—,"3.3 A 从未通过：环境/凭据问题为主
+Playwright page.goto 60s 超时及目标站反爬",
+B,跑通,0,add-bibtex,"✅ FAIL（run glm-5.2/260904）
+57 条 bibtex 内容不符：作者列表截断为""and others""（应列全）、会议名缺限定词（""ICLR"" vs ""the ninth ICLR""）、标题大小写、缺 `journal` 字段、cite key 命名不一致（`roziere2023codellama` vs `roziere2023code`）；能力问题，非 infra",🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+B,跑通,0,course-schedule,"✅ FAIL（run glm-5.2/260904）
+课程名漏合并：`算法分析与设计-01班` 应为 `算法分析与设计-01、02班`；能力问题，非 infra",—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+B,跑通,0,cvpr-research,✅ PASS（run glm-5.2/260904）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+B,跑通,0,find-alita-paper,✅ PASS（run glm-5.2/260904）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+跨全部 5 个批次 4/5 PASS",
+B,跑通,0,git-milestone,✅ PASS（run glm-5.2/260904）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+B,跑通,0,git-repo,✅ PASS（run glm-5.2/260904）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+B,跑通,0,hk-top-conf,"✅ NO_EVAL（重跑 glm-5.2（已并入 results/glm-5.2））
+agent 放弃预期 hover 方案、绕路逆向 papercopilot/GitHub 数据源，三会场分校计数已算出但耗尽 max_turns，未写 result.md/未 claim_done；能力/策略问题，非 infra（本次无网络故障，仅 2 次 terminal MCP 60s 超时）",🟡 偶发：Prompt 超长 400,"3.3 A 从未通过：环境/凭据问题为主
+Playwright page.goto 60s 超时及目标站反爬",
+B,跑通,0,identify-all-songs,✅ PASS（run glm-5.2/260904）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+B,不通,Yahoo Finance 429,invoice-org,"🟠 NO_EVAL（run glm-5.2/260904）
+跑满 max_turns 未产出可判定结果
+根因=infra：轨迹 226 次 Yahoo Finance「Rate limited」429，与 env-error 记录一致",🔴 必现：Yahoo Finance API 429 限流,"3.3 A 从未通过：环境/凭据问题为主
+Yahoo Finance 公共接口 IP 限流 429",本次记录中的服务／凭据阻塞
+B,跑通,0,ipad-edu-price,✅ PASS（run glm-5.2/260904）,—,"3.2 不稳定：260821 FAIL，260826 PASS
+文档判断多为环境抖动，重跑可能捞回",
+B,跑通,0,language-school,"✅ FAIL（重跑 glm-5.2（已并入 results/glm-5.2））
+本次页面访问正常并产出结果；Toefl_min_score 填 95≠groundtruth 80（index 4 值不符）；内容/能力问题，非 infra（此前 NO_EVAL 的页面超时本次未复现）",🔴 必现：Playwright 页面加载 60s 超时,"3.3 A 从未通过：环境/凭据问题为主
+Playwright page.goto 60s 超时及目标站反爬",
+B,跑通,0,latex-prompt-box,"✅ FAIL（run glm-5.2/260904）
+填充内容不符合任一可接受的 Simple Prompt 渲染格式（起始不匹配）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+B,跑通,0,logical-datasets-collection,"✅ FAIL（run glm-5.2/260904）
+表格内容或格式与 groundtruth 不符（local check: Table content or format does not match）；能力问题，非 infra",—,"3.2 不稳定：260821 FAIL，260826 PASS
+文档判断多为环境抖动，重跑可能捞回",
+B,跑通,0,mrbeast-analysis,"✅ FAIL（run glm-5.2/260904）
+Detail_Lists 表 duration_seconds 单值不符（agent 924 / gt 1019），其余 (32,7) 结构一致；数据准确性/能力问题，非 infra（youtube MCP 仅首次 init 超时后恢复）","🔴 必现：Hugging Face 读取或 SSL 握手超时
+🔴 必现：API Key 无效","3.2 不稳定：260821 PASS，260826 FAIL
+文档判断多为环境抖动，重跑可能捞回",
+B,不通,Yahoo Finance 429,nvidia-market,"🟠 NO_EVAL（run glm-5.2/260904）
+跑满 max_turns 未产出可判定结果
+根因=infra：轨迹 212 次 Yahoo Finance 429 限流，与 env-error 记录一致","🔴 必现：Yahoo Finance API 429 限流
+🔴 必现：Playwright 页面加载 60s 超时","3.3 A 从未通过：环境/凭据问题为主
+Yahoo Finance 公共接口 IP 限流 429",本次记录中的服务／凭据阻塞
+B,不通,Yahoo Finance 429,nvidia-stock-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+跑满 max_turns 未产出可判定结果
+根因=infra：轨迹 94 次 Yahoo Finance 429 限流，与 env-error 记录一致","🔴 必现：Yahoo Finance API 429 限流
+🔴 必现：Playwright 页面加载 60s 超时
+🔴 必现：API Key 无效
+🟡 偶发：MCP 工具执行错误 -32603
+🟡 偶发：Python 依赖缺失或 ABI 不匹配","3.3 A 从未通过：环境/凭据问题为主
+Yahoo Finance 公共接口 IP 限流 429",本次记录中的服务／凭据阻塞
+B,跑通,0,profile-update-online,✅ PASS（run glm-5.2/260904）,🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+B,不通,Google,search-ca-school,"🟠 NO_EVAL（run glm-5.2/260904）
+跑满 max_turns 未产出可判定结果
+根因=infra/凭据：轨迹 56 次页面加载失败（net::ERR_NETWORK_CHANGED，csrankings.org）+ Google Maps geocoding「invalid API key」",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Maps 地图（`google_map`）
+凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
+使用阶段：agent 使用 Maps 查学校位置/驾车距离",本次记录中的服务／凭据阻塞
+B,跑通,0,shopping-helper,"✅ FAIL（run glm-5.2/260904）
+评测器实时抓取 Amazon 成功，3 个商品提交价均与实时页价不符（364.63≠379.99；172.72≠180.0×2），0/3 通过；价格数据不符，非 infra",🔴 必现：Playwright 页面加载 60s 超时,"3.3 A 从未通过：环境/凭据问题为主
+Playwright page.goto 60s 超时及目标站反爬",
+B,不通,Yahoo Finance 429,stock-build-position,"🟠 NO_EVAL（run glm-5.2/260904）
+跑满 max_turns 未产出可判定结果
+根因=infra：轨迹 233 次 Yahoo Finance 429 限流，与 env-error 记录一致",🔴 必现：Yahoo Finance API 429 限流,3.1 稳定可跑：GLM-5.3 两轮均 PASS,本次记录中的服务／凭据阻塞
+B,不通,Google,subway-planning,"🟠 PASS（run glm-5.2/260904）
+当前阻塞：Google Maps API 尚未配置（BLOCK=Google）；按当前配置记为“不通”
+备注：agent 通过 playwright 抓取公开网页完成，未用上 Google Maps API（`google_cloud_console_api_key` 实为占位符 `""XX""`）；且任务只需 google_map/filesystem/playwright/fetch，不涉及 Google OAuth，原 inventory 的 OAuth-阻塞误挂已更正为 Maps API Key 依赖",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Maps 地图（`google_map`）
+凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
+使用阶段：agent 可使用 Maps 查询地铁站/路线；已有网页替代完成记录不代表 API Key 有效",Google Maps API 尚未配置（人工标注）
+B,不通,Yahoo Finance 429,travel-exchange,"🟠 NO_EVAL（run glm-5.2/260904）
+跑满 max_turns 未产出可判定结果
+根因=infra：轨迹 229 次 Yahoo Finance「Too Many Requests」429，与 env-error 记录一致",🔴 必现：Yahoo Finance API 429 限流,"3.3 A 从未通过：环境/凭据问题为主
+Yahoo Finance 公共接口 IP 限流 429",本次记录中的服务／凭据阻塞
+B,不通,Google,trip-adviser,"🟠 PASS（run glm-5.2/260904）
+当前阻塞：Google Maps API 尚未配置（BLOCK=Google）；按当前配置记为“不通”
+备注：agent 通过 playwright 抓取公开网页完成，未用上 Google Maps API（`google_cloud_console_api_key` 实为占位符 `""XX""`）；且任务只需 google_map/filesystem/playwright/fetch，不涉及 Google OAuth，原 inventory 的 OAuth-阻塞误挂已更正为 Maps API Key 依赖",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Maps 地图（`google_map`）
+凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
+使用阶段：agent 可使用 Maps 查地点/路线；当前评测的 GoogleMapsMCPClient 为本地模拟实现，PASS 不证明真实 Maps API 可用",Google Maps API 尚未配置（人工标注）
+B,不通,Google,trip-itinerary-generator,"🟠 NO_EVAL（重跑 glm-5.2（已并入 results/glm-5.2））
+跑满 max_turns 未产出结果
+根因=infra/凭据：`google_map` 的 API Key 无效（`google_cloud_console_api_key` 为占位符 `""XX""`），10/10 Maps 调用（search_places/geocode/distance_matrix）均返回「The provided API key is invalid.」；agent 被迫改用 playwright 手动抓 Google Maps/官网（79 次）逐个读营业时间，耗尽预算、未写 Paris_Itinerary.json。page.goto 超时（louvre.fr 等）为回退副产物，非根因（原文档误标为 Playwright 页面超时，已更正）",—,"第 4 节未验证：无历史实跑记录
+**题目明确要求 Maps**：`task_config.needed_mcp_servers` = `[filesystem, google_map, playwright_with_chunk]`；题目需景点间最短步行距离 + 当日营业时间，正是 Maps 能力
+Google 依赖：Maps 地图（`google_map`）
+凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
+使用阶段：agent + 评测均使用 Maps；评测调用 maps_search_places / maps_place_details / maps_distance_matrix",本次记录中的服务／凭据阻塞
+B,不通,Google,upenn-campus-route,"❌ FAIL（run glm-5.2/260904）
+路线格式校验通过，但评测器获取步行时间的外部接口返回空（JSON decode error: line 1 col 0）→ ""Failed to get walking time""，评测中断；根因=infra（评测侧外部地图接口），非模型能力",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Maps 地图（`google_map`）
+凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
+使用阶段：agent + 评测均使用 Maps；评测调用 maps_directions 取得步行时间",评测器调用 Google Maps 失败；具体原因待核
+B,跑通,0,wandb-best-score,✅ PASS（run glm-5.2/260904）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+B,跑通,0,wandb-shortest-length,✅ PASS（run glm-5.2/260904）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+B,不通,Yahoo Finance 429,yahoo-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+跑满 max_turns 未产出可判定结果
+根因=infra：轨迹 204 次 Yahoo Finance 429 限流，与 env-error 记录一致",🔴 必现：Yahoo Finance API 429 限流,"3.2 不稳定：260821 PASS，260826 FAIL
+文档判断多为环境抖动，重跑可能捞回",本次记录中的服务／凭据阻塞
+B,跑通,0,youtube-repo,✅ PASS（run glm-5.2/260904）,🔴 必现：API Key 无效,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,apply-phd-email,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,不通,0,canvas-arrange-exam,"🟠 NO_EVAL（run glm-5.2/260905）
+跑满 max_turns 未产出可判定结果（status running=max_turn_exceeded）；轨迹错误签名稀疏，偏能力耗尽预算，非明显 infra（未四层核验）",🟡 偶发：IMAP 认证失败,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,不通,0,canvas-art-manager,"🟠 NO_EVAL（run glm-5.2/260905）
+跑满 max_turns 未产出可判定结果；轨迹多次 timeout + 5 次 429，疑 MCP/网络抖动叠加能力，根因未四层核验","🟡 偶发：IMAP 认证失败
+🟡 偶发：DNS 解析失败
+🟡 偶发：MCP 工具执行错误 -32603
+🟡 偶发：网络连接拒绝或中断",3.3 B 从未通过：模型能力/任务难度为主,
+C-local,不通,0,canvas-art-quiz,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞",—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+跨全部 5 个批次 4/5 PASS
+5.1 低外部依赖
+列入文档 smoke test 集",
+C-local,不通,0,canvas-do-quiz,"🟠 NO_EVAL（run glm-5.2/260905）
+跑满 max_turns 未产出可判定结果；轨迹错误签名稀疏，偏能力耗尽预算，非明显 infra（未四层核验）",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖
+第 6 节冲突约束：不可与 `canvas-submit-late-work` 并发",
+C-local,不通,0,canvas-homework-grader-python,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞",🟡 偶发：IMAP 认证失败,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+跨全部 5 个批次 4/5 PASS",
+C-local,不通,0,canvas-list-test,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：配置课程清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+C-local,不通,0,canvas-new-students-notification,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：Canvas API localhost:50001 连接拒绝（Errno 111），容器未就绪；infra 阻塞",—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+5.1 低外部依赖",
+C-local,不通,0,canvas-submit-late-work,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：配置课程预清理连不上 Canvas localhost:50001（Connect call failed），容器未就绪；infra 阻塞","🟡 偶发：IMAP 认证失败
+🟡 偶发：SMTP 发送失败","3.1 稳定可跑：GLM-5.3 两轮均 PASS
+第 6 节冲突约束：不可与 `canvas-do-quiz` 并发",
+C-local,跑通,0,course-assistant,"✅ FAIL（run glm-5.2/260905）
+学生 Michelle Brooks（michelle_brooks26@mcp.com）未收到主题 'nlp-course-emergency' 的通知邮件；其余正例学生与全部负例账户校验均通过；能力问题，非 infra",🟡 偶发：IMAP 认证失败,3.3 B 从未通过：模型能力/任务难度为主,
+C-local,跑通,0,email-paper-homepage,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,不通,0,filter-low-selling-products,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：WooCommerce localhost:50003 SSL record layer failure / 连接失败，容器未就绪；infra 阻塞",—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,git-bug-hunt,✅ PASS（run glm-5.2/260905）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+跨全部 5 个批次 4/5 PASS",
+C-local,不通,0,inventory-sync,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：WooCommerce API localhost:50003 SSL/连接失败，容器未就绪；infra 阻塞",🟡 偶发：Prompt 超长 400,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,k8s-deployment-cleanup,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,k8s-mysql,✅ PASS（run glm-5.2/260905）,🟡 偶发：MCP 工具执行错误 -32603,"3.2 不稳定：260821 PASS，260826 FAIL
+文档判断多为环境抖动，重跑可能捞回",
+C-local,不通,0,k8s-pr-preview-testing,"🟠 NO_EVAL（run glm-5.2/260905）
+跑满 max_turns 未产出可判定结果；轨迹见 MCP -32603 + registry + 连接拒绝，疑 infra 干扰（与 env-error MCP -32603 记录一致），未四层核验",🟡 偶发：MCP 工具执行错误 -32603,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,不通,0,k8s-redis-helm-upgrade,"🟠 NO_EVAL（run glm-5.2/260905）
+跑满 max_turns 未产出可判定结果；轨迹 registry/ImagePull/连接拒绝/429 密集，根因偏 infra（Docker Registry / ImagePullBackOff，与 env-error 记录一致），未四层核验","🟡 偶发：MCP 工具执行错误 -32603
+🟡 偶发：Docker Registry 5xx / ImagePullBackOff
+🟡 偶发：网络连接拒绝或中断","3.3 A 从未通过：环境/凭据问题为主
+Docker Registry 5xx / ImagePullBackOff",
+C-local,没跑,Google,k8s-safety-audit,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定
+Google 配置待核：个人尚未实跑",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-local,跑通,0,landing-task-reminder,✅ PASS（run glm-5.2/260905）,—,"3.2 不稳定：260821 FAIL，260826 PASS
+文档判断多为环境抖动，重跑可能捞回",
+C-local,跑通,0,meeting-assign,✅ PASS（run glm-5.2/260905）,"🟡 偶发：IMAP 认证失败
+🟡 偶发：SMTP 发送失败",3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,0,payable-invoice-checker,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,没跑,Google,set-conf-cr-ddl,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Calendar 日历（`google_calendar`）
+凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`
+使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限
+Google 配置待核：个人尚未实跑
+第 6 节冲突约束：不可与 `student-interview` 并发",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-local,跑通,0,sla-timeout-monitor,"✅ FAIL（run glm-5.2/260905）
+9 封客户道歉邮件与 6 个负例账户校验全部正确，但漏发经理提醒邮件：dhall@mcp.com（4 张工单）未收到 manager reminder；能力问题，非 infra",—,"3.2 不稳定：260821 FAIL，260826 PASS
+文档判断多为环境抖动，重跑可能捞回",
+C-local,没跑,Google,student-interview,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Calendar 日历（`google_calendar`）
+凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`
+使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限
+Google 配置待核：个人尚未实跑
+第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-local,跑通,0,travel-expense-reimbursement,✅ PASS（run glm-5.2/260905）,—,3.3 B 从未通过：模型能力/任务难度为主,
+C-local,没跑,Google,update-material-inventory,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定
+Google 配置待核：个人尚未实跑",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-local,没跑,Google,woocommerce-customer-survey,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）
+凭据：OAuth `configs/google_credentials.json`；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token`
+使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限
+Google 配置待核：个人尚未实跑
+第 6 节冲突约束：不可与 `woocommerce-product-recall` 并发",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-local,不通,0,woocommerce-new-product,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：WooCommerce localhost:50003 SSL record layer failure，容器未就绪；infra 阻塞","🟡 偶发：IMAP 认证失败
+🟡 偶发：SMTP 发送失败
+🟡 偶发：网络连接拒绝或中断","3.3 A 从未通过：环境/凭据问题为主
+IMAP/SMTP 抖动或连接拒绝",
+C-local,没跑,Google,woocommerce-new-welcome,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：BigQuery 数据集 `woocommerce_crm`（`google-cloud`）
+凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
+使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果
+Google 配置待核：个人尚未实跑",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-local,没跑,Google,woocommerce-product-recall,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）
+凭据：OAuth `configs/google_credentials.json`；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token`
+使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限
+Google 配置待核：个人尚未实跑
+第 6 节冲突约束：不可与 `woocommerce-customer-survey` 并发",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-local,没跑,Google,woocommerce-stock-alert,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定
+Google 配置待核：个人尚未实跑",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-local,不通,0,woocommerce-update-cover,"🟠 NO_EVAL（run glm-5.2/260905）
+preprocess 失败未进入 agent：WooCommerce localhost:50003 连接失败（多次重试耗尽），容器未就绪；infra 阻塞",—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-remote,不通,Google,ab-testing,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺凭据文件 `configs/gcp-service_account.keys.json`（GCP 服务账号密钥）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：BigQuery 数据集 `ab_testing` + Storage 桶 `promo-assets-for-b*` + Logging 日志桶（`google-cloud`）
+凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
+使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果",本次记录中的服务／凭据阻塞
+C-remote,不通,Google,academic-warning,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：BigQuery 数据集 `academic_warning` + Logging 日志桶（`google-cloud`）
+凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
+使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果",本次记录中的服务／凭据阻塞
+C-remote,跑通,0,dataset-license-issue,✅ PASS（run glm-5.2/260904）,—,"3.4 无有效评测产出：5 批次均 NO_EVAL
+第 6 节冲突约束：不可与 `huggingface-upload` 并发",
+C-remote,不通,Google,fillout-online-forms,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google OAuth 授权信息缺字段 client_id/client_secret；根因=infra/凭据",🔴 必现：Google OAuth credentials 缺字段,"第 4 节未验证：无历史实跑记录
+Google 依赖：Forms 表单 + Drive 文件管理（未声明 Google MCP）
+凭据：OAuth `configs/google_credentials.json`；需 Forms/Drive 权限
+使用阶段：预处理创建表单、评测读取表单/回答；agent 通过浏览器填写
+历史已知错误：OAuth 缺 refresh_token / client_secret / client_id",本次记录中的服务／凭据阻塞
+C-remote,不通,Google,flagged-transactions,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：BigQuery 数据集 `all_transactions`（`google-cloud`）
+凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
+使用阶段：预处理准备云端数据，agent 经 MCP 访问",本次记录中的服务／凭据阻塞
+C-remote,不通,Google,game-statistics,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：BigQuery 数据集 `game_analytics`（`google-cloud`）
+凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
+使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果",本次记录中的服务／凭据阻塞
+C-remote,不通,Google,gdp-cr5-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
+C-remote,跑通,0,huggingface-upload,"✅ FAIL（run glm-5.2/260904）
+仓库已建、README/config.json/pytorch_model.bin 均匹配，但漏传 figures/fig1–3.png；能力问题，非 infra",🟡 偶发：Python 依赖缺失或 ABI 不匹配,"3.3 A 从未通过：环境/凭据问题为主
+Hugging Face 客户端 read timeout 10/15s
+第 6 节冲突约束：不可与 `dataset-license-issue` 并发",
+C-remote,不通,Google,inter-final-performance-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
+C-remote,不通,Google,investment-decision-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败（returncode 1）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",按 Google Sheets/Drive 预处理暂归类；本次仅有 returncode 1，待核
+C-remote,不通,Google,live-transactions,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：BigQuery 数据集 `transactions_analytics` + Storage 桶 + Logging 日志桶（`google-cloud`）
+凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
+使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果",本次记录中的服务／凭据阻塞
+C-remote,不通,Google,llm-training-dataset,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
+C-remote,不通,Google,machine-operating,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：BigQuery 数据集 `machine_operating` + Storage 桶（`google-cloud`）
+凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
+使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果",本次记录中的服务／凭据阻塞
+C-remote,跑通,0,merge-hf-datasets,"✅ FAIL（run glm-5.2/260904）
+xlam_18 工具参数类型字符串被截断（`List[Union[int, float]]` 输出成 `List[Union[int`）；能力问题，非 infra",🔴 必现：Hugging Face 读取或 SSL 握手超时,"3.3 A 从未通过：环境/凭据问题为主
+Hugging Face 客户端 read timeout 10/15s",
+C-remote,不通,Google,music-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
+C-remote,不通,Google,nhl-b2b-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
+C-remote,跑通,0,personal-website-construct,"✅ FAIL（run glm-5.2/260904）
+远端 about.md 缺必需信息 “PhD candidate”；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+C-remote,不通,Google,price-comparison,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：GCP 默认凭据缺失（DefaultCredentialsError）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：BigQuery 数据集 `bigquery_pricing_analysis`（`google-cloud`）
+凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
+使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果
+预处理缺服务账号时回退 ADC；需单独核对默认凭据
+另有 466 个派生变体全部 NO_EVAL，需排查 GCP 凭据及预处理/评测流程",本次记录中的服务／凭据阻塞
+C-remote,跑通,0,sync-todo-to-readme,✅ PASS（run glm-5.2/260904）,—,"3.3 B 从未通过：模型能力/任务难度为主
+5.1 低外部依赖",
+C-remote,跑通,0,train-ticket-plan,"✅ PASS（重跑 glm-5.2（已并入 results/glm-5.2））
+本次 rail_12306 MCP 连接正常，preprocess/agent/评测全通过（上次 NO_EVAL 因 MCP 仅连 3/4，属 infra 抖动，重跑捞回）",🟡 偶发：MCP server 启动超时（rail_12306）,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-remote,跑通,0,verl-dataset,✅ PASS（run glm-5.2/260904）,🔴 必现：Hugging Face 读取或 SSL 握手超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-remote,不通,Google,vlm-history-completer,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
+凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",Google 凭据缺 token；已核对预处理代码
+C-notion,不通,Notion,experiments-recordings,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用",本次记录中的服务／凭据阻塞
+C-notion,没跑,Google,notion-find-job,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+Google 依赖：Maps 地图（`google_map`）
+凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
+使用阶段：agent 使用 Maps 查地点/路线；另有 Notion 依赖
+Google 配置待核：个人尚未实跑",Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
+C-notion,没跑,Notion,notion-hr,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用",历史已知阻塞；个人尚未实跑
+C-notion,不通,Notion,notion-movies,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用",本次记录中的服务／凭据阻塞
+C-notion,不通,Notion,notion-personal-website,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 卡住未完成（超时/中断，status=running）；根因=infra",🟡 偶发：preprocess 阶段卡死,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用",Notion 预处理卡住；具体原因待核
+C-notion,不通,Notion,oil-price,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",🟡 偶发：Notion refresh lock 争用（含疑似间接影响）,"第 4 节未验证：无历史实跑记录
+已知阻塞：Notion refresh lock 争用
+历史环境曾出现 preprocess fail",本次记录中的服务／凭据阻塞
+C-notion,不通,Google,quantitative-financial-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+依赖：Yahoo Finance 行情 + Google Sheets/Drive + Notion（`Quant Research` 页面）
+Google 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
+Notion 配置：integration key、源/评测父页面，以及 `configs/.mcp-auth` 中供 `notion_official` 复制页面使用的 OAuth 授权
+使用阶段：预处理先准备 Drive 文件夹，再清理/复制 Notion 页面；agent 写行情表格，并在 Notion 写入表格链接和指定评论；评测检查两边结果；`google_sheets_folder_id` 由任务配置指定
+本次记录失败在 Google 初始化阶段，尚未执行 Notion 初始化；修好 Google 凭据后仍需验证 Notion；不依赖 Poste",Google 凭据缺 token；已核对预处理代码
+C-notion,不通,Notion,task-tracker,"🟠 NO_EVAL（run glm-5.2/260904）
+preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra","🟡 偶发：preprocess 阶段卡死
+🟡 偶发：Notion refresh lock 争用（含疑似间接影响）",3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock,本次记录中的服务／凭据阻塞

@@ -1,0 +1,9 @@
+# finalpool group C-notion: writes Notion state (8 tasks); two mail tasks also require Poste.
+experiments-recordings
+notion-find-job
+notion-hr
+notion-movies
+notion-personal-website
+oil-price
+quantitative-financial-analysis
+task-tracker
