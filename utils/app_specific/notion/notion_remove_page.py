@@ -111,7 +111,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --url "https://www.notion.so/Page-Name-xxx" --name "page_to_delete"
+  %(prog)s --url "https://app.notion.com/Page-Name-xxx" --name "page_to_delete"
   %(prog)s -u "page_url" -n "page_name" --dry-run
   
 Environment Variables:

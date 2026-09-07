@@ -52,6 +52,10 @@ bash global_preparation/deploy_notion_containers.sh false
 
 仍需准备普通 Notion integration 配置、源页面/评测页面、`configs/.mcp-auth` 中的 Notion OAuth 授权，以及表中各任务所需的其他服务配置。页面清理/复制与任务邮箱清理由各自 preprocess 执行。
 
+网页入口统一使用 `https://app.notion.com`。`source_notion_page_url`、`eval_notion_page_url` 和 API 返回的浏览器页面链接仍兼容旧 `notion.so` 地址，脚本使用时会转换域名并保留路径、查询参数和片段；页面 ID 与保护规则保持一致。REST API 和官方 MCP 继续使用 `api.notion.com`、`mcp.notion.com`。
+
+若启用 `notion_preprocess_with_playwright=True`，旧 `.so` 登录状态可能不适用于新域名，可运行 `uv run utils/app_specific/notion/notion_login_helper.py --headless` 重新生成 `configs/notion_state.json`。这与 `configs/.mcp-auth` 中的 MCP OAuth 授权分开；默认 MCP 预处理无需浏览器登录状态。
+
 Notion 任务共享 OAuth 刷新状态与页面操作流程，并发可能造成刷新锁等待超时和状态竞争。按以下命令逐个运行任务：
 
 ```bash

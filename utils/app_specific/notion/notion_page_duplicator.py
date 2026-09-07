@@ -8,9 +8,9 @@ to another parent page using Playwright automation and Notion API.
 
 Usage:
     python notion_page_duplicator.py \
-        --source-parent "https://notion.so/your-source-page-url" \
+        --source-parent "https://app.notion.com/your-source-page-url" \
         --child-name "Child Page Name" \
-        --target-parent "https://notion.so/your-target-page-url" \
+        --target-parent "https://app.notion.com/your-target-page-url" \
         --notion-key "your_notion_api_key" \
         --output-file "./duplicated_page_id.txt"
 
@@ -30,6 +30,7 @@ from notion_client import Client
 from playwright.sync_api import Browser, Page, sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 from utils.mcp.tool_servers import MCPServerManager, call_tool_with_retry, ToolCallError
+from utils.app_specific.notion.urls import normalize_notion_url, notion_page_url
 import asyncio
 import fcntl
 import json
@@ -176,7 +177,7 @@ class NotionPageDuplicator:
                     if title_prop:
                         title = "".join(t.get("plain_text", "") for t in title_prop).strip()
                         if title == child_name:
-                            return child["id"], child_page.get("url", "")
+                            return child["id"], normalize_notion_url(child_page.get("url", ""))
             
             return None
             
@@ -264,7 +265,7 @@ class NotionPageDuplicator:
         # Strategy 4: Refresh the page (last resort)
         try:
             print("🔄 Refreshing page as last resort...")
-            current_url = page.url
+            current_url = normalize_notion_url(page.url)
             page.goto(current_url, wait_until="load", timeout=30_000)
             time.sleep(3)
             print("✅ Page refreshed successfully")
@@ -285,6 +286,7 @@ class NotionPageDuplicator:
         Returns:
             URL of the duplicated page if successful, None otherwise
         """
+        source_page_url = normalize_notion_url(source_page_url)
         try:
             with sync_playwright() as p:
                 browser_type = getattr(p, self.browser_name)
@@ -422,7 +424,7 @@ class NotionPageDuplicator:
                 if not duplicated_page_id:
                     raise Exception(f"Failed to find valid duplicated page after {max_attempts} attempts")
 
-                duplicated_url = page.url
+                duplicated_url = normalize_notion_url(page.url)
                 print(f"Page duplicated successfully: {duplicated_url}")
 
                 self.duplicated_page_id = duplicated_page_id
@@ -438,7 +440,7 @@ class NotionPageDuplicator:
                     raise Exception(error_msg)
 
                 # CRITICAL: Before moving, ensure we're on the duplicated page
-                duplicated_page_url = f"https://www.notion.so/{duplicated_page_id.replace('-', '')}"
+                duplicated_page_url = notion_page_url(duplicated_page_id)
                 current_url = page.url
                 current_page_id = self.extract_page_id_from_url(current_url)
 
@@ -632,7 +634,7 @@ class NotionPageDuplicator:
         finally:
             _release_notion_official_lock(lock_fd)
         self.rename_page_via_api(duplicated_page_id, child_name)
-        return f"https://www.notion.so/{duplicated_page_id.replace('-', '')}"
+        return notion_page_url(duplicated_page_id)
         
 
     def duplicate_child_page(self, source_parent_url: str, child_name: str, target_parent_url: str, with_playwright=WITH_PLAYWRIGHT) -> bool:

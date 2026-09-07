@@ -20,6 +20,12 @@ from playwright.sync_api import (
 
 import logging
 
+if __package__:
+    from .urls import NOTION_WEB_BASE_URL, normalize_notion_url
+else:
+    # Also support the documented direct-script invocation.
+    from urls import NOTION_WEB_BASE_URL, normalize_notion_url
+
 # Initialize logger
 logger = logging.getLogger(__name__)
 
@@ -54,7 +60,7 @@ class NotionLoginHelper:
                 f"Unsupported browser '{browser}'. Supported browsers are: {', '.join(self.SUPPORTED_BROWSERS)}"
             )
 
-        self.url = url or "https://www.notion.so/login"
+        self.url = normalize_notion_url(url or f"{NOTION_WEB_BASE_URL}/login")
         self.headless = headless
         self.browser_name = browser
         self.state_path = (
@@ -133,7 +139,7 @@ class NotionLoginHelper:
         Guides the user through the login process in headless mode.
         """
         page: Page = context.pages[0]
-        login_url = "https://www.notion.so/login"
+        login_url = f"{NOTION_WEB_BASE_URL}/login"
         page.goto(login_url, wait_until="domcontentloaded")
 
         email = input("Enter your Notion email address: ").strip()
