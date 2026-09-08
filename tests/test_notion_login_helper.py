@@ -7,7 +7,9 @@ import json
 import os
 import tempfile
 import threading
+import time
 import unittest
+from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
@@ -18,16 +20,36 @@ class LoginFixture(BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        self.server.requests[self.path] += 1
+        if self.path in ("/fixture.css", "/fixture.js"):
+            is_css = self.path.endswith(".css")
+            body = b"body { color: rgb(10, 20, 30); }" if is_css else b"window.fixtureAssetReady = true;"
+            self.send_response(200)
+            self.send_header("Content-Type", "text/css" if is_css else "text/javascript")
+            self.send_header("Cache-Control", "public, max-age=3600")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if self.path == "/":
             self.send_response(302)
-            self.send_header("Location", "/login")
+            authenticated = "fixture_session=valid" in self.headers.get("Cookie", "")
+            self.send_header("Location", "/home" if authenticated else "/login")
+            self.send_header("Cache-Control", "no-store")
             self.end_headers()
             return
         if self.path == "/pending.png":
             self.server.release.wait(10)
             return
         if self.path == "/home":
-            body = '<div class="notion-sidebar">Workspace</div><img src="/pending.png">'
+            body = """
+                <div id="workspace">Workspace</div><img src="/pending.png">
+                <script>
+                    if (localStorage.getItem('fixture-user') === 'valid') {
+                        document.querySelector('#workspace').className = 'notion-sidebar';
+                    }
+                </script>
+            """
         else:
             body = """
                 <input id="email" type="email">
@@ -63,13 +85,16 @@ class LoginFixture(BaseHTTPRequestHandler):
                     });
                     code.addEventListener('keydown', e => {
                         if (e.key !== 'Enter') return;
-                        document.cookie = 'fixture_session=valid; path=/';
+                        document.cookie = 'fixture_session=valid; path=/; Max-Age=3600';
+                        localStorage.setItem('fixture-user', 'valid');
                         location.href = '/home';
                     });
                 </script>
             """.replace("SCENARIO", json.dumps(self.server.scenario))
+        body = '<link rel="stylesheet" href="/fixture.css"><script src="/fixture.js"></script>' + body
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(body.encode())
 
@@ -89,6 +114,7 @@ class NotionLoginBrowserTest(unittest.TestCase):
 
     def setUp(self):
         self.server.scenario = "code"
+        self.server.requests = Counter()
         self.server.release = threading.Event()
         self.addCleanup(self.server.release.set)
         self.enterContext(patch.object(
@@ -117,6 +143,54 @@ class NotionLoginBrowserTest(unittest.TestCase):
         with patch("builtins.input", side_effect=["probe@example.test", "fixture-code"]):
             self.helper.login()
         self.assertTrue(self.state_path.exists())
+
+    def test_profile_reuses_authentication_and_disk_cache_across_restarts(self):
+        with patch("builtins.input", side_effect=["probe@example.test", "fixture-code"]):
+            self.helper.login()
+        self.helper.close()
+        self.assertTrue(self.helper.profile_dir.is_dir())
+        self.assertEqual(self.server.requests["/fixture.css"], 1)
+        self.assertEqual(self.server.requests["/fixture.js"], 1)
+
+        for snapshot in ("stale", "missing"):
+            with self.subTest(snapshot=snapshot):
+                if snapshot == "stale":
+                    self.state_path.write_text('{"cookies": [], "origins": []}')
+                else:
+                    self.state_path.unlink()
+                with patch("builtins.input", side_effect=AssertionError("Must reuse the profile")):
+                    context = self.helper.login()
+                page = context.pages[0]
+                self.assertTrue(page.evaluate("window.fixtureAssetReady"))
+                self.assertEqual(page.evaluate("localStorage.getItem('fixture-user')"), "valid")
+                exported = json.loads(self.state_path.read_text())
+                self.assertTrue(any(c["name"] == "fixture_session" for c in exported["cookies"]))
+                self.assertEqual(self.server.requests["/fixture.css"], 1)
+                self.assertEqual(self.server.requests["/fixture.js"], 1)
+                self.helper.close()
+
+    def test_new_profile_imports_cookie_and_local_storage_from_existing_json(self):
+        self.state_path.write_text(json.dumps({
+            "cookies": [{
+                "name": "fixture_session", "value": "valid", "domain": "127.0.0.1", "path": "/",
+                "expires": int(time.time()) + 3600, "httpOnly": True, "secure": False, "sameSite": "Lax",
+            }],
+            "origins": [{
+                "origin": self.module.NOTION_WEB_BASE_URL,
+                "localStorage": [
+                    {"name": "fixture-user", "value": "valid"},
+                    {"name": "fixture-setting", "value": "old"},
+                ],
+            }],
+        }))
+        with patch("builtins.input", side_effect=AssertionError("Must import the existing login")):
+            context = self.helper.login()
+        page = context.pages[0]
+        self.assertEqual(page.evaluate("localStorage.getItem('fixture-setting')"), "old")
+        # A later navigation must not reapply the old snapshot over newer values.
+        page.evaluate("localStorage.setItem('fixture-setting', 'new')")
+        page.reload(wait_until="domcontentloaded")
+        self.assertEqual(page.evaluate("localStorage.getItem('fixture-setting')"), "new")
 
     def test_server_error_exits_without_code_prompt_and_preserves_saved_state(self):
         self.server.scenario = "error"

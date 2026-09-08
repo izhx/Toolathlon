@@ -122,50 +122,71 @@ class NotionUrlConsumersTest(unittest.TestCase):
         helper = load_module("notion_login_helper").NotionLoginHelper(state_path=state_path)
         self.addCleanup(helper.close)
         helper._playwright = Mock()
-        browser = helper._playwright.firefox.launch.return_value
-        context = browser.new_context.return_value
+        browser_type = helper._playwright.firefox
+        context = browser_type.launch_persistent_context.return_value
         page = context.new_page.return_value
         context.pages = [page]
         page.goto.return_value = None
-        return helper, browser, context, page
+        page.url = "https://app.notion.com/login"
+        return helper, browser_type, context, page
 
-    def test_valid_saved_login_skips_prompts_and_leaves_file_untouched(self):
-        helper, browser, context, page = self.make_saved_login()
-        before = (helper.state_path.read_bytes(), helper.state_path.stat().st_mtime_ns)
+    def test_valid_profile_skips_prompts_and_exports_current_state(self):
+        helper, browser_type, context, page = self.make_saved_login()
         page.wait_for_function.return_value.json_value.return_value = "valid"
         with patch("builtins.input", side_effect=AssertionError("Must not request credentials")) as prompt:
             self.assertIs(helper.login(), context)
         prompt.assert_not_called()
-        browser.new_context.assert_called_once_with(storage_state=str(helper.state_path))
+        browser_type.launch_persistent_context.assert_called_once_with(
+            user_data_dir=str(helper.state_path.parent / "notion_browser_profile/firefox"), headless=True,
+        )
         page.goto.assert_called_once_with("https://app.notion.com/", wait_until="domcontentloaded", timeout=30_000)
-        context.storage_state.assert_not_called()
-        self.assertEqual((helper.state_path.read_bytes(), helper.state_path.stat().st_mtime_ns), before)
+        context.add_cookies.assert_not_called()  # An old JSON must not overwrite a valid profile.
+        context.storage_state.assert_called_once_with(path=str(helper.state_path))
 
-    def test_expired_or_unreadable_saved_login_starts_fresh_context(self):
+    def test_expired_or_unreadable_saved_login_keeps_the_persistent_context(self):
         for failure in ("expired", "unreadable"):
             with self.subTest(failure=failure):
-                helper, browser, saved_context, saved_page = self.make_saved_login()
-                saved_page.wait_for_function.return_value.json_value.return_value = "expired"
-                fresh_context = Mock()
-                browser.new_context.side_effect = [
-                    ValueError("invalid state file") if failure == "unreadable" else saved_context,
-                    fresh_context,
-                ]
+                helper, browser_type, context, page = self.make_saved_login()
+                page.wait_for_function.return_value.json_value.return_value = "expired"
+                if failure == "unreadable":
+                    helper.state_path.write_text("invalid JSON")
                 helper._handle_headless_login = Mock()
-                self.assertIs(helper.login(), fresh_context)
-                self.assertEqual(browser.new_context.call_args_list, [
-                    call(storage_state=str(helper.state_path)), call(),
-                ])
-                helper._handle_headless_login.assert_called_once_with(fresh_context)
-                saved_context.storage_state.assert_not_called()
-                fresh_context.storage_state.assert_called_once_with(path=str(helper.state_path))
-                if failure == "expired":
-                    saved_context.close.assert_called_once()
+                self.assertIs(helper.login(), context)
+                browser_type.launch_persistent_context.assert_called_once()
+                helper._handle_headless_login.assert_called_once_with(context)
+                context.storage_state.assert_called_once_with(path=str(helper.state_path))
+                context.close.assert_not_called()
+
+    def test_saved_json_is_restored_only_after_profile_login_is_expired(self):
+        helper, _, context, page = self.make_saved_login()
+        cookies = [{"name": "fixture", "value": "valid", "domain": "app.notion.com", "path": "/"}]
+        entries = [{"name": "workspace", "value": "example"}]
+        helper.state_path.write_text(json.dumps({
+            "cookies": cookies,
+            "origins": [{"origin": "https://app.notion.com", "localStorage": entries}],
+        }))
+        page.wait_for_function.side_effect = [
+            Mock(json_value=Mock(return_value=status)) for status in ("expired", "valid")
+        ]
+        page.evaluate.return_value = "https://app.notion.com"
+        with patch("builtins.input", side_effect=AssertionError("Must reuse saved JSON")):
+            self.assertIs(helper.login(), context)
+        context.add_cookies.assert_called_once_with(cookies)
+        self.assertEqual(page.evaluate.call_args.args[1], entries)
+        self.assertEqual(page.goto.call_count, 2)
+        context.storage_state.assert_called_once_with(path=str(helper.state_path))
+
+    def test_profile_directory_separates_browsers_and_accepts_custom_root(self):
+        helper_class = load_module("notion_login_helper").NotionLoginHelper
+        with tempfile.TemporaryDirectory() as directory:
+            for browser in ("chromium", "firefox"):
+                helper = helper_class(profile_dir=directory, browser=browser)
+                self.assertEqual(helper.profile_dir, Path(directory).resolve() / browser)
 
     def test_saved_login_check_error_preserves_state_without_prompting(self):
         for failure in ("timeout", "server_error"):
             with self.subTest(failure=failure):
-                helper, browser, context, page = self.make_saved_login()
+                helper, browser_type, context, page = self.make_saved_login()
                 before = helper.state_path.read_bytes()
                 if failure == "timeout":
                     page.wait_for_function.side_effect = TimeoutError("Page did not become ready")
@@ -175,7 +196,8 @@ class NotionUrlConsumersTest(unittest.TestCase):
                     with helper:
                         self.fail("An inconclusive session check must not report success")
                 prompt.assert_not_called()
-                browser.new_context.assert_called_once_with(storage_state=str(helper.state_path))
+                browser_type.launch_persistent_context.assert_called_once()
+                context.add_cookies.assert_not_called()
                 context.storage_state.assert_not_called()
                 self.assertEqual(helper.state_path.read_bytes(), before)
                 context.close.assert_called_once()
@@ -186,15 +208,17 @@ class NotionUrlConsumersTest(unittest.TestCase):
             with self.subTest(destination=destination), tempfile.TemporaryDirectory() as temp_dir:
                 helper = helper_class(url=destination, state_path=Path(temp_dir) / "state.json")
                 helper._playwright = Mock()
-                browser = helper._playwright.firefox.launch.return_value
-                context = browser.new_context.return_value
+                context = helper._playwright.firefox.launch_persistent_context.return_value
                 page = context.new_page.return_value
                 context.pages = [page]
-                page.wait_for_function.return_value.json_value.return_value = {"step": "code"}
+                page.wait_for_function.side_effect = [
+                    Mock(json_value=Mock(return_value=status)) for status in ("expired", {"step": "code"})
+                ]
 
-                def navigate(url, *, wait_until):
+                def navigate(url, *, wait_until, timeout=None):
                     if wait_until == "load":
                         raise TimeoutError("External resources prevent the load event")
+                    page.url = "https://app.notion.com/login" if url == "https://app.notion.com/" else url
 
                 def wait_for_redirect(predicate, *, timeout, wait_until="load"):
                     if wait_until == "load":
@@ -205,7 +229,7 @@ class NotionUrlConsumersTest(unittest.TestCase):
                 page.wait_for_url.side_effect = wait_for_redirect
                 with patch("builtins.input", side_effect=["test@example.com", "123456"]):
                     self.assertIs(helper.login(), context)
-                expected = [call("https://app.notion.com/login", wait_until="domcontentloaded")]
+                expected = [call("https://app.notion.com/", wait_until="domcontentloaded", timeout=30_000)]
                 if destination:
                     expected.append(call(f"https://app.notion.com/{CHILD_ID}", wait_until="domcontentloaded"))
                 self.assertEqual(page.goto.call_args_list, expected)
@@ -224,18 +248,13 @@ class NotionUrlConsumersTest(unittest.TestCase):
                 helper = helper_class(state_path=state_path)
                 playwright = Mock()
                 helper._playwright = playwright
-                browser = playwright.firefox.launch.return_value
-                context = browser.new_context.return_value
+                context = playwright.firefox.launch_persistent_context.return_value
                 page = context.new_page.return_value
                 context.pages = [page]
+                page.goto.return_value = None
                 page.url = "https://app.notion.com/login?next=home#verification"
-                page.wait_for_function.return_value.json_value.return_value = {"step": "code"}
-                if existing_state:
-                    saved_context = Mock()
-                    saved_page = saved_context.new_page.return_value
-                    saved_page.goto.return_value = None
-                    saved_page.wait_for_function.return_value.json_value.return_value = "expired"
-                    browser.new_context.side_effect = [saved_context, context]
+                statuses = ["expired"] * (2 if existing_state else 1) + [{"step": "code"}]
+                page.wait_for_function.side_effect = [Mock(json_value=Mock(return_value=s)) for s in statuses]
 
                 def wait_for_redirect(predicate, **kwargs):
                     # Query/fragment changes while still on /login are not success.
@@ -253,7 +272,6 @@ class NotionUrlConsumersTest(unittest.TestCase):
                 else:
                     self.assertFalse(state_path.exists())
                 context.close.assert_called_once()
-                browser.close.assert_called_once()
                 playwright.stop.assert_called_once()
 
     def test_child_page_url_from_api_is_normalized(self):

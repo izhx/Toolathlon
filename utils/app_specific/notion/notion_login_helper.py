@@ -8,6 +8,7 @@ which can be used for subsequent automated tasks.
 """
 
 import argparse
+import json
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlsplit
@@ -55,6 +56,7 @@ class NotionLoginHelper:
         url: Optional[str] = None,
         headless: bool = True,
         state_path: Optional[str | Path] = None,
+        profile_dir: Optional[str | Path] = None,
         browser: str = "firefox",
     ) -> None:
         """
@@ -64,6 +66,7 @@ class NotionLoginHelper:
             url: The Notion URL to open after launching the browser.
             headless: Whether to run Playwright in headless mode.
             state_path: The path to save the authenticated session state.
+            profile_dir: Root directory for persistent browser profiles.
             browser: The browser engine to use ('chromium' or 'firefox').
         """
         super().__init__()
@@ -78,33 +81,47 @@ class NotionLoginHelper:
         self.state_path = (
             Path(state_path or Path.cwd() / "notion_state.json").expanduser().resolve()
         )
+        self.profile_dir = (
+            Path(profile_dir or self.state_path.parent / "notion_browser_profile")
+            .expanduser().resolve() / browser
+        )
         self._browser_context: Optional[BrowserContext] = None
         self._playwright = None
-        self._browser = None
 
     def login(self) -> BrowserContext:
         """
-        Reuses a valid saved session, otherwise logs in and saves a new one.
+        Reuses the browser profile, then the exported state, before requesting login.
         """
         if self._playwright is None:
             self._playwright = sync_playwright().start()
 
         browser_type = getattr(self._playwright, self.browser_name)
-        self._browser = browser_type.launch(headless=self.headless)
-        if self.state_path.exists():
-            context = self._check_saved_session()
-            if context is not None:
-                logger.info("Saved Notion login is valid; skipping login: %s", self.state_path)
-                return context
-
-        context = self._browser.new_context()
+        logger.info("Using persistent Notion browser profile: %s", self.profile_dir)
+        context = browser_type.launch_persistent_context(
+            user_data_dir=str(self.profile_dir), headless=self.headless,
+        )
         self._browser_context = context
-        page = context.new_page()
+        page = context.pages[0] if context.pages else context.new_page()
+
+        valid = self._check_saved_session(page)
+        if not valid and self.state_path.exists() and self._restore_saved_state(context, page):
+            valid = self._check_saved_session(page)
+        if valid:
+            logger.info("Saved Notion login is valid; skipping login.")
+            if self.url != f"{NOTION_WEB_BASE_URL}/login":
+                page.goto(self.url, wait_until="domcontentloaded")
+            # Keep the snapshot consumed by other scripts in sync with the profile.
+            context.storage_state(path=str(self.state_path))
+            logger.info("Session state exported to %s", self.state_path)
+            return context
 
         start_url = f"{NOTION_WEB_BASE_URL}/login" if self.headless else self.url
-        logger.info("Navigating to Notion URL: %s", start_url)
-        # The form can be ready while unrelated resources still delay `load`.
-        page.goto(start_url, wait_until="domcontentloaded")
+        logger.info("No valid saved Notion login; starting a new login.")
+        # The session check normally already lands on the login page. Reuse it
+        # and its cached assets instead of creating a second, empty context.
+        if page.url != start_url:
+            logger.info("Navigating to Notion URL: %s", start_url)
+            page.goto(start_url, wait_until="domcontentloaded")
 
         if self.headless:
             self._handle_headless_login(context)
@@ -134,18 +151,37 @@ class NotionLoginHelper:
 
         return context
 
-    def _check_saved_session(self) -> Optional[BrowserContext]:
-        """Check the workspace UI with saved cookies, not just cookie expiry."""
-        logger.info("Checking saved Notion login: %s", self.state_path)
+    def _restore_saved_state(self, context: BrowserContext, page: Page) -> bool:
+        """Import the existing JSON without replacing the persistent context."""
+        logger.info("Restoring saved Notion login: %s", self.state_path)
         try:
-            context = self._browser.new_context(storage_state=str(self.state_path))
-        except (OSError, ValueError, PlaywrightError) as exc:
+            state = json.loads(self.state_path.read_text())
+            # The session check has opened the current Notion origin. Restore its
+            # localStorage once, then reload, so stale values cannot overwrite
+            # newer login data on subsequent navigations.
+            origin = page.evaluate("location.origin")
+            entries = [
+                entry
+                for item in state.get("origins", []) if item["origin"] == origin
+                for entry in item.get("localStorage", [])
+            ]
+            if any(not isinstance(entry["name"], str) or not isinstance(entry["value"], str)
+                   for entry in entries):
+                raise ValueError("Invalid localStorage snapshot")
+            context.add_cookies(state.get("cookies", []))
+            page.evaluate(
+                "entries => { for (const {name, value} of entries) localStorage.setItem(name, value); }",
+                entries,
+            )
+        except (OSError, ValueError, KeyError, TypeError, AttributeError, PlaywrightError) as exc:
             # Playwright validation errors may include cookie values; log only the type.
-            logger.warning("Cannot load saved login (%s); starting a new login.", type(exc).__name__)
-            return None
+            logger.warning("Cannot restore saved login (%s); continuing to login.", type(exc).__name__)
+            return False
+        return True
 
-        self._browser_context = context
-        page = context.new_page()
+    def _check_saved_session(self, page: Page) -> bool:
+        """Check the workspace UI with saved cookies, not just cookie expiry."""
+        logger.info("Checking Notion login in the browser profile...")
         try:
             response = page.goto(f"{NOTION_WEB_BASE_URL}/", wait_until="domcontentloaded", timeout=30_000)
             if response is not None and response.status >= 400:
@@ -169,15 +205,7 @@ class NotionLoginHelper:
                 "Retry when the workspace or login page can finish loading."
             ) from exc
 
-        if status == "valid":
-            if self.url != f"{NOTION_WEB_BASE_URL}/login":
-                page.goto(self.url, wait_until="domcontentloaded")
-            return context
-
-        context.close()
-        self._browser_context = None
-        logger.info("Saved Notion login has expired; starting a new login.")
-        return None
+        return status == "valid"
 
     def close(self) -> None:
         """Closes the underlying browser and Playwright instance."""
@@ -186,11 +214,8 @@ class NotionLoginHelper:
                 self._browser_context.close()
             finally:
                 self._browser_context = None
-        if self._browser:
-            try:
-                self._browser.close()
-            finally:
-                self._browser = None
+        # Closing the persistent context also closes its browser and flushes its
+        # profile/cache to disk.
         if self._playwright:
             self._playwright.stop()
             self._playwright = None
@@ -328,10 +353,18 @@ def main():
         default="./configs/notion_state.json",
         help="The path to save the authenticated session state.",
     )
+    parser.add_argument(
+        "--profile-dir", "--profile_dir",
+        help="Persistent profile root; defaults to notion_browser_profile beside the state file. "
+             "Chromium and Firefox use separate subdirectories.",
+    )
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-    helper = NotionLoginHelper(headless=args.headless, browser=args.browser, state_path=args.state_path)
+    helper = NotionLoginHelper(
+        headless=args.headless, browser=args.browser, state_path=args.state_path,
+        profile_dir=args.profile_dir,
+    )
     with helper:
         logger.info("Login process completed.")
 

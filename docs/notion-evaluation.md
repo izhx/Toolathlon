@@ -56,7 +56,9 @@ bash global_preparation/deploy_notion_containers.sh false
 
 若启用 `notion_preprocess_with_playwright=True`，旧 `.so` 登录状态可能不适用于新域名，可运行 `uv run utils/app_specific/notion/notion_login_helper.py --headless` 重新生成 `configs/notion_state.json`。这与 `configs/.mcp-auth` 中的 MCP OAuth 授权分开；默认 MCP 预处理无需浏览器登录状态。
 
-登录助手会先加载已有状态并打开 Notion 工作区检查：能进入工作区则直接退出，不再要求邮箱或验证码，也不改写文件；回到登录页则重新登录，完成后覆盖保存。文件无法读取时也会重新登录。检查遇到网络错误或超时会报错并保留原文件，不把它判为登录失效。
+登录助手默认使用持久化浏览器目录 `configs/notion_browser_profile/chromium/`（`--browser firefox` 使用 `firefox/` 子目录），退出后保留登录状态及可缓存的 CSS、JS 等资源。资源过期或更新时仍会重新请求。可用 `--profile-dir /path/to/profiles` 指定其他根目录；同一浏览器子目录不能被多个进程同时使用，不同账号也应指定不同目录。该目录已加入 Git 忽略规则。
+
+登录助手先检查浏览器目录中的登录状态；无效时尝试导入已有的 `configs/notion_state.json`，仍无效或文件不可读才要求重新登录。检查有效后无需邮箱或验证码，会导出最新 `notion_state.json` 并退出，供现有页面复制等脚本继续使用。检查遇到网络错误或超时会报错并保留原 JSON 文件，不把它判为登录失效。`--headless` 同样使用持久化目录；页面复制脚本仍使用 JSON 登录快照，不共享此浏览器缓存。
 
 Notion 任务共享 OAuth 刷新状态与页面操作流程，并发可能造成刷新锁等待超时和状态竞争。按以下命令逐个运行任务：
 
