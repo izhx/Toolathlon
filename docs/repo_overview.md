@@ -352,6 +352,19 @@ Host Agent 只能通过 MCP gateway 调用容器内任务工具；任务环境�
 
 顶层聚合逻辑见 `scripts/run_parallel.sh:135-161`，统计逻辑见 `scripts/generate_parallel_stats.py:32-256`。
 
+只计算一个运行目录或任务子集的通过率，可用独立脚本（仅依赖 Python 标准库，不改写运行结果）：
+
+```bash
+python3 scripts/calculate_pass_rate.py results/my-run
+python3 scripts/calculate_pass_rate.py results/my-run --task-list configs/task_lists/finalpool/c-notion.txt
+```
+
+默认读取 `<运行目录>/finalpool/<task>/eval_res.json`；其他任务集用 `--tasks-folder <名称>`，直接传入任务父目录时用 `--tasks-folder .`。未指定清单时，以该目录内全部任务子目录为分母，不依赖 `status.json` 或环境变量 `TASK_LIST`；指定清单时，以去重后的清单任务数为分母，支持空行和整行 `#` 注释，清单中的缺失任务也计入分母。分子只计 JSON 布尔值 `pass=true`；`false`、`null`、缺失结果、无效结果分别统计，历史 `legacy_results` 不参与。无任务时显示 `N/A`，空清单或路径错误会报错。
+
+现有 `generate_parallel_stats.py` 的 `--task_list_file` 仅写入报告元数据，不筛选任务；它的通过率分母是当前任务层的 `status.json` 文件数。
+
+算分脚本在终端输出通过率，以及通过、失败、无 eval 结果（文件缺失或 `pass=null`）、缺失任务目录（指定清单时）各类的数量和完整任务名单；无效结果另外列出任务名及错误原因。
+
 ## 10. 当前实现中需要特别注意的边界
 
 ### 10.1 顶层退出码不能代表全部任务通过
