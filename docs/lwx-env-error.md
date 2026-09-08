@@ -19,7 +19,7 @@
 | 1 | 🟡 偶发 | **IMAP 认证失败** | `IMAP login failed: [UNAVAILABLE] Temporary authentication failure. [mcp.com:...]` | canvas-arrange-exam, canvas-art-manager, canvas-homework-grader-python, canvas-submit-late-work, course-assistant, meeting-assign, woocommerce-new-product (**7**) | — | 7 | mcp.com 邮件服务限流；单账户串行 + 指数退避 |
 | 2 | 🟡 偶发 | **SMTP 发送失败** | `Error sending email: Connection unexpectedly closed` / `(450, ESERVFAIL)` | canvas-submit-late-work, meeting-assign, woocommerce-new-product (**3**) | — | 3 | 同上，跟 IMAP 一起修 |
 | 3 | 🟡 偶发 | **DNS 解析失败** | `Name or service not known` (`mail.mcp.com`, `imap.mcp.com`) | canvas-art-manager (**1**) | — | 1 | 检查容器 /etc/hosts、DNS 配置 |
-| 4 | 🔴 **必现** | **上游 API 429 限流** | `Too Many Requests. Rate limited.`（Yahoo Finance） | invoice-org, nvidia-market, nvidia-stock-analysis, shopping-helper, stock-build-position, travel-exchange, yahoo-analysis (**7**) | — | 7 | yfinance MCP 加令牌桶/共享缓存 |
+| 4 | 🔴 **必现** | **上游 API 429 限流** | `Too Many Requests. Rate limited.`（Yahoo Finance） | invoice-org, nvidia-market, nvidia-stock-analysis, shopping-helper, stock-build-position, travel-exchange, yahoo-analysis (**7**) | — | 7 | yfinance MCP 加令牌桶/共享缓存（[分析](yahoo-finance-429-analysis.md)） |
 | 5 | 🔴 **必现** | **HuggingFace 读超时** | `ReadTimeout: huggingface.co ... read timeout=10/15` + SSL handshake timeout | merge-hf-datasets, mrbeast-analysis, verl-dataset (**3**) | — | 3 | 加大 timeout（≥60s），或本地镜像 |
 | 6 | 🔴 **必现** | **Playwright 页面超时** | `page.goto: Timeout 60000ms exceeded` (Amazon/Nasdaq/scribd 等) | add-bibtex, language-school, nvidia-market, nvidia-stock-analysis, profile-update-online, shopping-helper (**6**) | — | 6 | 加大超时、换加载策略、UA |
 | 7 | 🔴 **必现** | **API Key 无效** | `API key not valid`（YouTube / FMP / Docker registry） | mrbeast-analysis, youtube-repo, nvidia-stock-analysis (**3**) | — | 3 | 更新对应 provider key |
@@ -41,7 +41,7 @@
 
 | # | 问题 | 根因性质 | 修复优先级 |
 |---|---|---|---|
-| 4 | Yahoo Finance 429 限流 | yfinance 官方公共接口对 IP 限流，任何并行/密集调用都会触发 | 🔴 高（影响 7 个 task） |
+| 4 | Yahoo Finance 429 限流 | yfinance 打的是 Yahoo 未公开的内部接口（官方公开 API 2017 已下线），按出口 IP 限流，任何并行/密集调用都会触发；无 key 可申请提额。详见 [yahoo-finance-429-analysis.md](yahoo-finance-429-analysis.md) | 🔴 高（影响 7 个 task） |
 | 5 | HuggingFace 读超时 | 客户端 `read timeout=10/15` 太短，跨国链路稳定 timeout | 🔴 高 |
 | 6 | Playwright 页面超时 | Amazon/Nasdaq/scribd 反爬 + 页面重，60s 不够 | 🔴 高（影响 6 个 task） |
 | 7 | API Key 无效 | YouTube/FMP 的 key 本身失效或未配置 | 🔴 高（不修永远失败） |
