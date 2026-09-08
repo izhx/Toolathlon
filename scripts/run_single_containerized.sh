@@ -66,6 +66,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
+if [ -z "${TOOLATHLON_OPENAI_BASE_URL:-}" ] && _dotenv_value="$(set +e; source "$PROJECT_ROOT/.env" 2>/dev/null; printf '%s' "${TOOLATHLON_OPENAI_BASE_URL:-}")" && [ -n "$_dotenv_value" ]; then
+    export TOOLATHLON_OPENAI_BASE_URL="$_dotenv_value"
+fi
+if [ -z "${TOOLATHLON_OPENAI_API_KEY:-}" ] && _dotenv_value="$(set +e; source "$PROJECT_ROOT/.env" 2>/dev/null; printf '%s' "${TOOLATHLON_OPENAI_API_KEY:-}")" && [ -n "$_dotenv_value" ]; then
+    export TOOLATHLON_OPENAI_API_KEY="$_dotenv_value"
+fi
+if [ -z "${TOOLATHLON_MODEL_PARAMS_FILE:-}" ] && _dotenv_value="$(set +e; source "$PROJECT_ROOT/.env" 2>/dev/null; printf '%s' "${TOOLATHLON_MODEL_PARAMS_FILE:-}")" && [ -n "$_dotenv_value" ]; then
+    export TOOLATHLON_MODEL_PARAMS_FILE="$_dotenv_value"
+fi
+unset _dotenv_value
+
 echo "Project root: $PROJECT_ROOT"
 echo "Task directory: $task_dir_arg"
 echo "Runmode: $runmode"

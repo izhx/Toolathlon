@@ -2,7 +2,7 @@ name: toolathlon-dev
 
 services:
   controller:
-    image: "${WB_CONTROLLER_IMAGE:-daily-dev:dev-docker-claude-codex}"
+    image: "${WB_CONTROLLER_IMAGE:-daily-dev:dev-docker}"
     pull_policy: never
 
     # The controller proxy must listen on the host network so Harbor-created
@@ -27,12 +27,9 @@ services:
     environment:
       PYTHONUNBUFFERED: "1"
       PYTHONDONTWRITEBYTECODE: "1"
-      http_proxy: ${http_proxy:-}
-      https_proxy: ${https_proxy:-}
-      no_proxy: ${no_proxy:-}
-      HTTP_PROXY: ${http_proxy:-}
-      HTTPS_PROXY: ${https_proxy:-}
-      NO_PROXY: ${no_proxy:-}
+      back_http_proxy: ${http_proxy:-}
+      back_https_proxy: ${https_proxy:-}
+      back_no_proxy: ${no_proxy:-}
 
     volumes:
       # Keep the same absolute repository path inside and outside the
@@ -44,17 +41,34 @@ services:
           create_host_path: false
 
       - type: bind
+        source: /data01/lwx/Toolathlon
+        target: /data01/lwx/Toolathlon
+        bind:
+          create_host_path: false
+
+      - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
         bind:
           create_host_path: false
 
       - type: bind
+        source: ${SSH_SOURCE_DIR:-${HOME}/.ssh}
+        target: /opt/ssh-src
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${AGENT_BIN_DIR:-./agent-bin}
+        target: /opt/agent-bin-src
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
         source: ${DEV_DATA_ROOT}/dot-claude
         target: /agent-data/claude
         bind:
           create_host_path: false
-
       - type: bind
         source: ${DEV_DATA_ROOT}/dot-codex
         target: /agent-data/codex

@@ -4,6 +4,8 @@
 # pyproject.toml
 # uv.lock
 
+.env
+
 local_tools
 local_servers
 

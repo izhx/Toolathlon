@@ -1,0 +1,16 @@
+# finalpool group A: no task-tool network dependency (15 tasks)
+arrange-workspace
+cooking-guidance
+courses-ta-hws
+detect-revised-terms
+dietary-health
+excel-data-transformation
+excel-market-research
+imagenet
+interview-report
+paper-checker
+ppt-analysis
+privacy-desensitization
+reimbursement-form-filler
+sales-accounting
+university-course-selection
