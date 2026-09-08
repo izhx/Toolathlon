@@ -64,7 +64,7 @@ class TaskDebugCSVTest(unittest.TestCase):
         for task, blocks in expected.items():
             with self.subTest(task=task):
                 self.assertEqual(rows[task]["blocks"], blocks)
-        self.assertEqual(rows["ipad-edu-price"]["status"], 1)
+        self.assertEqual(rows["ipad-edu-price"]["status"], 0)
 
     def test_csv_is_current_and_export_keeps_html_unchanged(self):
         html = ROOT / "docs/task-debug-progress.html"

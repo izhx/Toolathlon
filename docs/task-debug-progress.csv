@@ -72,7 +72,7 @@ B,不通,Yahoo Finance,invoice-org,"🟠 NO_EVAL（run glm-5.2/260904）
 跑满 max_turns 未产出可判定结果
 根因=infra：轨迹 226 次 Yahoo Finance「Rate limited」429，与 env-error 记录一致",🔴 必现：Yahoo Finance API 429 限流,"3.3 A 从未通过：环境/凭据问题为主
 Yahoo Finance 公共接口 IP 限流 429",原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞
-B,跑通,Yahoo Finance,ipad-edu-price,✅ PASS（run glm-5.2/260904）,—,"3.2 不稳定：260821 FAIL，260826 PASS
+B,不通,Yahoo Finance,ipad-edu-price,❌ PASS（run glm-5.2/260904）,—,"3.2 不稳定：260821 FAIL，260826 PASS
 文档判断多为环境抖动，重跑可能捞回",任务配置声明 Yahoo Finance 工具；已跑通，保留依赖标签
 B,跑通,0,language-school,"✅ FAIL（重跑 glm-5.2（已并入 results/glm-5.2））
 本次页面访问正常并产出结果；Toefl_min_score 填 95≠groundtruth 80（index 4 值不符）；内容/能力问题，非 infra（此前 NO_EVAL 的页面超时本次未复现）",🔴 必现：Playwright 页面加载 60s 超时,"3.3 A 从未通过：环境/凭据问题为主
@@ -350,24 +350,29 @@ preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直
 Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
 使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",原记录（Google）：Google 凭据缺 token；已核对预处理代码
-C-notion,不通,Notion,experiments-recordings,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+C-notion,跑通,Notion,experiments-recordings,"✅ FAIL（重跑 glm-5.2/260908）
+preprocess 已通过（重做 Notion 无头登录后修复，见本节说明）；agent 31 步正常收尾，评测判 `pass=false`：产出表格与标准答案不符；根因=能力，非 infra
+（上次 260904 为 NO_EVAL：preprocess 失败缺 `files/duplicated_page_id.txt`）",—,"第 4 节未验证：无历史实跑记录
 已知阻塞：Notion refresh lock 争用",原记录（Notion）：本次记录中的服务／凭据阻塞
 C-notion,没跑,Google;Notion,notion-find-job,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Maps 地图（`google_map`）
 凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
 使用阶段：agent 使用 Maps 查地点/路线；另有 Notion 依赖
 Google 配置待核：个人尚未实跑",Google Maps 查地点/路线，Notion 页面读写；个人尚未实跑，配置待核
-C-notion,没跑,Notion,notion-hr,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
+C-notion,跑通,Notion,notion-hr,"✅ PASS（run glm-5.2/260908）
+preprocess/agent/评测全通（首次实跑；重做 Notion 无头登录后 preprocess 一次通过）",—,"第 4 节未验证：无历史实跑记录
 已知阻塞：Notion refresh lock 争用",原记录（Notion）：历史已知阻塞；个人尚未实跑
-C-notion,不通,Notion,notion-movies,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",—,"第 4 节未验证：无历史实跑记录
+C-notion,跑通,Notion,notion-movies,"✅ PASS（重跑 glm-5.2/260908）
+重做 Notion 无头登录后 preprocess 通过，agent/评测全通（上次 260904 为 NO_EVAL：缺 `files/duplicated_page_id.txt`，属 infra，重跑捞回）",—,"第 4 节未验证：无历史实跑记录
 已知阻塞：Notion refresh lock 争用",原记录（Notion）：本次记录中的服务／凭据阻塞
-C-notion,不通,Notion,notion-personal-website,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 卡住未完成（超时/中断，status=running）；根因=infra",🟡 偶发：preprocess 阶段卡死,"第 4 节未验证：无历史实跑记录
+C-notion,跑通,Notion,notion-personal-website,"✅ PASS（重跑 glm-5.2/260908）
+重做 Notion 无头登录后 preprocess 通过，agent/评测全通（上次 260904 为 NO_EVAL：preprocess 卡住未完成，属 infra，重跑捞回）",🟡 偶发：preprocess 阶段卡死,"第 4 节未验证：无历史实跑记录
 已知阻塞：Notion refresh lock 争用",原记录（Notion）：Notion 预处理卡住；具体原因待核
-C-notion,不通,Yahoo Finance;Notion,oil-price,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra",🟡 偶发：Notion refresh lock 争用（含疑似间接影响）,"第 4 节未验证：无历史实跑记录
+C-notion,不通,Yahoo Finance;Notion,oil-price,"🟠 NO_EVAL（重跑 glm-5.2/260908）
+Notion 侧已修复：重做无头登录后 preprocess 通过，`duplicated_page_id.txt` 正常生成；阻塞点转为 **Yahoo Finance 限流**
+agent 跑满 5400s TIMEOUT：`yahoo_finance_get_historical_stock_prices` 调用 50 次，52 条返回 `Too Many Requests. Rate limited.`，自 turn 2 起即被限流；agent 用 45 次 `time.sleep(~115s)` 重试（≈86 分钟纯等待）耗尽时间预算
+根因=上游 Yahoo 对本机 IP 限流（无认证公开接口），非本仓库 infra；需换出口 IP／避开限流窗口后才能验证 Yahoo 部分
+（上次 260904 为 NO_EVAL：preprocess 失败缺 `files/duplicated_page_id.txt`）",🟡 偶发：Notion refresh lock 争用（含疑似间接影响）,"第 4 节未验证：无历史实跑记录
 已知阻塞：Notion refresh lock 争用
 历史环境曾出现 preprocess fail",Yahoo 获取行情，Notion 页面读写；本次预处理缺 duplicated_page_id.txt，后续 Yahoo 尚未验证
 C-notion,不通,Yahoo Finance;Google;Notion,quantitative-financial-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
@@ -377,6 +382,9 @@ Google 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权�
 Notion 配置：integration key、源/评测父页面，以及 `configs/.mcp-auth` 中供 `notion_official` 复制页面使用的 OAuth 授权
 使用阶段：预处理先准备 Drive 文件夹，再清理/复制 Notion 页面；agent 写行情表格，并在 Notion 写入表格链接和指定评论；评测检查两边结果；`google_sheets_folder_id` 由任务配置指定
 本次记录失败在 Google 初始化阶段，尚未执行 Notion 初始化；修好 Google 凭据后仍需验证 Notion；不依赖 Poste",Yahoo 获取行情；Google Sheets/Drive 与 Notion 读写；本次失败在 Google 凭据缺 token，尚未进入 Notion 初始化，Yahoo 与 Notion 待验证
-C-notion,不通,Notion,task-tracker,"🟠 NO_EVAL（run glm-5.2/260904）
-preprocess 失败：缺 `files/duplicated_page_id.txt`（Notion）；根因=infra","🟡 偶发：preprocess 阶段卡死
+C-notion,跑通,Notion,task-tracker,"✅ NO_EVAL（重跑 glm-5.2/260908）
+preprocess 已通过（重做 Notion 无头登录后修复），失败点已从 infra 转为能力：agent 跑满 100 步 `max_turn_exceeded`，评测未执行（`pass=null`）
+478 次工具调用中 371 次为逐文件 `github_get_file_contents`（351 个不同路径，占 78%，吃掉 turn 2–73），turn 57–100 又逐个 `github_push_files`，在推最后一批时被切断
+已核对 GitHub 侧**无限流**：全量输出扫 `rate limit`/`Too Many Requests`/`X-RateLimit`/`retry-after` 均 0 命中，`429` 的 12 次匹配全是 git SHA 误报；真实报错仅 2 条（含 1 条本地 python `json.load`）
+根因=能力/步数预算，非 infra；建议提高 `MAX_STEPS` 后重跑","🟡 偶发：preprocess 阶段卡死
 🟡 偶发：Notion refresh lock 争用（含疑似间接影响）",3.4 无有效评测产出：5 批次均 NO_EVAL；preprocess 持续卡死，疑似 Notion refresh lock,原记录（Notion）：本次记录中的服务／凭据阻塞

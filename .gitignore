@@ -26,6 +26,7 @@ configs/google_credentials.json
 configs/gcp-service_account.keys.json
 configs/gcp-oauth.keys.json
 configs/notion_state.json
+configs/notion_browser_profile/
 configs/snowflake_rsa_key.p8
 configs/snowflake_rsa_key.pub
 configs/.mcp-auth/

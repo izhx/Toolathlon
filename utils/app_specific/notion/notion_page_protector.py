@@ -13,6 +13,7 @@ import os
 # Add project root to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 from configs.token_key_session import all_token_key_session
+from utils.app_specific.notion.urls import normalize_notion_url
 
 
 class NotionPageProtector:
@@ -21,8 +22,8 @@ class NotionPageProtector:
     def __init__(self):
         """Initialize protector with URLs from config."""
         # Get URLs from config
-        self.source_page_url = all_token_key_session.source_notion_page_url
-        self.eval_page_url = all_token_key_session.eval_notion_page_url
+        self.source_page_url = normalize_notion_url(all_token_key_session.source_notion_page_url)
+        self.eval_page_url = normalize_notion_url(all_token_key_session.eval_notion_page_url)
 
         # Extract page IDs from URLs
         self.source_page_id = self.extract_page_id_from_url(self.source_page_url)
@@ -48,9 +49,8 @@ class NotionPageProtector:
                 # Add without www
                 urls.add(url.replace("https://www.", "https://"))
                 urls.add(url.replace("www.", ""))
-                # Add just the notion.so part
-                if "notion.so" in url:
-                    urls.add(url.split("//")[-1])
+                # Add without the scheme for either web domain.
+                urls.add(url.split("://", 1)[-1])
         return urls
 
     @staticmethod
@@ -75,6 +75,7 @@ class NotionPageProtector:
 
     def is_protected_url(self, url: str) -> bool:
         """Check if a URL refers to a protected page."""
+        url = normalize_notion_url(url)
         # Check direct URL match
         for protected_url in self.PROTECTED_URLS:
             if protected_url in url:
