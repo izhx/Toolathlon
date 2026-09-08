@@ -116,3 +116,31 @@ PYTHONDONTWRITEBYTECODE=1 RUN_NOTION_BROWSER_TESTS=1 \
 ```
 
 这些测试使用 mock 或本地 HTTP 页面，不连接真实 Notion。此次审查没有额外重跑真实 Notion 任务，也没有验证远程初始页面内容的一致性；以上属于源码与本地测试层面的结论。
+
+## MCP 与 Playwright 预处理路径及对模型评测的影响
+
+`notion_preprocess_with_playwright` 只控制评测开始前的 Notion 页面复制方式：`False` 走官方 MCP，`True` 走 Playwright。模型执行任务时的工具配置和评分规则都不随它切换。两条路径的分支入口是 [duplicate_child_page()](../utils/app_specific/notion/notion_page_duplicator.py)。以下说明基于 2026-09-08 的源码核对。
+
+完整阶段顺序为：**清理旧页面 → 用 MCP 或 Playwright 复制模板、移动并重命名 → 写出页面 ID → 模型做任务 → evaluator 检查结果**。
+
+| 对比项 | MCP 路径 | Playwright 路径 |
+| --- | --- | --- |
+| 复制方式 | 固定脚本调用官方 MCP 的 `notion-duplicate-page`。 | 固定脚本驱动浏览器点击 Duplicate。 |
+| 移动方式 | 调用 `notion-move-pages`，用 `new_parent.page_id` 指定目标父页面 ID。 | 打开 Move to，搜索目标父页面标题，点击第一条匹配结果。 |
+| 认证 | 使用 `configs/.mcp-auth` 中的 OAuth 授权，通过 `mcp-remote` 连接 `https://mcp.notion.com/mcp`。 | 使用 `configs/notion_state.json` 中的浏览器登录快照，创建浏览器 context；复制过程会更新该 JSON。 |
+| 共同依赖 | 使用 integration key，通过 API 查找源子页、确认复制页存在、重命名；清理旧页面也走公共 API 流程。 | 相同，启用 Playwright 后仍需 integration key。 |
+| 主要故障点 | OAuth 刷新、刷新锁等待、远程 MCP 调用、页面就绪等待。 | 登录失效、网页加载、元素定位、弹窗、搜索结果匹配。 |
+| 交付给后续阶段的结果 | 复制出的页面及 `duplicated_page_id.txt`。 | 相同，后续使用本次复制出的页面 ID。 |
+
+对被评测模型，直接影响如下：
+
+- **模型使用的 Notion 工具相同。** 当前 8 个任务配置的都是 `notion`；[notion.yaml](../configs/mcp_servers/notion.yaml) 使用 `notion_integration_key_eval`，通过 `--page-id` 传入 `notion_allowed_page_ids`。任务的 [token_key_session.py 示例](../tasks/finalpool/notion-movies/token_key_session.py) 从 `duplicated_page_id.txt` 读取该值。预处理使用的 [notion_official](../configs/mcp_servers/notion_official.yaml) 是另一套服务。
+- **复制操作不占被评测模型的推理轮次。** 这些操作由固定脚本调用工具或驱动浏览器完成。[TaskAgent](../utils/roles/task_agent.py) 在预处理完成后加载任务页面 ID，再连接模型工具并启动交互循环；容器预处理入口 [container_preprocess.py](../scripts/decoupled/container_preprocess.py) 也先初始化环境、加载页面配置，再交付给后续模型执行阶段。
+- **任务是否提供浏览器工具由任务配置决定。** 例如 [notion-movies/task_config.json](../tasks/finalpool/notion-movies/task_config.json) 本来就包含 `playwright_with_chunk`，切换预处理方式不会增加或移除它。[该浏览器工具配置](../configs/mcp_servers/playwright_with_chunk.yaml) 使用 `--isolated`，没有加载预处理的 Notion 登录快照。
+- **评分仍运行同一个 evaluator。** 开关没有切换任务要求、检查项或 PASS/FAIL 判定逻辑。
+
+**初始化结果不同，仍会间接影响模型表现和得分。** 当前实现中，MCP 按父页面 ID 移动，Playwright 按标题搜索后点击第一条结果。存在同名父页面时，Playwright 可能选错位置；该流程等待移动对话框消失后继续重命名，没有再通过 API 核对复制页的最终父页面 ID。其后的父页面保护检查验证的是受保护页面的标题，不能代替最终归属检查。
+
+因此，在源模板、最终父页面、复制内容和模型访问权限一致的前提下，两条路径不改变测量的任务能力；登录、复制或权限问题则可能造成预处理失败，或改变模型读取到的数据。做模型横向比较时，固定同一条预处理路径更容易控制环境差异。切换路径也不改变本文要求的 C-notion 全任务串行执行规则。
+
+目前已从源码确认工具配置和判分规则不随开关变化；尚未做两条路径的真实远程页面内容对照，不能仅凭两边都报告预处理成功就认定初始环境完全等价。
