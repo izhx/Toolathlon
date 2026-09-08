@@ -190,6 +190,7 @@ class NotionUrlConsumersTest(unittest.TestCase):
                 context = browser.new_context.return_value
                 page = context.new_page.return_value
                 context.pages = [page]
+                page.wait_for_function.return_value.json_value.return_value = {"step": "code"}
 
                 def navigate(url, *, wait_until):
                     if wait_until == "load":
@@ -208,7 +209,7 @@ class NotionUrlConsumersTest(unittest.TestCase):
                 if destination:
                     expected.append(call(f"https://app.notion.com/{CHILD_ID}", wait_until="domcontentloaded"))
                 self.assertEqual(page.goto.call_args_list, expected)
-                page.locator.return_value.wait_for.assert_any_call(state="visible", timeout=120_000)
+                page.locator.return_value.first.wait_for.assert_any_call(state="visible", timeout=120_000)
                 context.storage_state.assert_called_once_with(path=str(helper.state_path))
                 helper.close()
 
@@ -228,6 +229,7 @@ class NotionUrlConsumersTest(unittest.TestCase):
                 page = context.new_page.return_value
                 context.pages = [page]
                 page.url = "https://app.notion.com/login?next=home#verification"
+                page.wait_for_function.return_value.json_value.return_value = {"step": "code"}
                 if existing_state:
                     saved_context = Mock()
                     saved_page = saved_context.new_page.return_value

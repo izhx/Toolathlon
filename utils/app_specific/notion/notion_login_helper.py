@@ -22,6 +22,12 @@ from playwright.sync_api import (
 
 import logging
 
+# Enable terminal line editing (including Ctrl-H/Backspace) for input().
+try:
+    import readline  # noqa: F401
+except ImportError:
+    pass
+
 if __package__:
     from .urls import NOTION_WEB_BASE_URL, normalize_notion_url
 else:
@@ -38,6 +44,10 @@ class NotionLoginHelper:
     """
 
     SUPPORTED_BROWSERS = {"chromium", "firefox"}
+    CODE_INPUT_SELECTOR = (
+        'input[autocomplete="one-time-code"], '
+        'input[placeholder="Enter code"], input[placeholder="Paste verification code"]'
+    )
 
     def __init__(
         self,
@@ -185,6 +195,65 @@ class NotionLoginHelper:
             self._playwright.stop()
             self._playwright = None
 
+    @staticmethod
+    def _read_login_input(prompt: str) -> str:
+        while True:
+            value = input(prompt)
+            # Do not silently turn a mistyped address into a different address.
+            if any(not char.isprintable() for char in value) or "^H" in value or "^?" in value:
+                logger.warning("Input contains terminal control characters; please enter it again.")
+                continue
+            if value.strip():
+                return value.strip()
+            logger.warning("Input cannot be empty; please enter it again.")
+
+    def _login_timeout(self, page: Page, message: str) -> RuntimeError:
+        """Keep a headless failure inspectable on the machine running the script."""
+        screenshot_path = self.state_path.with_suffix(".login-error.png")
+        detail = f"Current page path: {urlsplit(page.url).path}."
+        try:
+            screenshot_path.parent.mkdir(parents=True, exist_ok=True)
+            page.screenshot(path=str(screenshot_path), timeout=5_000)
+            detail += f" Login page screenshot: {screenshot_path}."
+        except (OSError, PlaywrightError):
+            detail += " Could not capture the login page screenshot."
+        return RuntimeError(f"{message} Login failed; session state was not saved. {detail}")
+
+    def _wait_for_code_input(self, page: Page):
+        try:
+            result = page.wait_for_function(
+                """codeSelector => {
+                    const visible = e => e && !e.closest('[aria-hidden="true"]') &&
+                        e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden';
+                    const alert = [...document.querySelectorAll('[role="alert"]')]
+                        .find(e => visible(e) && e.innerText.trim());
+                    if (alert) return {error: alert.innerText.trim()};
+                    if ([...document.querySelectorAll(codeSelector)].some(visible)) {
+                        return {step: 'code'};
+                    }
+                    // The initial email form also has an aria-hidden password field
+                    // for autofill; it must not be mistaken for password login.
+                    if ([...document.querySelectorAll('input[type="password"]')].some(visible)) {
+                        return {error: 'Notion is requesting an account password. '
+                            + 'Run without --headless to complete this login flow.'};
+                    }
+                    if ([...document.querySelectorAll('button, [role="button"]')]
+                        .some(e => visible(e) && e.innerText.trim() === 'Continue with SSO')) {
+                        return {error: 'Notion requires SSO. Run without --headless to complete login.'};
+                    }
+                    return false;
+                }""",
+                arg=self.CODE_INPUT_SELECTOR,
+                timeout=60_000,
+            ).json_value()
+        except PlaywrightTimeoutError as exc:
+            raise self._login_timeout(
+                page, "No verification code input or login error appeared within 60 seconds after submitting email."
+            ) from exc
+        if result.get("error"):
+            raise RuntimeError(f"Notion login stopped: {result['error']} Session state was not saved.")
+        return page.locator(f":is({self.CODE_INPUT_SELECTOR}):visible").first
+
     def _handle_headless_login(self, context: BrowserContext) -> None:
         """
         Guides the user through the login process in headless mode.
@@ -192,30 +261,26 @@ class NotionLoginHelper:
         page: Page = context.pages[0]
         login_url = f"{NOTION_WEB_BASE_URL}/login"
 
-        email = input("Enter your Notion email address: ").strip()
+        email_input = page.locator('input[type="email"]:visible').first
         try:
-            email_input = page.locator(
-                'input[placeholder="Enter your email address..."]'
-            )
             email_input.wait_for(state="visible", timeout=120_000)
-            email_input.fill(email)
-            email_input.press("Enter")
-        except PlaywrightTimeoutError:
-            raise RuntimeError("Timed out waiting for the email input field.")
-        except Exception:
-            page.get_by_role("button", name="Continue", exact=True).click()
+        except PlaywrightTimeoutError as exc:
+            raise self._login_timeout(page, "Timed out waiting for the email input field.") from exc
 
-        try:
-            code_input = page.locator('input[placeholder="Enter code"]')
-            code_input.wait_for(state="visible", timeout=120_000)
-            code = input("Enter the verification code from your email: ").strip()
-            code_input.fill(code)
-            logger.info("Submitting verification code; waiting for login redirect (up to 180 seconds)...")
-            code_input.press("Enter")
-        except PlaywrightTimeoutError:
-            raise RuntimeError("Timed out waiting for the verification code input.")
-        except Exception:
-            page.get_by_role("button", name="Continue", exact=True).click()
+        while True:
+            email = self._read_login_input("Enter your Notion email address: ")
+            email_input.fill(email)
+            if email_input.evaluate("element => element.validity.valid"):
+                break
+            logger.warning("Invalid email address; please enter it again.")
+
+        logger.info("Submitting email; waiting for the next login step (up to 60 seconds)...")
+        email_input.press("Enter")
+        code_input = self._wait_for_code_input(page)
+        code = self._read_login_input("Enter the verification code from your email: ")
+        code_input.fill(code)
+        logger.info("Submitting verification code; waiting for login redirect (up to 180 seconds)...")
+        code_input.press("Enter")
 
         try:
             page.wait_for_url(
@@ -224,11 +289,7 @@ class NotionLoginHelper:
                 timeout=180_000,
             )
         except PlaywrightTimeoutError as exc:
-            raise RuntimeError(
-                "Login redirect timed out after 180 seconds; session state was not saved. "
-                f"Current page path: {urlsplit(page.url).path}. "
-                "Check whether the verification code was accepted and login completed."
-            ) from exc
+            raise self._login_timeout(page, "Login redirect timed out after 180 seconds.") from exc
 
         if self.url and self.url != login_url:
             page.goto(self.url, wait_until="domcontentloaded")
