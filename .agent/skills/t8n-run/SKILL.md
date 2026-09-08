@@ -79,11 +79,26 @@ bash scripts/run_parallel.sh "$model_name" "$dump_path" unified "$workers"
 
 - `TOOLATHLON_MODEL_PARAMS_FILE` 是模型请求参数 JSON，和第六个位置参数的 eval config 不同。
 - `scripts/run_single_containerized.sh` 会在模型 URL、key、参数文件环境变量为空时从仓库 `.env` 补值。确认实际来源，将已确认的连接配置放入后台进程环境，避免任务启动时重新拾取不同配置；不得将 key 写入审阅单、启动命令文件或交接记录。读取 `.env` 时避免回显敏感内容。
-- 指定参数文件时先验证可读、JSON 顶层为对象，再保存本次快照并显式传入快照路径。下游把它复制到容器 `/workspace/model_params.json`。
+- 指定参数文件时先验证可读、JSON 顶层为对象，再将文件内容原样复制为本次记录目录的 `model-params.json`，显式传入该快照的绝对路径；不能只记录原文件路径或创建符号链接。下游把它复制到容器 `/workspace/model_params.json`。
 - 非空参数对象使用“必要请求字段 + 用户参数”分支，不自动补全 eval config 中的采样默认值。展示 token 上限、thinking / reasoning、temperature 等实际提供的值；缺失值标为未显式发送，不能声称仍使用 `65536`。若 JSON 覆盖 `model` 等核心字段，应把有效覆盖列入审阅。
 - 文件不存在或解析失败可能回退默认请求参数，因此不能带着这类问题启动。
-- 用户明确选择默认请求参数时，创建内容为 `{}` 的本次参数快照并显式传入，标注为默认模式。这会进入默认请求参数分支，同时避免 `.env` 回填旧参数文件；不修改用户的 `.env`。
+- 用户明确选择默认请求参数时，创建内容为 `{}` 的本次 `model-params.json` 并显式传入，标注为默认模式。这会进入默认请求参数分支，同时避免 `.env` 回填旧参数文件；不修改用户的 `.env`。
 - 检查实际运行时 Docker / Podman 是否可访问、`uv` 是否可用、目标镜像可用性及必需的本地配置文件。启动任务容器或 MCP 预检不属于纯只读检查，服务连通也不证明远端任务权限全部可用。
+
+## 启动配置快照
+
+每次启动（含原地补跑）在 `<dump>/.t8n-run/<UTC时间>-<唯一后缀>/` 保存以下文件；每次使用新目录，不覆盖之前的记录。这是执行 skill 时必须完成的步骤，直接运行 `scripts/run_parallel.sh` 不会自动生成这些记录。
+
+| 文件 | 保存内容 |
+| --- | --- |
+| `launch.json` | 启动时间、仓库绝对路径 / commit / dirty 状态、运行安排与部署结论；审阅单中的有效参数：模型、provider、dump、workers、`TASKS_FOLDER`、`TAG`、`MAX_STEPS`、`TIMEOUT`、`MAX_TOKENS`、镜像、runner、runmode、agent framework、`TOOLATHLON_CONTAINERIZED_MODE`；任务清单来源 / 快照路径 / 数量、模型参数来源 / 原路径 / 快照路径 / 默认或自定义模式、eval config 来源 / 原路径 / 快照路径及命令行覆盖；模型 base URL、API key 是否配置及来源，不保存 key 值。区分脚本 `MAX_TOKENS` 与实际请求中的 token 参数。 |
+| `task-list.txt` | 本次确认的任务清单，实际启动使用这份文件。 |
+| `model-params.json` | 实际模型请求参数文件的完整副本；默认模式为 `{}`。实际启动使用这份文件。 |
+| `eval-config.json` | 用户指定 eval config 时，在启动前复制并通过第六个位置参数传入；由脚本自动生成时，从启动日志定位真实文件，生成后立即复制，handoff 前确认已保存。另在 `launch.json` 记录模型、provider、max steps 等有效覆盖，不把原始配置快照误称为最终生效配置。 |
+| `launch-command.txt` | 最终命令及非敏感环境覆盖，使用快照绝对路径，不含 API key。 |
+| `launch.log` | 本次后台启动的完整 stdout / stderr。 |
+
+先写入并核对启动前可确定的参数与快照，再创建后台进程；随后将 PID / 会话名、自动生成的 eval config 路径和就绪证据补入本次 `launch.json`。不把整个 `.env` 或认证配置目录复制进启动记录。
 
 ## 部署与并发
 
@@ -98,13 +113,13 @@ bash scripts/run_parallel.sh "$model_name" "$dump_path" unified "$workers"
 
 ## 后台启动与 handoff
 
-1. 在启动记录目录保存任务清单、模型参数快照、最终命令、仓库路径 / commit / dirty 状态、模型、镜像、worker 数、eval config 路径、部署结论和启动时间。记录有效参数，排除密钥；已有记录不覆盖。原地补跑还保存本次将跳过和将执行的任务列表，并按参考文档备份会被覆盖的根层日志 / 统计文件。
+1. 按“启动配置快照”保存本次 `launch.json`、任务清单、模型参数、eval config 和最终命令；自动生成的 eval config 在生成后补存。原地补跑还保存本次将跳过和将执行的任务列表，并按参考文档备份会被覆盖的根层日志 / 统计文件。
 2. 若原地补跑的待执行任务为零，报告“没有需要补跑的任务”，不启动后台进程，也不宣称已 handoff。
 3. 用持久会话或独立后台进程运行原生命令。例如使用 Python `subprocess.Popen` 的参数数组，设置 `cwd=repo_root`、`env=已确认环境`、`stdin=DEVNULL`、`stdout=打开的启动日志`、`stderr=STDOUT`、`start_new_session=True`。后台命令仍然是 `bash scripts/run_parallel.sh ...`。不要只依赖当前工具调用的临时 session 存活。
 4. 完整启动日志写入本次记录目录的 `launch.log`，不要与脚本自己用 `tee` 写的 `<dump>/stdout.log` 共用文件。记录 PID、启动时间与可核对的命令；使用持久会话时记录会话名。禁止把 key 拼进命令行。生成的临时 eval config 路径可从启动日志定位，保存其快照和有效覆盖信息。
 5. 在有限窗口内检查启动，通常最多 10 分钟；按所选任务的已知预处理耗时可调整并说明。检查间隔不超过 60 秒，期间给出简短进展。核对真实调度进程、预期的筛选数量、已开始执行的任务及其容器 / 日志。
 6. 就绪证据至少包括：后台调度进程仍存活；实际待执行任务数符合预览；至少一个待执行任务已完成预处理、进入 Agent，且日志出现真实模型响应或工具调用。只有 PID、容器创建消息或 `STARTING` 不足以证明模型已经跑起来。检查已启动任务是否出现共同的配置 / 认证 / 容器启动错误；如有则报告，不能只挑一个成功片段宣布整批正常。
-7. 就绪后更新启动记录并交接：模型、清单与任务数、实际执行 / 跳过数量、workers、dump 目录、PID / 会话名、日志路径和实际就绪证据。结束本轮，不再定期轮询，不等待整个实验完成，不追加重跑，不发送 INT / TERM 或停止容器。
+7. 就绪后更新启动记录并交接：模型、清单与任务数、实际执行 / 跳过数量、workers、dump 目录、PID / 会话名、`launch.json` / `model-params.json` / 日志路径和实际就绪证据。结束本轮，不再定期轮询，不等待整个实验完成，不追加重跑，不发送 INT / TERM 或停止容器。
 8. 若短任务已全部结束，按真实结果报告“已结束”，不伪造仍运行的 PID。若检查窗口到期仍未就绪，报告“已启动但尚未验证就绪”、当前阶段、日志及存活情况；保留后台现场，不自动重启或延长为持续监控。若已经退出，报告启动失败和可定位的错误。用户后来明确要求检查时，再做一次实时观察。
 
 脚本的 `tee` 管道未默认启用 `pipefail`，调度器部分失败路径也可能打印 `SUCCESS`；就绪或任务完成的结论不能只看 shell 退出码或这行日志。以当前进程、任务状态和实际产物为证据。
