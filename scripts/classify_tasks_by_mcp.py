@@ -25,8 +25,10 @@ PUBLIC_READONLY_MCPS = {
     "google_map",
     "howtocook",
     "pdf-tools",
+    "playwright_with_chunk",
     "rail_12306",
     "scholarly",
+    "web_search",
     "youtube",
     "youtube-transcript",
 }
