@@ -98,7 +98,7 @@ dumps_finalexp.tar.gz
 detect_cn.py
 
 .vscode
-.claude
+# .claude
 
 aux/
 
@@ -108,7 +108,7 @@ scripts/temp_configs
 hf_trajs
 .vscode
 
-CLAUDE.md
+# CLAUDE.md
 
 analysis
 archieved
