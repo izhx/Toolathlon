@@ -201,18 +201,18 @@ Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
 使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定
 Google 配置待核：个人尚未实跑",原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,跑通,0,landing-task-reminder,✅ PASS（run glm-5.2/260905）,—,"3.2 不稳定：260821 FAIL，260826 PASS
+C-local,跑通,Snowflake,landing-task-reminder,✅ PASS（run glm-5.2/260905）,—,"3.2 不稳定：260821 FAIL，260826 PASS
 文档判断多为环境抖动，重跑可能捞回",
 C-local,跑通,0,meeting-assign,✅ PASS（run glm-5.2/260905）,"🟡 偶发：IMAP 认证失败
 🟡 偶发：SMTP 发送失败",3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-C-local,跑通,0,payable-invoice-checker,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+C-local,跑通,Snowflake,payable-invoice-checker,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,没跑,Google,set-conf-cr-ddl,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Calendar 日历（`google_calendar`）
 凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`
 使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限
 Google 配置待核：个人尚未实跑
 第 6 节冲突约束：不可与 `student-interview` 并发",原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,跑通,0,sla-timeout-monitor,"✅ FAIL（run glm-5.2/260905）
+C-local,跑通,Snowflake,sla-timeout-monitor,"✅ FAIL（run glm-5.2/260905）
 9 封客户道歉邮件与 6 个负例账户校验全部正确，但漏发经理提醒邮件：dhall@mcp.com（4 张工单）未收到 manager reminder；能力问题，非 infra",—,"3.2 不稳定：260821 FAIL，260826 PASS
 文档判断多为环境抖动，重跑可能捞回",
 C-local,没跑,Google,student-interview,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
@@ -221,7 +221,7 @@ Google 依赖：Calendar 日历（`google_calendar`）
 使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限
 Google 配置待核：个人尚未实跑
 第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发",原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,跑通,0,travel-expense-reimbursement,✅ PASS（run glm-5.2/260905）,—,3.3 B 从未通过：模型能力/任务难度为主,
+C-local,跑通,Snowflake,travel-expense-reimbursement,✅ PASS（run glm-5.2/260905）,—,3.3 B 从未通过：模型能力/任务难度为主,
 C-local,没跑,Google,update-material-inventory,⬜ 待填写,—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）

@@ -82,6 +82,7 @@
     .block-yahoo { background:#fff0d9; color:#8c5a0b; }
     .block-notion { background:#eee9f8; color:#665087; }
     .block-google { background:#e5effb; color:#3b619a; }
+    .block-snowflake { background:#e2f3f7; color:#226879; }
     .block-reason { display:block; font-size:10px; color:var(--muted); margin-top:4px; line-height:1.55; white-space:pre-line; }
     code { font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;
       background:#eff2ed; border-radius:3px; padding:1px 3px; overflow-wrap:anywhere; }
@@ -126,7 +127,7 @@
     <div class="stat pass"><small>跑通</small><strong id="stat-pass">—</strong><span>原记录有 ✅</span></div>
     <div class="stat fail"><small>不通</small><strong id="stat-fail">—</strong><span>已填写，无 ✅</span></div>
     <div class="stat"><small>没跑</small><strong id="stat-pending">—</strong><span>原记录为空或待填写</span></div>
-    <div class="stat"><small>已标注依赖</small><strong id="stat-labeled">—</strong><span>Yahoo / Google / Notion，按任务去重</span></div>
+    <div class="stat"><small>已标注依赖</small><strong id="stat-labeled">—</strong><span>Yahoo / Google / Notion / Snowflake，按任务去重</span></div>
   </section>
   <form class="filters" id="filters" aria-label="任务筛选">
     <fieldset class="multi-filter" id="filter-category" disabled>
@@ -153,7 +154,8 @@
         <label><input type="checkbox" name="block" value="yahoo">Yahoo Finance</label>
         <label><input type="checkbox" name="block" value="google">Google</label>
         <label><input type="checkbox" name="block" value="notion">Notion</label>
-        <label><input type="checkbox" name="block" value="0">0 · 未标注这三类依赖</label>
+        <label><input type="checkbox" name="block" value="snowflake">Snowflake</label>
+        <label><input type="checkbox" name="block" value="0">0 · 未标注这四类依赖</label>
       </div>
     </fieldset>
     <div class="search-control"><label for="filter-search">搜索任务或说明</label>
@@ -165,9 +167,9 @@
   <details class="legend">
     <summary>STATUS / BLOCK 口径与历史分类说明</summary>
     <p><b>STATUS 看对号：</b>原始“我跑通情况”首行含 ✅ 就记为“跑通”；因此 ✅ FAIL、✅ NO_EVAL、✅🟠 PASS 都为“跑通”。已填写但没有 ✅ 为“不通”；空白或待填写为“没跑”。它不表示评测是否 PASS。</p>
-    <p><b>BLOCK 是服务依赖标签：</b>可同时标注 Yahoo Finance、Google、Notion；Google 包含 OAuth、GCP 与 Maps。标签来自任务配置及预处理/评测依赖核对，由原始文档的 BLOCK 列维护。任务跑通后仍保留标签；标签不表示当前服务失败或尚未配置。0 表示未标注这三类依赖，不保证没有其他依赖或阻塞。</p>
+    <p><b>BLOCK 是服务依赖标签：</b>可同时标注 Yahoo Finance、Google、Notion、Snowflake；Google 包含 OAuth、GCP 与 Maps。标签来自任务配置及预处理/评测依赖核对，由原始文档的 BLOCK 列维护。任务跑通后仍保留标签；标签不表示当前服务失败或尚未配置。0 表示未标注这四类依赖，不保证没有其他依赖或阻塞。</p>
     <p>429、缺凭据、失败阶段及待核情况保留在每行说明和“我跑通情况”中。例如 quantitative-financial-analysis 同时依赖 Yahoo Finance、Google、Notion，但本次先失败在 Google 初始化，后续服务尚未验证。</p>
-    <p><b>多选筛选：</b>任务类别、STATUS、BLOCK 均可多选，每组内匹配任一选项，某组未选表示不限制该组。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，会显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 0（未标注这三类依赖）可与服务选项同时勾选，例如选 0 和 Google，会显示未标注这三类依赖或涉及 Google 的任务；勾选三个服务可查看所有已标注依赖的任务。搜索条件需同时满足；顶部统计按任务去重，重置会清空所有选择和搜索。</p>
+    <p><b>多选筛选：</b>任务类别、STATUS、BLOCK 均可多选，每组内匹配任一选项，某组未选表示不限制该组。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，会显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 0（未标注这四类依赖）可与服务选项同时勾选，例如选 0 和 Google，会显示未标注这四类依赖或涉及 Google 的任务；勾选全部四个服务可查看所有已标注依赖的任务。搜索条件需同时满足；顶部统计按任务去重，重置会清空所有选择和搜索。</p>
     <p><b>历史 inventory 分类：</b>3.1 = 稳定可跑；3.2 = 不稳定；3.3 A = 从未通过，以环境／凭据问题为主；3.3 B = 从未通过，以能力／难度为主；3.4 = 无有效评测产出；4 = 未验证；5.1 = 低外部依赖。smoke test 为原文建议子集；第 6 节为并发冲突约束。这些历史分类与本表五类执行分组、个人 STATUS 是不同维度。C-notion 独立包含全部 8 个 Notion 任务，其中两个邮件任务仍依赖 Poste。</p>
     <p>环境错误栏“—”表示来源文档未提及，不表示已确认没有环境问题。paper-checker 在原文 3.1 和 5.1 中均有记录，但未列入原文 smoke test 清单，本页保留原始标注。</p>
   </details>
@@ -202,7 +204,7 @@
   const search = document.getElementById("filter-search");
   const groups = {A:"无网络依赖", B:"网络只读", "C-local":"本地基础设施写", "C-remote":"远端写", "C-notion":"Notion 写"};
   const statuses = {"跑通":"1", "不通":"0", "没跑":"-1"};
-  const blocks = {"0":"0", "Yahoo Finance":"yahoo", Google:"google", Notion:"notion"};
+  const blocks = {"0":"0", "Yahoo Finance":"yahoo", Google:"google", Notion:"notion", Snowflake:"snowflake"};
   const columns = ["任务类别", "STATUS", "BLOCK", "任务", "我跑通情况",
     "lwx-env-error 描述", "task inventory 描述", "BLOCK 说明"];
   let rows = [];

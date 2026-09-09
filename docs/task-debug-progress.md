@@ -10,13 +10,15 @@
 
 ## BLOCK 服务依赖标签
 
-`BLOCK` 可同时标注 `Yahoo Finance`、`Google`、`Notion`，记录任务配置声明及预处理/评测涉及的服务。**跑通后保留 BLOCK，STATUS 与依赖标签独立。** 标签不表示服务当前不可用；429、缺凭据、实际失败阶段和未验证情况保留在说明及“我跑通情况”中。`0` 表示未标注这三类依赖，不保证没有其他依赖或阻塞。
+`BLOCK` 可同时标注 `Yahoo Finance`、`Google`、`Notion`、`Snowflake`，记录任务配置声明及预处理/评测涉及的服务。**跑通后保留 BLOCK，STATUS 与依赖标签独立。** 标签不表示服务当前不可用；429、缺凭据、实际失败阶段和未验证情况保留在说明及“我跑通情况”中。`0` 表示未标注这四类依赖，不保证没有其他依赖或阻塞。
 
-直接编辑下方各任务的 BLOCK 列：第一行用英文分号分隔标签，例如 `Yahoo Finance;Google;Notion`；可在 `<br>` 后追加说明。无这三类依赖填 `0`，不能把 `0` 与其他标签混用。导出脚本按固定顺序去重，仅读取显式标签，不根据跑通状态或报错文字重新归类。CSV 与 HTML 从本文更新，网页复选框用于筛选。
+直接编辑下方各任务的 BLOCK 列：第一行用英文分号分隔标签，例如 `Yahoo Finance;Google;Notion`；可在 `<br>` 后追加说明。无这四类依赖填 `0`，不能把 `0` 与其他标签混用。导出脚本按固定顺序去重，仅读取显式标签，不根据跑通状态或报错文字重新归类。CSV 与 HTML 从本文更新，网页复选框用于筛选。
 
-网页的任务类别、STATUS、BLOCK 均可多选：同一组内匹配任一选项，某组未选表示不限制该组；不同筛选组及搜索条件须同时满足。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 `0`（未标注这三类依赖）可与服务选项同时勾选，例如选 `0` 和 Google，会显示未标注这三类依赖或涉及 Google 的任务；勾选三个服务可查看所有已标注依赖的任务。顶部统计按任务去重，重置会清空所有选择和搜索。
+网页的任务类别、STATUS、BLOCK 均可多选：同一组内匹配任一选项，某组未选表示不限制该组；不同筛选组及搜索条件须同时满足。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 `0`（未标注这四类依赖）可与服务选项同时勾选，例如选 `0` 和 Google，会显示未标注这四类依赖或涉及 Google 的任务；勾选全部四个服务可查看所有已标注依赖的任务。顶部统计按任务去重，重置会清空所有选择和搜索。
 
-2026-09-07 核对 108 个任务：Yahoo Finance 10、Google 30、Notion 8，共涉及 43 个任务，标签计数存在重叠。Google 包括声明 Google MCP 的 29 个任务，以及预处理/评测使用 Google 的 `fillout-online-forms`。交叉依赖包括 `quantitative-financial-analysis`（Yahoo Finance + Google + Notion）、`investment-decision-analysis`（Yahoo Finance + Google）、`oil-price`（Yahoo Finance + Notion）、`notion-find-job`（Google + Notion）。`ipad-edu-price` 已跑通，仍保留其任务配置声明的 Yahoo Finance 标签。
+2026-09-09 更新，108 个任务：Yahoo Finance 10、Google 30、Notion 8、Snowflake 4，共涉及 47 个任务，标签计数存在重叠。Google 包括声明 Google MCP 的 29 个任务，以及预处理/评测使用 Google 的 `fillout-online-forms`。交叉依赖包括 `quantitative-financial-analysis`（Yahoo Finance + Google + Notion）、`investment-decision-analysis`（Yahoo Finance + Google）、`oil-price`（Yahoo Finance + Notion）、`notion-find-job`（Google + Notion）。`ipad-edu-price` 已跑通，仍保留其任务配置声明的 Yahoo Finance 标签。
+
+Snowflake 标签来自任务配置中的 `needed_mcp_servers`，覆盖 C-local 的 `landing-task-reminder`、`payable-invoice-checker`、`sla-timeout-monitor`、`travel-expense-reimbursement`。按 C-local 中 `BLOCK=0` 维护的 [临时清单](../configs/task_lists/finalpool/tmp-c-local.txt) 已同步排除这 4 个任务，现为 21 个。
 
 ## task inventory 分类说明
 
@@ -167,13 +169,13 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `k8s-pr-preview-testing` | 0 | 🟡 偶发：MCP 工具执行错误 -32603 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ NO_EVAL（run glm-5.2/260907，归档重跑）<br>跑满 max_turns，**一手核实=agent 策略问题非 infra**：环境可用；死磕 port-forward 未改 NodePort:30123（service.yaml 仍 ClusterIP，Connection reset×14）＋用 Playwright 逐用例手动复现耗光 turn＋误删仓库＋未产出 filled-test-results-report.md。MCP -32603 仅 1 次为自身传参错误可自修 |
 | `k8s-redis-helm-upgrade` | 0 | 🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Docker Registry 5xx / ImagePullBackOff<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>Docker Registry 5xx / ImagePullBackOff | ✅ NO_EVAL（run glm-5.2/260907，归档重跑）<br>跑满 max_turns，**一手核实=agent 决策瘫痪非 infra**：ImagePullBackOff 真实 44 次但无 registry 5xx/TLS/timeout 签名（历史"Registry 5xx 故障"定性更正）；这是任务设计障碍（bitnami→bitnamilegacy 迁移），preprocess 已预加载 bitnamilegacy/redis:7.2.4-debian-12-r9，正确解离线可达。agent 最终拼对 override（bitnamilegacy+tag 7.2.4+allowInsecureImages）却被 207 处犹豫独白空耗 turn，撞上限前没跑完 |
 | `k8s-safety-audit` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
-| `landing-task-reminder` | 0 | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run glm-5.2/260905） |
+| `landing-task-reminder` | Snowflake | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run glm-5.2/260905） |
 | `meeting-assign` | 0 | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
-| `payable-invoice-checker` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
+| `payable-invoice-checker` | Snowflake | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260905） |
 | `set-conf-cr-ddl` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `student-interview` 并发 | ⬜ 待填写 |
-| `sla-timeout-monitor` | 0 | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run glm-5.2/260905）<br>9 封客户道歉邮件与 6 个负例账户校验全部正确，但漏发经理提醒邮件：dhall@mcp.com（4 张工单）未收到 manager reminder；能力问题，非 infra |
+| `sla-timeout-monitor` | Snowflake | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run glm-5.2/260905）<br>9 封客户道歉邮件与 6 个负例账户校验全部正确，但漏发经理提醒邮件：dhall@mcp.com（4 张工单）未收到 manager reminder；能力问题，非 infra |
 | `student-interview` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发 | ⬜ 待填写 |
-| `travel-expense-reimbursement` | 0 | — | 3.3 B 从未通过：模型能力/任务难度为主 | ✅ PASS（run glm-5.2/260905） |
+| `travel-expense-reimbursement` | Snowflake | — | 3.3 B 从未通过：模型能力/任务难度为主 | ✅ PASS（run glm-5.2/260905） |
 | `update-material-inventory` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ⬜ 待填写 |
 | `woocommerce-customer-survey` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）<br>凭据：OAuth `configs/google_credentials.json`；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token`<br>使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `woocommerce-product-recall` 并发 | ⬜ 待填写 |
 | `woocommerce-new-product` | 0 | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>IMAP/SMTP 抖动或连接拒绝 | ✅ FAIL（run glm-5.2/260907）<br>商品检测正常（3 新品+4 促销品），但折扣邮件 0/40 未发（要求给全部 40 客户各发 1 封）；agent 漏做群发邮件动作，非 infra |

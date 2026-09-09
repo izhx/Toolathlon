@@ -18,7 +18,8 @@ GROUPS = {
     "C-notion": "Notion 写",
 }
 STATUS_LABELS = {1: "跑通", 0: "不通", -1: "没跑"}
-BLOCK_LABELS = {"yahoo": "Yahoo Finance", "google": "Google", "notion": "Notion"}
+BLOCK_LABELS = {"yahoo": "Yahoo Finance", "google": "Google", "notion": "Notion",
+                "snowflake": "Snowflake"}
 CSV_FIELDS = ["任务类别", "STATUS", "BLOCK", "任务", "我跑通情况",
               "lwx-env-error 描述", "task inventory 描述", "BLOCK 说明"]
 
@@ -38,7 +39,7 @@ def parse_blocks(cell):
     parts = re.split(r"<br\s*/?>", cell, maxsplit=1, flags=re.I)
     labels = {label.strip() for label in parts[0].split(";")}
     if not labels <= {"0", *BLOCK_LABELS.values()} or ("0" in labels and len(labels) > 1):
-        raise ValueError("BLOCK must be 0 or semicolon-separated Yahoo Finance, Google, Notion")
+        raise ValueError("BLOCK must be 0 or semicolon-separated " + ", ".join(BLOCK_LABELS.values()))
     blocks = [code for code, label in BLOCK_LABELS.items() if label in labels]
     return blocks, parts[1].strip() if len(parts) > 1 else ""
 
