@@ -1,0 +1,6 @@
+  {
+    "temperature": 1,
+    "top_p": 0.95,
+    "extra_body":{"enable_thinking":true},
+    "reasoning_effort": "max"
+  }
