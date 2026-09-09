@@ -4,7 +4,7 @@
 
 依据 `docs/finalpool-task-risk-classification.md`，将 `tasks/finalpool` 的 108 个任务拆成 5 个互斥且完备的 task list。运行时仍只保留一份 canonical `tasks/finalpool`，不复制任务目录，也不为任务创建软链接。
 
-分组通过一个薄封装脚本调用现有 `scripts/run_parallel.sh`。分组运行时通过 `--task-list` 显式指定清单和独立 dump 目录，因此五组可以由五个进程同时运行；省略 `--task-list` 时运行 `tasks/finalpool` 全量任务。
+分组通过一个薄封装脚本调用现有 `scripts/run_parallel.sh`。分组运行时通过 `--task-list` 显式指定清单和独立 dump 目录，可以分别启动进程；省略 `--task-list` 时运行 `tasks/finalpool` 全量任务。Google Scholar 互斥组跨 B 与 C-remote，分别启动这两组时需错开 Scholar 任务，或将它们放在同一批次调度。
 
 C-notion 组内必须串行：显式设置 `workers=1`，每个任务完整结束后再开始下一个，也不能同时启动多个 Notion 作业。其他组可以按各自资源条件设置 workers；不能直接把其他组的并发参数用于 Notion。具体命令见 [Notion 评测](notion-evaluation.md)。
 
@@ -31,9 +31,9 @@ C-notion 组内必须串行：显式设置 `workers=1`，每个任务完整结�
 1. 每个有效行只包含一个 `tasks/finalpool` 下的任务 basename。
 2. 五组之间没有重复任务。
 3. 五组并集恰好覆盖 108 个任务。
-4. `tasks/finalpool/task_conflict.json` 中每个 conflict group 的成员必须位于同一 task list。
+4. 原有 4 个 conflict group 的成员仍各自位于同一 task list；Google Scholar 是明确登记的跨组例外，包含 6 个 B 任务与 C-remote 的 `llm-training-dataset`。
 
-当前四个显式冲突组不会跨分组：三个落在 C 本地基础设施写组，一个落在 C 远端写组。这里的冲突锁是单个 `run_parallel.py` 进程内的 `asyncio.Lock`；如果以后调整清单，不能把同一 conflict group 拆到两个并发进程。
+当前共有 5 个显式冲突组：原有三个落在 C 本地基础设施写组、一个落在 C 远端写组；新增 Google Scholar 组为 `academic-pdf-report`、`add-bibtex`、`cvpr-research`、`find-alita-paper`、`llm-training-dataset`、`logical-datasets-collection`、`profile-update-online`。这里的冲突锁是单个 `run_parallel.py` 进程内的 `asyncio.Lock`，覆盖完整任务执行，等待锁时不占 worker。要保证 Scholar 组串行，需把相关任务交给同一调度进程，或在不同批次间手动错开；不能依靠该锁协调分别启动的 B 与 C-remote。串行只减少任务之间的请求叠加，不保证消除限流。
 
 ## 薄封装脚本
 
@@ -109,7 +109,7 @@ results/<run-id>/
 bash global_preparation/deploy_containers.sh true
 ```
 
-部署成功后再启动五组。不要在其他组运行期间重新执行部署脚本，因为它会清理并重建共享容器、网络和端口。
+部署成功后再安排各组运行，并协调 B 与 C-remote 的 Scholar 任务，确保它们不跨进程重叠。不要在其他组运行期间重新执行部署脚本，因为它会清理并重建共享容器、网络和端口。
 
 只运行 C-notion 时，已有可用 Poste 即可复用；首次准备邮件后端可执行 `bash global_preparation/deploy_notion_containers.sh`。完整部署已包含 Poste，运行全部五组时不用再执行最小部署。C-notion 的两个邮件任务与 C-local 共用 Poste，任一组使用期间都不能重建它；跨组邮箱操作也需要核对资源是否重叠。
 
@@ -178,7 +178,7 @@ C 本地组中只有 `k8s-redis-helm-upgrade` 和 `k8s-safety-audit` 未直接�
 
 同一模型按当前五份清单运行时，Canvas、Poste 和 WooCommerce 只需预先部署一套监听者。C-local 与 C-notion 会共同连接 Poste，但普通邮件任务是客户端，不会各自再次绑定服务端口；`30123`、`30124`、`30137` 仍分别只属于一个 C-local 任务。
 
-端口不重复绑定仍不能排除共享状态竞争。C-local 内的 Canvas/WooCommerce 操作，以及 C-local 与 C-notion 间的 Poste 操作，都需要遵守各自的任务资源边界。当前 `task_conflict.json` 中的三个 C-local 冲突对和一个 C-remote Hugging Face 冲突对仍各在同一份清单内；这些进程内锁不覆盖未登记的跨组邮件状态竞争。
+端口不重复绑定仍不能排除共享状态竞争。C-local 内的 Canvas/WooCommerce 操作，以及 C-local 与 C-notion 间的 Poste 操作，都需要遵守各自的任务资源边界。当前 `task_conflict.json` 中的三个 C-local 冲突对和一个 C-remote Hugging Face 冲突对仍各在同一份清单内；新增的 Google Scholar 组跨 B 与 C-remote，需由同一进程调度或跨批次手动错开。进程内锁也不覆盖未登记的跨组邮件状态竞争。
 
 ### 多模型同机并发
 
@@ -192,7 +192,7 @@ C 本地组中只有 `k8s-redis-helm-upgrade` 和 `k8s-safety-audit` 未直接�
 
 A 和 B 组本身可以不受这十个宿主端口的影响，但多模型并发仍可能触发模型 API 或外部服务的限流。C-remote 需要隔离 Google、GitHub、Hugging Face 等远端资源；C-notion 需要隔离 Notion 页面和认证状态，以及所用的 Google/GitHub/W&B 资源和邮件账号。
 
-因此，单模型五组并发应遵循“部署一次、启动五组、等待全部结束”。多模型并发时，应协调共用基础设施的 C-local 和 C-notion 邮件任务，并串行或隔离同一任务使用的 Notion 页面。真正并行时需为每个模型准备独立 checkout/worktree、prefix、suffix、端口、基础设施数据及远端任务资源。
+因此，单模型分组运行应遵循“部署一次、协调各组共享服务、等待全部结束”，其中 B 与 C-remote 的 Scholar 任务需错开或合并到同一批次。多模型并发时，应协调共用基础设施的 C-local 和 C-notion 邮件任务，并串行或隔离同一任务使用的 Notion 页面。真正并行时需为每个模型准备独立 checkout/worktree、prefix、suffix、端口、基础设施数据及远端任务资源。
 
 ## dump 与结果合并
 
@@ -203,7 +203,7 @@ A 和 B 组本身可以不受这十个宿主端口的影响，但多模型并发
 ## 已知边界
 
 - A 的“无网络依赖”仅指任务工具；远程模型 API 仍然需要网络。
-- `task_conflict.json` 只覆盖四个已声明的冲突组。C-local、C-remote、C-notion 仍可能共享 Google/GitHub 等远端资源，C-local 与 C-notion 还共享 Poste；跨实验的 C-notion 也可能共用 Notion 页面和认证。五组拆分本身不提供跨进程外部状态隔离。
+- `task_conflict.json` 只覆盖五个已声明的冲突组，且只在同一调度进程内生效。C-local、C-remote、C-notion 仍可能共享 Google/GitHub 等远端资源，C-local 与 C-notion 还共享 Poste；跨实验的 C-notion 也可能共用 Notion 页面和认证。五组拆分本身不提供跨进程外部状态隔离。
 - task-list 的执行顺序不固定，`run_parallel.py` 会在执行前随机打乱任务。
 - 当前范围只实现分组清单和薄封装脚本，不实现结果合并工具。
 

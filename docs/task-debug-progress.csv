@@ -49,15 +49,15 @@ A,跑通,0,university-course-selection,"✅ FAIL（run glm-5.2/260903）
 5.1 低外部依赖",
 B,跑通,Google Scholar,academic-pdf-report,✅ PASS（run glm-5.2/260904）,—,"3.3 A 从未通过：环境/凭据问题为主
 Playwright page.goto 60s 超时及目标站反爬",2026-09-09 用户反馈：Google Scholar 被限流
-B,跑通,0,add-bibtex,"✅ FAIL（run glm-5.2/260904）
-57 条 bibtex 内容不符：作者列表截断为""and others""（应列全）、会议名缺限定词（""ICLR"" vs ""the ninth ICLR""）、标题大小写、缺 `journal` 字段、cite key 命名不一致（`roziere2023codellama` vs `roziere2023code`）；能力问题，非 infra",🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+B,跑通,Google Scholar,add-bibtex,"✅ FAIL（run glm-5.2/260904）
+57 条 bibtex 内容不符：作者列表截断为""and others""（应列全）、会议名缺限定词（""ICLR"" vs ""the ninth ICLR""）、标题大小写、缺 `journal` 字段、cite key 命名不一致（`roziere2023codellama` vs `roziere2023code`）；能力问题，非 infra",🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,任务配置声明 scholarly，可检索 Google Scholar（按用户要求标注）
 B,跑通,0,course-schedule,"✅ FAIL（run glm-5.2/260904）
 课程名漏合并：`算法分析与设计-01班` 应为 `算法分析与设计-01、02班`；能力问题，非 infra",—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
 5.1 低外部依赖
 列入文档 smoke test 集",
-B,跑通,0,cvpr-research,✅ PASS（run glm-5.2/260904）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-B,跑通,0,find-alita-paper,✅ PASS（run glm-5.2/260904）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
-跨全部 5 个批次 4/5 PASS",
+B,跑通,Google Scholar,cvpr-research,✅ PASS（run glm-5.2/260904）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,个人资料要求参考 Google Scholar 页面了解论文（按用户要求标注）
+B,跑通,Google Scholar,find-alita-paper,✅ PASS（run glm-5.2/260904）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+跨全部 5 个批次 4/5 PASS",任务配置声明 scholarly，可检索 Google Scholar（按用户要求标注）
 B,跑通,0,git-milestone,✅ PASS（run glm-5.2/260904）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
 5.1 低外部依赖
 列入文档 smoke test 集",
@@ -80,9 +80,9 @@ Playwright page.goto 60s 超时及目标站反爬",
 B,跑通,0,latex-prompt-box,"✅ FAIL（run glm-5.2/260904）
 填充内容不符合任一可接受的 Simple Prompt 渲染格式（起始不匹配）；能力问题，非 infra",—,"3.3 B 从未通过：模型能力/任务难度为主
 5.1 低外部依赖",
-B,跑通,0,logical-datasets-collection,"✅ FAIL（run glm-5.2/260904）
+B,跑通,Google Scholar,logical-datasets-collection,"✅ FAIL（run glm-5.2/260904）
 表格内容或格式与 groundtruth 不符（local check: Table content or format does not match）；能力问题，非 infra",—,"3.2 不稳定：260821 FAIL，260826 PASS
-文档判断多为环境抖动，重跑可能捞回",
+文档判断多为环境抖动，重跑可能捞回",任务配置声明 scholarly，可检索 Google Scholar（按用户要求标注）
 B,跑通,YouTube,mrbeast-analysis,"✅ FAIL（run glm-5.2/260904）
 Detail_Lists 表 duration_seconds 单值不符（agent 924 / gt 1019），其余 (32,7) 结构一致；数据准确性/能力问题，非 infra（youtube MCP 仅首次 init 超时后恢复）","🔴 必现：Hugging Face 读取或 SSL 握手超时
 🔴 必现：API Key 无效","3.2 不稳定：260821 PASS，260826 FAIL
@@ -100,7 +100,7 @@ B,不通,Yahoo Finance,nvidia-stock-analysis,"🟠 NO_EVAL（run glm-5.2/260904�
 🟡 偶发：MCP 工具执行错误 -32603
 🟡 偶发：Python 依赖缺失或 ABI 不匹配","3.3 A 从未通过：环境/凭据问题为主
 Yahoo Finance 公共接口 IP 限流 429",原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞
-B,跑通,0,profile-update-online,✅ PASS（run glm-5.2/260904）,🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+B,跑通,Google Scholar,profile-update-online,✅ PASS（run glm-5.2/260904）,🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,任务配置声明 scholarly，可检索 Google Scholar（按用户要求标注）
 B,不通,Google,search-ca-school,"🟠 NO_EVAL（run glm-5.2/260904）
 跑满 max_turns 未产出可判定结果
 根因=infra/凭据：轨迹 56 次页面加载失败（net::ERR_NETWORK_CHANGED，csrankings.org）+ Google Maps geocoding「invalid API key」",—,"第 4 节未验证：无历史实跑记录
@@ -307,11 +307,12 @@ preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra",
 Google 依赖：BigQuery 数据集 `transactions_analytics` + Storage 桶 + Logging 日志桶（`google-cloud`）
 凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
 使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果",原记录（Google）：本次记录中的服务／凭据阻塞
-C-remote,不通,Google,llm-training-dataset,"🟠 NO_EVAL（run glm-5.2/260904）
+C-remote,不通,Google;Google Scholar,llm-training-dataset,"🟠 NO_EVAL（run glm-5.2/260904）
 preprocess 失败：Google Sheets/Drive 凭据缺 `token`（KeyError；代码直接读取该字段）；根因=infra",—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
-使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",原记录（Google）：Google 凭据缺 token；已核对预处理代码
+使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定","原记录（Google）：Google 凭据缺 token；已核对预处理代码
+任务配置声明 scholarly，可检索 Google Scholar（按用户要求标注）"
 C-remote,不通,Google,machine-operating,"🟠 NO_EVAL（run glm-5.2/260904）
 preprocess 失败：缺 `configs/gcp-service_account.keys.json`；根因=infra",—,"第 4 节未验证：无历史实跑记录
 Google 依赖：BigQuery 数据集 `machine_operating` + Storage 桶（`google-cloud`）

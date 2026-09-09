@@ -3,6 +3,15 @@
         ["set-conf-cr-ddl", "student-interview"],
         ["huggingface-upload","dataset-license-issue"],
         ["woocommerce-customer-survey","woocommerce-product-recall"],
-        ["canvas-submit-late-work", "canvas-do-quiz"]
+        ["canvas-submit-late-work", "canvas-do-quiz"],
+        [
+            "academic-pdf-report",
+            "add-bibtex",
+            "cvpr-research",
+            "find-alita-paper",
+            "llm-training-dataset",
+            "logical-datasets-collection",
+            "profile-update-online"
+        ]
     ]
 }

@@ -1,17 +1,17 @@
 # finalpool 五组并发风险分析
 
-- 分析日期：2026-09-03；分组更新：2026-09-07（主机资源和运行条件仍为原检查快照，本次未重新验证）
+- 分析日期：2026-09-03；分组更新：2026-09-07；Scholar 互斥更新：2026-09-09（主机资源和运行条件仍为原检查快照，本次未重新验证）
 - 适用范围：当前 checkout 中的五个 `finalpool` task list，以及 `containerized` / `decoupled` 并行评测流程
 - 分析方式：源码审计、任务配置核对、聚焦测试和只读主机检查；未启动正式任务、基础设施或真实 OAuth/API 并发验证
 
 ## 一、结论
 
-五组在任务清单和 dump 目录层面可以并行，但当前环境还不能直接开始正式评测，也不建议按默认参数一次启动 `5 × 10 = 50` 个 workers（C-notion 只有 8 个任务，实际同时活跃任务上限为 48）。
+五组的任务清单和 dump 目录保持独立；新增 Scholar 互斥组跨 B 与 C-remote，相关任务需由同一调度进程串行执行或跨批次手动错开。按原检查快照，环境还不能直接开始正式评测，也不建议按默认参数一次启动 `5 × 10 = 50` 个 workers（C-notion 只有 8 个任务，实际同时活跃任务上限为 48）。
 
 | 判断项 | 结论 |
 |---|---|
 | 五组任务是否重复 | 否；共享服务的状态和生命周期仍需协调 |
-| 已声明冲突是否跨组 | 否，可以由现有进程内锁处理 |
+| 已声明冲突是否跨组 | 是，Google Scholar 组跨 B 与 C-remote；现有进程内锁仅能协调同一批次 |
 | dump 是否会覆盖 | 使用当前 `--attempts` 布局时不会 |
 | 本地基础设施是否完全隔离 | 否，仅做到任务命名空间隔离，不是实例隔离 |
 | 外部账号是否隔离 | 否，共享 Notion、Google、GitHub、Hugging Face 等账号 |
@@ -43,17 +43,18 @@
 - 五组交集为空；
 - 五组并集恰好覆盖 108 个 `tasks/finalpool` 任务目录；
 - 没有缺失或额外任务；
-- 三个显式冲突组位于 `c-local`，一个位于 `c-remote`；
-- `tests.test_finalpool_task_lists` 和 `tests.test_run_parallel_task_list` 共 21 个测试通过。
+- 原有三个显式冲突组位于 `c-local`、一个位于 `c-remote`；新增 Scholar 组跨 `b` 与 `c-remote`；
+- 原分组验证时，`tests.test_finalpool_task_lists` 和 `tests.test_run_parallel_task_list` 共 21 个测试通过。
 
-当前 `tasks/finalpool/task_conflict.json` 中有四个冲突组：
+当前 `tasks/finalpool/task_conflict.json` 中有五个冲突组：
 
 1. `set-conf-cr-ddl` / `student-interview`
 2. `huggingface-upload` / `dataset-license-issue`
 3. `woocommerce-customer-survey` / `woocommerce-product-recall`
 4. `canvas-submit-late-work` / `canvas-do-quiz`
+5. Google Scholar：`academic-pdf-report` / `add-bibtex` / `cvpr-research` / `find-alita-paper` / `llm-training-dataset` / `logical-datasets-collection` / `profile-update-online`
 
-这些冲突对没有被拆到两个 task list，所以同一组内的 `run_parallel.py` 可以对它们加锁。
+前四组仍各自位于同一个 task list。Scholar 组有 6 个 B 任务，以及 C-remote 的 `llm-training-dataset`；只有交给同一次 `run_parallel.py` 调度，7 个任务才会共用同一把互斥锁。等待锁时不占 worker，其他任务仍可并发。
 
 但是，`run_parallel.py` 为每个 `AsyncTaskScheduler` 创建自己的 `asyncio.Lock`。该锁只对当前 Python 进程有效，不能协调：
 
@@ -62,7 +63,7 @@
 - 另一个 checkout/worktree；
 - 绕过该调度器直接启动的任务。
 
-五组当前能保留声明锁语义，是因为已声明冲突对全部位于同一组，不代表所有共享后端冲突都已登记。
+分别启动 B 与 C-remote 时，必须错开其中的 Scholar 任务，或将这些任务合并到同一批次；执行分组不提供跨进程互斥。串行只减少任务之间的请求叠加，不保证消除 Scholar 限流。
 
 ## 三、dump 路径与结果隔离
 
@@ -506,7 +507,7 @@ group 进程退出码为 0
 
 ## 十三、最终判断
 
-当前五组的拆分和 dump 设计已经具备并行执行的基础，已声明的四个冲突组也没有被错误拆分。
+当前五组的拆分和 dump 设计已经具备并行执行的基础，原有四个冲突组仍各自保留在同一清单内。新增的 Google Scholar 组跨 B 与 C-remote，需要同批次调度或跨批次手动错开。
 
 但它们仍是同一个运行实例中的五个调度进程，共享：
 

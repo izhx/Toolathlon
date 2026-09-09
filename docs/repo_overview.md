@@ -177,7 +177,7 @@ scripts/run_parallel.sh
 
 待执行任务会被随机打乱。`AsyncTaskScheduler` 使用 `asyncio.Semaphore(workers)` 限制总并发，并读取 `tasks/<folder>/task_conflict.json` 创建冲突锁，见 `run_parallel.py:120-244,678-744`。
 
-当前 `finalpool` 只配置了四个二元冲突组：
+当前 `finalpool` 配置了五个冲突组，其中四个为二元冲突组：
 
 ```text
 set-conf-cr-ddl              <-> student-interview
@@ -185,6 +185,8 @@ huggingface-upload           <-> dataset-license-issue
 woocommerce-customer-survey  <-> woocommerce-product-recall
 canvas-submit-late-work      <-> canvas-do-quiz
 ```
+
+第 5 组为 Google Scholar：`academic-pdf-report`、`add-bibtex`、`cvpr-research`、`find-alita-paper`、`llm-training-dataset`、`logical-datasets-collection`、`profile-update-online`。
 
 同一冲突组内的任务串行执行，并且等待冲突锁时不占 worker。但这些锁只是当前 `run_parallel.py` 进程内的 `asyncio.Lock`，不能协调另一个并行评测进程、另一个 checkout 或另一台机器。
 
@@ -393,7 +395,7 @@ python3 scripts/calculate_pass_rate.py results/my-run --task-list configs/task_l
 
 README 明确建议在正式并行评测前重新部署所需应用，见 `README.md:247-256`。`run_parallel.sh` 本身不会部署或重置这些服务。
 
-当前 `task_conflict.json` 的四个显式冲突组只能缓解已经登记、且处于同一个 `run_parallel.py` 进程中的冲突。执行清单另分为 A、B、C-local、C-remote、C-notion 五组；其中 C-notion 的两个邮件任务仍与 C-local 共享 Poste。多模型、多进程或多个 checkout 同时运行时，进程内锁不能协调这些跨进程访问。详见 [分组评测](finalpool-grouped-evaluation.md)。
+当前 `task_conflict.json` 的五个显式冲突组只能缓解已经登记、且处于同一个 `run_parallel.py` 进程中的冲突。Google Scholar 组跨 B 与 C-remote，分别启动这两组时需错开其中的 Scholar 任务，或将这些任务合并到同一批次调度。执行清单另分为 A、B、C-local、C-remote、C-notion 五组；其中 C-notion 的两个邮件任务仍与 C-local 共享 Poste。多模型、多进程或多个 checkout 同时运行时，进程内锁不能协调这些跨进程访问。详见 [分组评测](finalpool-grouped-evaluation.md)。
 
 ### 10.3 重跑与聚合可能混入历史结果
 

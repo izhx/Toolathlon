@@ -106,7 +106,7 @@ class FinalpoolTaskListsTest(unittest.TestCase):
             {row["任务"]: row["任务类别"].lower() for row in rows}, expected
         )
 
-    def test_declared_conflicts_do_not_cross_task_lists(self) -> None:
+    def test_declared_conflicts_respect_documented_group_boundaries(self) -> None:
         task_to_group = {
             task: group_name
             for group_name, tasks in self.groups.items()
@@ -115,8 +115,30 @@ class FinalpoolTaskListsTest(unittest.TestCase):
         conflict_config = json.loads(
             (FINALPOOL_ROOT / "task_conflict.json").read_text(encoding="utf-8")
         )
+        with (REPO_ROOT / "docs/task-debug-progress.csv").open(
+            encoding="utf-8-sig", newline=""
+        ) as source:
+            scholar_tasks = {
+                row["任务"] for row in csv.DictReader(source)
+                if "Google Scholar" in row["BLOCK"].split(";")
+            }
+        scholar_groups = [
+            group for group in conflict_config["conflict_groups"]
+            if "academic-pdf-report" in group
+        ]
+        self.assertEqual(len(scholar_groups), 1)
+        self.assertEqual(set(scholar_groups[0]), scholar_tasks)
+        seen = set()
         for conflict_group in conflict_config["conflict_groups"]:
+            self.assertEqual(len(conflict_group), len(set(conflict_group)))
+            self.assertFalse(seen.intersection(conflict_group))
+            seen.update(conflict_group)
             assigned_groups = {task_to_group[task] for task in conflict_group}
+            if set(conflict_group) == scholar_tasks:
+                # Scholar is an intentional cross-list conflict: it is only
+                # serialized when these tasks use the same scheduler process.
+                self.assertEqual(assigned_groups, {"b", "c-remote"})
+                continue
             self.assertEqual(
                 len(assigned_groups),
                 1,
