@@ -1,0 +1,3 @@
+interface:
+  display_name: "T8N Run"
+  short_description: "审阅参数并启动 Toolathlon 实验，支持原地补跑和后台交接"
