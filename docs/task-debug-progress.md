@@ -10,17 +10,17 @@
 
 ## BLOCK 服务依赖标签
 
-`BLOCK` 可同时标注 `Yahoo Finance`、`Google`、`Notion`、`Snowflake`、`YouTube`、`Google Scholar`，记录任务配置声明、预处理/评测涉及及人工确认的服务依赖。**跑通后保留 BLOCK，STATUS 与依赖标签独立。** 标签不表示服务当前不可用；429、缺凭据、实际失败阶段和未验证情况保留在说明及“我跑通情况”中。`0` 表示未标注这些依赖，不保证没有其他依赖或阻塞。
+`BLOCK` 可同时标注 `Yahoo Finance`、`Google`、`Notion`、`Snowflake`、`Google Scholar`，记录任务配置声明、预处理/评测涉及及人工确认的服务依赖。**跑通后保留 BLOCK，STATUS 与依赖标签独立。** 标签不表示服务当前不可用；429、缺凭据、实际失败阶段和未验证情况保留在说明及“我跑通情况”中。`0` 表示未标注这些依赖，不保证没有其他依赖或阻塞。
 
 直接编辑下方各任务的 BLOCK 列：第一行用英文分号分隔标签，例如 `Yahoo Finance;Google;Notion`；可在 `<br>` 后追加说明。无这些依赖填 `0`，不能把 `0` 与其他标签混用。导出脚本按固定顺序去重，仅读取显式标签，不根据跑通状态或报错文字重新归类。CSV 与 HTML 从本文更新，网页复选框用于筛选。
 
 网页的任务类别、STATUS、BLOCK 均可多选：同一组内匹配任一选项，某组未选表示不限制该组；不同筛选组及搜索条件须同时满足。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 `0`（未标注这些依赖）可与服务选项同时勾选，例如选 `0` 和 Google，会显示未标注这些依赖或涉及 Google 的任务；勾选全部服务可查看所有已标注依赖的任务。顶部统计按任务去重，重置会清空所有选择和搜索。
 
-2026-09-09 更新，108 个任务：Yahoo Finance 10、Google 30、Notion 8、Snowflake 4、YouTube 2、Google Scholar 7，共涉及 55 个任务，标签计数存在重叠。Google 包括声明 Google MCP 的 29 个任务，以及预处理/评测使用 Google 的 `fillout-online-forms`。交叉依赖包括 `quantitative-financial-analysis`（Yahoo Finance + Google + Notion）、`investment-decision-analysis`（Yahoo Finance + Google）、`oil-price`（Yahoo Finance + Notion）、`notion-find-job`（Google + Notion）。`ipad-edu-price` 已跑通，仍保留其任务配置声明的 Yahoo Finance 标签。
+2026-09-10 更新，108 个任务：Yahoo Finance 10、Google 32、Notion 8、Snowflake 4、Google Scholar 7，共涉及 55 个任务，标签计数存在重叠。Google 包括声明 Google MCP 的 29 个任务、预处理/评测使用 Google 的 `fillout-online-forms`，以及 YouTube 依赖的 `youtube-repo`、`mrbeast-analysis`。交叉依赖包括 `quantitative-financial-analysis`（Yahoo Finance + Google + Notion）、`investment-decision-analysis`（Yahoo Finance + Google）、`oil-price`（Yahoo Finance + Notion）、`notion-find-job`（Google + Notion）。`ipad-edu-price` 已跑通，仍保留其任务配置声明的 Yahoo Finance 标签。
 
-2026-09-09 按用户反馈补充：`youtube-repo`、`mrbeast-analysis` 标注 YouTube，当前 API Key 已过期；`academic-pdf-report` 标注 Google Scholar，当前被限流。YouTube 与 Google Scholar 单独筛选，不计入上述 Google 标签数量。
+2026-09-09 用户反馈：`youtube-repo`、`mrbeast-analysis` 的 YouTube API Key 已过期；`academic-pdf-report` 的 Google Scholar 被限流。2026-09-10 按用户要求将 YouTube 的 BLOCK 类型统一归入 Google，Google Scholar 仍单独筛选。按排除 Yahoo Finance/Google 依赖维护的 [临时清单](../configs/task_lists/finalpool/tmp-all.txt) 同步移除这两个 YouTube 任务，现为 68 个。
 
-同日按用户要求，将配置 scholarly MCP 的 `add-bibtex`、`find-alita-paper`、`llm-training-dataset`、`logical-datasets-collection`、`profile-update-online`，以及个人资料要求参考 Scholar 页面的 `cvpr-research`，统一补充 Google Scholar 标签；`llm-training-dataset` 同时保留 Google 标签。
+2026-09-09 按用户要求，将配置 scholarly MCP 的 `add-bibtex`、`find-alita-paper`、`llm-training-dataset`、`logical-datasets-collection`、`profile-update-online`，以及个人资料要求参考 Scholar 页面的 `cvpr-research`，统一补充 Google Scholar 标签；`llm-training-dataset` 同时保留 Google 标签。
 
 上述 6 个任务与 `academic-pdf-report` 共 7 个任务已加入同一个 [互斥组](../tasks/finalpool/task_conflict.json)，在同一次 `run_parallel.py` 调度中串行执行完整任务，等待锁时不占 worker；其他任务仍可并发。锁仅在当前调度进程内生效，分别启动 B 与 C-remote 时需错开 Scholar 任务，或将它们放在同一批次调度。串行只减少任务之间的请求叠加，不保证消除 Scholar 限流。
 
@@ -57,7 +57,7 @@ Snowflake 标签来自任务配置中的 `needed_mcp_servers`，覆盖 C-local �
 | `google_forms` | 2 | OAuth 用户凭据 `configs/google_credentials.json`，需 Forms + Drive 权限；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token` | 预处理清理表单，agent 创建表单，评测读取 |
 | **合计** | **29** | **15 个 OAuth + 8 个服务账号 + 6 个 API Key** | 同类凭据可共用，无需逐任务认证 |
 
-另有 `fillout-online-forms`：agent 未声明 Google MCP，但预处理/评测使用 Forms 与 Drive，同样需要 OAuth；它未计入上面的 29 个，但计入 BLOCK 的 30 个 Google 依赖任务。原先将这些任务一律标为“OAuth 缺字段”的记录已按实际依赖更正。9 个尚未实跑的 Google 相关任务标为“Google 配置待核”；BLOCK 保留 Google 标签，可同时包含其他服务，说明中的待核不表示已经确认凭据缺失。
+另有 `fillout-online-forms`：agent 未声明 Google MCP，但预处理/评测使用 Forms 与 Drive，同样需要 OAuth；它未计入上面的 29 个，但计入 BLOCK 的 32 个 Google 依赖任务（含 2 个 YouTube 任务）。原先将这些任务一律标为“OAuth 缺字段”的记录已按实际依赖更正。9 个尚未实跑的 Google 相关任务标为“Google 配置待核”；BLOCK 保留 Google 标签，可同时包含其他服务，说明中的待核不表示已经确认凭据缺失。
 
 Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`token_uri`、`client_id`、`client_secret`、`scopes` 六个字段；Forms 清理函数也读取同一组字段。仅补齐 OAuth 的三个身份/刷新字段仍可能报 `KeyError: token`。Cloud 任务还需具备对应云资源权限，MCP 的 `google_cloud_allowed_*` 按任务配置限制资源范围；Maps Key 和服务账号 JSON 不能替代 OAuth 用户凭据。
 
@@ -125,7 +125,7 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `language-school` | 0 | 🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ FAIL（重跑 glm-5.2（已并入 results/glm-5.2））<br>本次页面访问正常并产出结果；Toefl_min_score 填 95≠groundtruth 80（index 4 值不符）；内容/能力问题，非 infra（此前 NO_EVAL 的页面超时本次未复现） |
 | `latex-prompt-box` | 0 | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ FAIL（run glm-5.2/260904）<br>填充内容不符合任一可接受的 Simple Prompt 渲染格式（起始不匹配）；能力问题，非 infra |
 | `logical-datasets-collection` | Google Scholar<br>任务配置声明 scholarly，可检索 Google Scholar（按用户要求标注） | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run glm-5.2/260904）<br>表格内容或格式与 groundtruth 不符（local check: Table content or format does not match）；能力问题，非 infra |
-| `mrbeast-analysis` | YouTube<br>2026-09-09 用户反馈：YouTube API Key 已过期 | 🔴 必现：Hugging Face 读取或 SSL 握手超时<br>🔴 必现：API Key 无效 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run glm-5.2/260904）<br>Detail_Lists 表 duration_seconds 单值不符（agent 924 / gt 1019），其余 (32,7) 结构一致；数据准确性/能力问题，非 infra（youtube MCP 仅首次 init 超时后恢复） |
+| `mrbeast-analysis` | Google<br>2026-09-09 用户反馈：YouTube API Key 已过期 | 🔴 必现：Hugging Face 读取或 SSL 握手超时<br>🔴 必现：API Key 无效 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run glm-5.2/260904）<br>Detail_Lists 表 duration_seconds 单值不符（agent 924 / gt 1019），其余 (32,7) 结构一致；数据准确性/能力问题，非 infra（youtube MCP 仅首次 init 超时后恢复） |
 | `nvidia-market` | Yahoo Finance<br>原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞 | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 212 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
 | `nvidia-stock-analysis` | Yahoo Finance<br>原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞 | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时<br>🔴 必现：API Key 无效<br>🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Python 依赖缺失或 ABI 不匹配 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 94 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
 | `profile-update-online` | Google Scholar<br>任务配置声明 scholarly，可检索 Google Scholar（按用户要求标注） | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
@@ -140,7 +140,7 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `wandb-best-score` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
 | `wandb-shortest-length` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run glm-5.2/260904） |
 | `yahoo-analysis` | Yahoo Finance<br>原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞 | 🔴 必现：Yahoo Finance API 429 限流 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 204 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
-| `youtube-repo` | YouTube<br>2026-09-09 用户反馈：YouTube API Key 已过期 | 🔴 必现：API Key 无效 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
+| `youtube-repo` | Google<br>2026-09-09 用户反馈：YouTube API Key 已过期 | 🔴 必现：API Key 无效 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run glm-5.2/260904） |
 
 ## C-local：本地基础设施写（33）
 

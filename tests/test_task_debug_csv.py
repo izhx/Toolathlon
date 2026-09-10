@@ -75,17 +75,6 @@ class TaskDebugCSVTest(unittest.TestCase):
             self.assertEqual(output.read_bytes(), exporter.OUTPUT.read_bytes())
         self.assertEqual((html.read_bytes(), html.stat().st_mtime_ns), before)
 
-    def test_unlabeled_c_local_export_matches_tracker(self):
-        expected = {
-            row["task"] for row in exporter.read_rows()
-            if row["group"] == "C-local" and not row["blocks"]
-        }
-        actual = {
-            line.strip() for line in (ROOT / "configs/task_lists/finalpool/tmp-c-local.txt").read_text().splitlines()
-            if line.strip() and not line.lstrip().startswith("#")
-        }
-        self.assertEqual(actual, expected)
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -19,7 +19,7 @@ GROUPS = {
 }
 STATUS_LABELS = {1: "跑通", 0: "不通", -1: "没跑"}
 BLOCK_LABELS = {"yahoo": "Yahoo Finance", "google": "Google", "notion": "Notion",
-                "snowflake": "Snowflake", "youtube": "YouTube", "google-scholar": "Google Scholar"}
+                "snowflake": "Snowflake", "google-scholar": "Google Scholar"}
 CSV_FIELDS = ["任务类别", "STATUS", "BLOCK", "任务", "我跑通情况",
               "lwx-env-error 描述", "task inventory 描述", "BLOCK 说明"]
 

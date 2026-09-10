@@ -83,7 +83,7 @@ B,跑通,0,latex-prompt-box,"✅ FAIL（run glm-5.2/260904）
 B,跑通,Google Scholar,logical-datasets-collection,"✅ FAIL（run glm-5.2/260904）
 表格内容或格式与 groundtruth 不符（local check: Table content or format does not match）；能力问题，非 infra",—,"3.2 不稳定：260821 FAIL，260826 PASS
 文档判断多为环境抖动，重跑可能捞回",任务配置声明 scholarly，可检索 Google Scholar（按用户要求标注）
-B,跑通,YouTube,mrbeast-analysis,"✅ FAIL（run glm-5.2/260904）
+B,跑通,Google,mrbeast-analysis,"✅ FAIL（run glm-5.2/260904）
 Detail_Lists 表 duration_seconds 单值不符（agent 924 / gt 1019），其余 (32,7) 结构一致；数据准确性/能力问题，非 infra（youtube MCP 仅首次 init 超时后恢复）","🔴 必现：Hugging Face 读取或 SSL 握手超时
 🔴 必现：API Key 无效","3.2 不稳定：260821 PASS，260826 FAIL
 文档判断多为环境抖动，重跑可能捞回",2026-09-09 用户反馈：YouTube API Key 已过期
@@ -151,7 +151,7 @@ B,不通,Yahoo Finance,yahoo-analysis,"🟠 NO_EVAL（run glm-5.2/260904）
 跑满 max_turns 未产出可判定结果
 根因=infra：轨迹 204 次 Yahoo Finance 429 限流，与 env-error 记录一致",🔴 必现：Yahoo Finance API 429 限流,"3.2 不稳定：260821 PASS，260826 FAIL
 文档判断多为环境抖动，重跑可能捞回",原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞
-B,跑通,YouTube,youtube-repo,✅ PASS（run glm-5.2/260904）,🔴 必现：API Key 无效,3.1 稳定可跑：GLM-5.3 两轮均 PASS,2026-09-09 用户反馈：YouTube API Key 已过期
+B,跑通,Google,youtube-repo,✅ PASS（run glm-5.2/260904）,🔴 必现：API Key 无效,3.1 稳定可跑：GLM-5.3 两轮均 PASS,2026-09-09 用户反馈：YouTube API Key 已过期
 C-local,跑通,0,apply-phd-email,✅ PASS（run glm-5.2/260905）,—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,跑通,0,canvas-arrange-exam,"✅ FAIL（run glm-5.2/260907）
 `exam_schedule.xlsx` 多排 1 门：ENG101（入学考 ≥95 免考）不应列入，agent 10 行 / gt 9 行，9/10 完美匹配（90%）；能力问题，非 infra",🟡 偶发：IMAP 认证失败,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
