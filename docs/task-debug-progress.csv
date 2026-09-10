@@ -189,12 +189,12 @@ Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
 使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定
 Google 配置待核：个人尚未实跑",原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,不通,0,landing-task-reminder,"🟠 NO_EVAL（run dsv4/260910）
+C-local,不通,Snowflake,landing-task-reminder,"🟠 NO_EVAL（run dsv4/260910）
 Snowflake 免费试用到期（`free trial has ended`），预处理连不上；根因=infra",—,"3.2 不稳定：260821 FAIL，260826 PASS
 文档判断多为环境抖动，重跑可能捞回",
 C-local,跑通,0,meeting-assign,✅ PASS（run dsv4/260910）,"🟡 偶发：IMAP 认证失败
 🟡 偶发：SMTP 发送失败",3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-C-local,不通,0,payable-invoice-checker,"🟠 FAIL（run dsv4/260910）
+C-local,不通,Snowflake,payable-invoice-checker,"🟠 FAIL（run dsv4/260910）
 Snowflake 免费试用到期（日志 73 次 `free trial has ended`），agent 已执行但所有 Snowflake 调用被拒；根因=infra",—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-local,跑通,Google,set-conf-cr-ddl,✅ PASS（run dsv4/260910）,—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Calendar 日历（`google_calendar`）
@@ -202,7 +202,7 @@ Google 依赖：Calendar 日历（`google_calendar`）
 使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限
 Google 配置待核：个人尚未实跑
 第 6 节冲突约束：不可与 `student-interview` 并发",原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,不通,0,sla-timeout-monitor,"🟠 NO_EVAL（run dsv4/260910）
+C-local,不通,Snowflake,sla-timeout-monitor,"🟠 NO_EVAL（run dsv4/260910）
 Snowflake 免费试用到期（日志 66 次 `free trial has ended`），跑满 max_turns；根因=infra",—,"3.2 不稳定：260821 FAIL，260826 PASS
 文档判断多为环境抖动，重跑可能捞回",
 C-local,跑通,Google,student-interview,✅ PASS（run dsv4/260910）,—,"第 4 节未验证：无历史实跑记录
@@ -211,7 +211,7 @@ Google 依赖：Calendar 日历（`google_calendar`）
 使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限
 Google 配置待核：个人尚未实跑
 第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发",原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失
-C-local,不通,0,travel-expense-reimbursement,"🟠 FAIL（run dsv4/260910）
+C-local,不通,Snowflake,travel-expense-reimbursement,"🟠 FAIL（run dsv4/260910）
 Snowflake 免费试用到期（日志 69 次 `free trial has ended`）；根因=infra",—,3.3 B 从未通过：模型能力/任务难度为主,
 C-local,跑通,Google,update-material-inventory,✅ PASS（run dsv4/260910）,—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）

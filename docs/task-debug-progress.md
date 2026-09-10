@@ -10,13 +10,15 @@
 
 ## BLOCK 服务依赖标签
 
-`BLOCK` 可同时标注 `Yahoo Finance`、`Google`、`Google Scholar`、`Notion`，记录任务配置声明及预处理/评测涉及的服务。**跑通后保留 BLOCK，STATUS 与依赖标签独立。** 标签不表示服务当前不可用；429、缺凭据、实际失败阶段和未验证情况保留在说明及“我跑通情况”中。`0` 表示未标注这几类依赖，不保证没有其他依赖或阻塞。
+`BLOCK` 可同时标注 `Yahoo Finance`、`Google`、`Google Scholar`、`Notion`、`Snowflake`，记录任务配置声明及预处理/评测涉及的服务。**跑通后保留 BLOCK，STATUS 与依赖标签独立。** 标签不表示服务当前不可用；429、缺凭据、实际失败阶段和未验证情况保留在说明及“我跑通情况”中。`0` 表示未标注这几类依赖，不保证没有其他依赖或阻塞。
 
 直接编辑下方各任务的 BLOCK 列：第一行用英文分号分隔标签，例如 `Yahoo Finance;Google;Notion`；可在 `<br>` 后追加说明。无这几类依赖填 `0`，不能把 `0` 与其他标签混用。导出脚本按固定顺序去重，仅读取显式标签，不根据跑通状态或报错文字重新归类。CSV 与 HTML 从本文更新，网页复选框用于筛选。
 
 网页的任务类别、STATUS、BLOCK 均可多选：同一组内匹配任一选项，某组未选表示不限制该组；不同筛选组及搜索条件须同时满足。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 `0` 与服务选项互斥，勾选全部服务可查看所有已标注依赖的任务。顶部统计按任务去重，重置会清空所有选择和搜索。
 
-2026-09-07 核对 108 个任务；2026-09-10 补记 Google Scholar：Yahoo Finance 10、Google 30、Google Scholar 7、Notion 8，共涉及 49 个任务，标签计数存在重叠。Google 包括声明 Google MCP 的 29 个任务，以及预处理/评测使用 Google 的 `fillout-online-forms`。Google Scholar 为经 `scholarly` 调用 `search-google-scholar` 的 7 个任务，与 `tasks/finalpool/task_conflict.json` 的 Scholar 互斥组一致，需同批次调度或手动错开以避免限流。交叉依赖包括 `quantitative-financial-analysis`（Yahoo Finance + Google + Notion）、`investment-decision-analysis`（Yahoo Finance + Google）、`oil-price`（Yahoo Finance + Notion）、`notion-find-job`（Google + Notion）、`llm-training-dataset`（Google + Google Scholar）。`ipad-edu-price` 历史曾跑通，但 Yahoo Finance 当前不可用、无法复跑，已改回 `❌`。
+2026-09-07 核对 108 个任务；2026-09-10 补记 Google Scholar、Snowflake：Yahoo Finance 10、Google 30、Google Scholar 7、Notion 8、Snowflake 4，共涉及 53 个任务，标签计数存在重叠。Google 包括声明 Google MCP 的 29 个任务，以及预处理/评测使用 Google 的 `fillout-online-forms`。Google Scholar 为经 `scholarly` 调用 `search-google-scholar` 的 7 个任务，与 `tasks/finalpool/task_conflict.json` 的 Scholar 互斥组一致，需同批次调度或手动错开以避免限流。交叉依赖包括 `quantitative-financial-analysis`（Yahoo Finance + Google + Notion）、`investment-decision-analysis`（Yahoo Finance + Google）、`oil-price`（Yahoo Finance + Notion）、`notion-find-job`（Google + Notion）、`llm-training-dataset`（Google + Google Scholar）。`ipad-edu-price` 历史曾跑通，但 Yahoo Finance 当前不可用、无法复跑，已改回 `❌`。
+
+2026-09-10 核对全部 108 个 finalpool 任务的 `task_config.json` 及相关预处理/评测代码，Snowflake 依赖仅有 4 个：[`landing-task-reminder`](../tasks/finalpool/landing-task-reminder/task_config.json)、[`payable-invoice-checker`](../tasks/finalpool/payable-invoice-checker/task_config.json)、[`sla-timeout-monitor`](../tasks/finalpool/sla-timeout-monitor/task_config.json)、[`travel-expense-reimbursement`](../tasks/finalpool/travel-expense-reimbursement/task_config.json)。这 4 个任务均声明 `snowflake` MCP，且预处理使用 Snowflake；未发现其他任务依赖该服务。此处核对的是源码依赖，服务可用性及试用到期记录仍以“我跑通情况”为准。
 
 ## task inventory 分类说明
 
@@ -167,13 +169,13 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `k8s-pr-preview-testing` | 0 | 🟡 偶发：MCP 工具执行错误 -32603 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ NO_EVAL（run dsv4/260910）<br>环境正常，跑满 max_turns 未产出可判定结果；根因=模型能力/效率 |
 | `k8s-redis-helm-upgrade` | 0 | 🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Docker Registry 5xx / ImagePullBackOff<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>Docker Registry 5xx / ImagePullBackOff | ✅ PASS（run dsv4/260910） |
 | `k8s-safety-audit` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
-| `landing-task-reminder` | 0 | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | 🟠 NO_EVAL（run dsv4/260910）<br>Snowflake 免费试用到期（`free trial has ended`），预处理连不上；根因=infra |
+| `landing-task-reminder` | Snowflake | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | 🟠 NO_EVAL（run dsv4/260910）<br>Snowflake 免费试用到期（`free trial has ended`），预处理连不上；根因=infra |
 | `meeting-assign` | 0 | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run dsv4/260910） |
-| `payable-invoice-checker` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 FAIL（run dsv4/260910）<br>Snowflake 免费试用到期（日志 73 次 `free trial has ended`），agent 已执行但所有 Snowflake 调用被拒；根因=infra |
+| `payable-invoice-checker` | Snowflake | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 FAIL（run dsv4/260910）<br>Snowflake 免费试用到期（日志 73 次 `free trial has ended`），agent 已执行但所有 Snowflake 调用被拒；根因=infra |
 | `set-conf-cr-ddl` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `student-interview` 并发 | ✅ PASS（run dsv4/260910） |
-| `sla-timeout-monitor` | 0 | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | 🟠 NO_EVAL（run dsv4/260910）<br>Snowflake 免费试用到期（日志 66 次 `free trial has ended`），跑满 max_turns；根因=infra |
+| `sla-timeout-monitor` | Snowflake | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | 🟠 NO_EVAL（run dsv4/260910）<br>Snowflake 免费试用到期（日志 66 次 `free trial has ended`），跑满 max_turns；根因=infra |
 | `student-interview` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Calendar 日历（`google_calendar`）<br>凭据：OAuth；运行环境 `~/.calendar-mcp/gcp-oauth.keys.json` + `~/.calendar-mcp/credentials.json`<br>使用阶段：预处理清理/初始化日程，agent 创建日程，评测查询日程；需 Calendar 读写权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `set-conf-cr-ddl` 并发 | ✅ PASS（run dsv4/260910） |
-| `travel-expense-reimbursement` | 0 | — | 3.3 B 从未通过：模型能力/任务难度为主 | 🟠 FAIL（run dsv4/260910）<br>Snowflake 免费试用到期（日志 69 次 `free trial has ended`）；根因=infra |
+| `travel-expense-reimbursement` | Snowflake | — | 3.3 B 从未通过：模型能力/任务难度为主 | 🟠 FAIL（run dsv4/260910）<br>Snowflake 免费试用到期（日志 69 次 `free trial has ended`）；根因=infra |
 | `update-material-inventory` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定<br>Google 配置待核：个人尚未实跑 | ✅ PASS（run dsv4/260910） |
 | `woocommerce-customer-survey` | Google<br>原记录（Google）：Google 依赖配置待核；个人尚未实跑，未确认凭据缺失 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Forms 表单 + Drive 文件管理（`google_forms`）<br>凭据：OAuth `configs/google_credentials.json`；MCP 使用 `google_client_id` / `google_client_secret` / `google_refresh_token`<br>使用阶段：预处理通过 Drive 清理表单，agent 创建表单，评测读取表单；需 Forms/Drive 权限<br>Google 配置待核：个人尚未实跑<br>第 6 节冲突约束：不可与 `woocommerce-product-recall` 并发 | ✅ PASS（run dsv4/260910） |
 | `woocommerce-new-product` | 0 | 🟡 偶发：IMAP 认证失败<br>🟡 偶发：SMTP 发送失败<br>🟡 偶发：网络连接拒绝或中断 | 3.3 A 从未通过：环境/凭据问题为主<br>IMAP/SMTP 抖动或连接拒绝 | ✅ PASS（run dsv4/260910） |
