@@ -46,16 +46,16 @@ A,跑通,0,sales-accounting,✅ PASS（run dsv4/260910）,—,"3.1 稳定可跑�
 A,跑通,0,university-course-selection,"✅ FAIL（run dsv4/260910）
 环境正常，评测未通过；根因=模型能力/策略",—,"3.3 B 从未通过：模型能力/任务难度为主
 5.1 低外部依赖",
-B,跑通,0,academic-pdf-report,✅ PASS（run dsv4/260910）,—,"3.3 A 从未通过：环境/凭据问题为主
-Playwright page.goto 60s 超时及目标站反爬",
-B,跑通,0,add-bibtex,✅ PASS（run dsv4/260910）,🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+B,跑通,Google Scholar,academic-pdf-report,✅ PASS（run dsv4/260910）,—,"3.3 A 从未通过：环境/凭据问题为主
+Playwright page.goto 60s 超时及目标站反爬",经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流
+B,跑通,Google Scholar,add-bibtex,✅ PASS（run dsv4/260910）,🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流
 B,跑通,0,course-schedule,✅ PASS（run dsv4/260910）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
 5.1 低外部依赖
 列入文档 smoke test 集",
-B,跑通,0,cvpr-research,"✅ FAIL（run dsv4/260910）
-环境正常，评测未通过；根因=模型能力/策略",—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-B,跑通,0,find-alita-paper,✅ PASS（run dsv4/260910）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
-跨全部 5 个批次 4/5 PASS",
+B,跑通,Google Scholar,cvpr-research,"✅ FAIL（run dsv4/260910）
+环境正常，评测未通过；根因=模型能力/策略",—,3.1 稳定可跑：GLM-5.3 两轮均 PASS,经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流
+B,跑通,Google Scholar,find-alita-paper,✅ PASS（run dsv4/260910）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
+跨全部 5 个批次 4/5 PASS",经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流
 B,跑通,0,git-milestone,✅ PASS（run dsv4/260910）,—,"3.1 稳定可跑：GLM-5.3 两轮均 PASS
 5.1 低外部依赖
 列入文档 smoke test 集",
@@ -70,16 +70,17 @@ B,不通,Yahoo Finance,invoice-org,"🟠 NO_EVAL（run glm-5.2/260904）
 跑满 max_turns 未产出可判定结果
 根因=infra：轨迹 226 次 Yahoo Finance「Rate limited」429，与 env-error 记录一致",🔴 必现：Yahoo Finance API 429 限流,"3.3 A 从未通过：环境/凭据问题为主
 Yahoo Finance 公共接口 IP 限流 429",原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞
-B,跑通,Yahoo Finance,ipad-edu-price,✅ PASS（run glm-5.2/260904）,—,"3.2 不稳定：260821 FAIL，260826 PASS
-文档判断多为环境抖动，重跑可能捞回",任务配置声明 Yahoo Finance 工具；已跑通，保留依赖标签
+B,不通,Yahoo Finance,ipad-edu-price,"❌ PASS（run glm-5.2/260904）
+历史 glm-5.2 曾 PASS；Yahoo Finance 当前不可用，无法复跑验证；根因=外部服务",—,"3.2 不稳定：260821 FAIL，260826 PASS
+文档判断多为环境抖动，重跑可能捞回",任务配置声明 Yahoo Finance 工具；Yahoo Finance 当前不可用
 B,跑通,0,language-school,"✅ FAIL（run dsv4/260910）
 环境正常，评测未通过；根因=模型能力/策略",🔴 必现：Playwright 页面加载 60s 超时,"3.3 A 从未通过：环境/凭据问题为主
 Playwright page.goto 60s 超时及目标站反爬",
 B,跑通,0,latex-prompt-box,"✅ FAIL（run dsv4/260910）
 环境正常，评测未通过；根因=模型能力/策略",—,"3.3 B 从未通过：模型能力/任务难度为主
 5.1 低外部依赖",
-B,跑通,0,logical-datasets-collection,✅ PASS（run dsv4/260910）,—,"3.2 不稳定：260821 FAIL，260826 PASS
-文档判断多为环境抖动，重跑可能捞回",
+B,跑通,Google Scholar,logical-datasets-collection,✅ PASS（run dsv4/260910）,—,"3.2 不稳定：260821 FAIL，260826 PASS
+文档判断多为环境抖动，重跑可能捞回",经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流
 B,跑通,0,mrbeast-analysis,"✅ FAIL（run dsv4/260910）
 环境正常，评测未通过；根因=模型能力/策略","🔴 必现：Hugging Face 读取或 SSL 握手超时
 🔴 必现：API Key 无效","3.2 不稳定：260821 PASS，260826 FAIL
@@ -97,7 +98,7 @@ B,不通,Yahoo Finance,nvidia-stock-analysis,"🟠 NO_EVAL（run glm-5.2/260904�
 🟡 偶发：MCP 工具执行错误 -32603
 🟡 偶发：Python 依赖缺失或 ABI 不匹配","3.3 A 从未通过：环境/凭据问题为主
 Yahoo Finance 公共接口 IP 限流 429",原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞
-B,跑通,0,profile-update-online,✅ PASS（run dsv4/260910）,🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
+B,跑通,Google Scholar,profile-update-online,✅ PASS（run dsv4/260910）,🔴 必现：Playwright 页面加载 60s 超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流
 B,跑通,Google,search-ca-school,✅ PASS（run dsv4/260910）,—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Maps 地图（`google_map`）
 凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`
@@ -289,7 +290,7 @@ BigQuery gRPC 连不上：`ServiceUnavailable: 503 failed to connect to all addr
 Google 依赖：BigQuery 数据集 `transactions_analytics` + Storage 桶 + Logging 日志桶（`google-cloud`）
 凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`
 使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果",原记录（Google）：本次记录中的服务／凭据阻塞
-C-remote,跑通,Google,llm-training-dataset,✅ PASS（run dsv4/260910）,—,"第 4 节未验证：无历史实跑记录
+C-remote,跑通,Google;Google Scholar,llm-training-dataset,✅ PASS（run dsv4/260910）,—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
 使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",原记录（Google）：Google 凭据缺 token；已核对预处理代码

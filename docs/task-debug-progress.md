@@ -10,13 +10,13 @@
 
 ## BLOCK 服务依赖标签
 
-`BLOCK` 可同时标注 `Yahoo Finance`、`Google`、`Notion`，记录任务配置声明及预处理/评测涉及的服务。**跑通后保留 BLOCK，STATUS 与依赖标签独立。** 标签不表示服务当前不可用；429、缺凭据、实际失败阶段和未验证情况保留在说明及“我跑通情况”中。`0` 表示未标注这三类依赖，不保证没有其他依赖或阻塞。
+`BLOCK` 可同时标注 `Yahoo Finance`、`Google`、`Google Scholar`、`Notion`，记录任务配置声明及预处理/评测涉及的服务。**跑通后保留 BLOCK，STATUS 与依赖标签独立。** 标签不表示服务当前不可用；429、缺凭据、实际失败阶段和未验证情况保留在说明及“我跑通情况”中。`0` 表示未标注这几类依赖，不保证没有其他依赖或阻塞。
 
-直接编辑下方各任务的 BLOCK 列：第一行用英文分号分隔标签，例如 `Yahoo Finance;Google;Notion`；可在 `<br>` 后追加说明。无这三类依赖填 `0`，不能把 `0` 与其他标签混用。导出脚本按固定顺序去重，仅读取显式标签，不根据跑通状态或报错文字重新归类。CSV 与 HTML 从本文更新，网页复选框用于筛选。
+直接编辑下方各任务的 BLOCK 列：第一行用英文分号分隔标签，例如 `Yahoo Finance;Google;Notion`；可在 `<br>` 后追加说明。无这几类依赖填 `0`，不能把 `0` 与其他标签混用。导出脚本按固定顺序去重，仅读取显式标签，不根据跑通状态或报错文字重新归类。CSV 与 HTML 从本文更新，网页复选框用于筛选。
 
-网页的任务类别、STATUS、BLOCK 均可多选：同一组内匹配任一选项，某组未选表示不限制该组；不同筛选组及搜索条件须同时满足。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 `0` 与服务选项互斥，勾选三个服务可查看所有已标注依赖的任务。顶部统计按任务去重，重置会清空所有选择和搜索。
+网页的任务类别、STATUS、BLOCK 均可多选：同一组内匹配任一选项，某组未选表示不限制该组；不同筛选组及搜索条件须同时满足。例如类别选 C-local 和 C-notion、STATUS 选“不通”和“没跑”，显示这两个类别中不通或没跑的任务；再选 Google 和 Notion，则要求任务还涉及其中任一服务。BLOCK 的 `0` 与服务选项互斥，勾选全部服务可查看所有已标注依赖的任务。顶部统计按任务去重，重置会清空所有选择和搜索。
 
-2026-09-07 核对 108 个任务：Yahoo Finance 10、Google 30、Notion 8，共涉及 43 个任务，标签计数存在重叠。Google 包括声明 Google MCP 的 29 个任务，以及预处理/评测使用 Google 的 `fillout-online-forms`。交叉依赖包括 `quantitative-financial-analysis`（Yahoo Finance + Google + Notion）、`investment-decision-analysis`（Yahoo Finance + Google）、`oil-price`（Yahoo Finance + Notion）、`notion-find-job`（Google + Notion）。`ipad-edu-price` 已跑通，仍保留其任务配置声明的 Yahoo Finance 标签。
+2026-09-07 核对 108 个任务；2026-09-10 补记 Google Scholar：Yahoo Finance 10、Google 30、Google Scholar 7、Notion 8，共涉及 49 个任务，标签计数存在重叠。Google 包括声明 Google MCP 的 29 个任务，以及预处理/评测使用 Google 的 `fillout-online-forms`。Google Scholar 为经 `scholarly` 调用 `search-google-scholar` 的 7 个任务，与 `tasks/finalpool/task_conflict.json` 的 Scholar 互斥组一致，需同批次调度或手动错开以避免限流。交叉依赖包括 `quantitative-financial-analysis`（Yahoo Finance + Google + Notion）、`investment-decision-analysis`（Yahoo Finance + Google）、`oil-price`（Yahoo Finance + Notion）、`notion-find-job`（Google + Notion）、`llm-training-dataset`（Google + Google Scholar）。`ipad-edu-price` 历史曾跑通，但 Yahoo Finance 当前不可用、无法复跑，已改回 `❌`。
 
 ## task inventory 分类说明
 
@@ -103,24 +103,24 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 
 | 任务 | BLOCK | lwx-env-error 描述 | task inventory 描述 | 我跑通情况 |
 |---|---|---|---|---|
-| `academic-pdf-report` | 0 | — | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ PASS（run dsv4/260910） |
-| `add-bibtex` | 0 | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run dsv4/260910） |
+| `academic-pdf-report` | Google Scholar<br>经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流 | — | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ PASS（run dsv4/260910） |
+| `add-bibtex` | Google Scholar<br>经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流 | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run dsv4/260910） |
 | `course-schedule` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run dsv4/260910） |
-| `cvpr-research` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
-| `find-alita-paper` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ✅ PASS（run dsv4/260910） |
+| `cvpr-research` | Google Scholar<br>经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
+| `find-alita-paper` | Google Scholar<br>经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>跨全部 5 个批次 4/5 PASS | ✅ PASS（run dsv4/260910） |
 | `git-milestone` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run dsv4/260910） |
 | `git-repo` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS<br>5.1 低外部依赖<br>列入文档 smoke test 集 | ✅ PASS（run dsv4/260910） |
 | `hk-top-conf` | 0 | 🟡 偶发：Prompt 超长 400 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ NO_EVAL（run dsv4/260910）<br>环境正常，跑满 max_turns 未产出可判定结果；根因=模型能力/效率 |
 | `identify-all-songs` | 0 | — | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run dsv4/260910） |
 | `invoice-org` | Yahoo Finance<br>原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞 | 🔴 必现：Yahoo Finance API 429 限流 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 226 次 Yahoo Finance「Rate limited」429，与 env-error 记录一致 |
-| `ipad-edu-price` | Yahoo Finance<br>任务配置声明 Yahoo Finance 工具；已跑通，保留依赖标签 | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run glm-5.2/260904） |
+| `ipad-edu-price` | Yahoo Finance<br>任务配置声明 Yahoo Finance 工具；Yahoo Finance 当前不可用 | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ❌ PASS（run glm-5.2/260904）<br>历史 glm-5.2 曾 PASS；Yahoo Finance 当前不可用，无法复跑验证；根因=外部服务 |
 | `language-school` | 0 | 🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
 | `latex-prompt-box` | 0 | — | 3.3 B 从未通过：模型能力/任务难度为主<br>5.1 低外部依赖 | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
-| `logical-datasets-collection` | 0 | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run dsv4/260910） |
+| `logical-datasets-collection` | Google Scholar<br>经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流 | — | 3.2 不稳定：260821 FAIL，260826 PASS<br>文档判断多为环境抖动，重跑可能捞回 | ✅ PASS（run dsv4/260910） |
 | `mrbeast-analysis` | 0 | 🔴 必现：Hugging Face 读取或 SSL 握手超时<br>🔴 必现：API Key 无效 | 3.2 不稳定：260821 PASS，260826 FAIL<br>文档判断多为环境抖动，重跑可能捞回 | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
 | `nvidia-market` | Yahoo Finance<br>原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞 | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 212 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
 | `nvidia-stock-analysis` | Yahoo Finance<br>原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞 | 🔴 必现：Yahoo Finance API 429 限流<br>🔴 必现：Playwright 页面加载 60s 超时<br>🔴 必现：API Key 无效<br>🟡 偶发：MCP 工具执行错误 -32603<br>🟡 偶发：Python 依赖缺失或 ABI 不匹配 | 3.3 A 从未通过：环境/凭据问题为主<br>Yahoo Finance 公共接口 IP 限流 429 | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 94 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
-| `profile-update-online` | 0 | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run dsv4/260910） |
+| `profile-update-online` | Google Scholar<br>经 `scholarly` 调用 `search-google-scholar`；与同组 7 个任务互斥，避免 Scholar 限流 | 🔴 必现：Playwright 页面加载 60s 超时 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | ✅ PASS（run dsv4/260910） |
 | `search-ca-school` | Google<br>原记录（Google）：本次记录中的服务／凭据阻塞 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Maps 地图（`google_map`）<br>凭据：API Key，`google_cloud_console_api_key` → `GOOGLE_MAPS_API_KEY`<br>使用阶段：agent 使用 Maps 查学校位置/驾车距离 | ✅ PASS（run dsv4/260910） |
 | `shopping-helper` | 0 | 🔴 必现：Playwright 页面加载 60s 超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Playwright page.goto 60s 超时及目标站反爬 | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
 | `stock-build-position` | Yahoo Finance<br>原记录（Yahoo Finance 429）：本次记录中的服务／凭据阻塞 | 🔴 必现：Yahoo Finance API 429 限流 | 3.1 稳定可跑：GLM-5.3 两轮均 PASS | 🟠 NO_EVAL（run glm-5.2/260904）<br>跑满 max_turns 未产出可判定结果<br>根因=infra：轨迹 233 次 Yahoo Finance 429 限流，与 env-error 记录一致 |
@@ -207,7 +207,7 @@ Sheets 的共享预处理函数会直接读取 `token`、`refresh_token`、`toke
 | `inter-final-performance-analysis` | Google<br>原记录（Google）：Google 凭据缺 token；已核对预处理代码 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | ✅ PASS（run dsv4/260910） |
 | `investment-decision-analysis` | Yahoo Finance;Google<br>Yahoo 获取行情，Google Sheets/Drive 读写；本次预处理仅记录 returncode 1，具体失败原因待核 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | 🟠 NO_EVAL（run glm-5.2/260904）<br>preprocess 失败（returncode 1）；根因=infra |
 | `live-transactions` | Google<br>原记录（Google）：本次记录中的服务／凭据阻塞 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `transactions_analytics` + Storage 桶 + Logging 日志桶（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | 🟠 NO_EVAL（run dsv4/260910）<br>BigQuery gRPC 连不上：`ServiceUnavailable: 503 failed to connect to all addresses`（ipv4:216.239.34.174:443 超时）；根因=infra/网络 |
-| `llm-training-dataset` | Google<br>原记录（Google）：Google 凭据缺 token；已核对预处理代码 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | ✅ PASS（run dsv4/260910） |
+| `llm-training-dataset` | Google;Google Scholar<br>原记录（Google）：Google 凭据缺 token；已核对预处理代码 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | ✅ PASS（run dsv4/260910） |
 | `machine-operating` | Google<br>原记录（Google）：本次记录中的服务／凭据阻塞 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：BigQuery 数据集 `machine_operating` + Storage 桶（`google-cloud`）<br>凭据：服务账号 `configs/gcp-service_account.keys.json` + `gcp_project_id` / `gcp_service_account_path`<br>使用阶段：预处理准备云端数据，agent 经 MCP 访问，评测读取云端结果 | ✅ PASS（run dsv4/260910） |
 | `merge-hf-datasets` | 0 | 🔴 必现：Hugging Face 读取或 SSL 握手超时 | 3.3 A 从未通过：环境/凭据问题为主<br>Hugging Face 客户端 read timeout 10/15s | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
 | `music-analysis` | Google<br>原记录（Google）：Google 凭据缺 token；已核对预处理代码 | — | 第 4 节未验证：无历史实跑记录<br>Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）<br>凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）<br>使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定 | ✅ FAIL（run dsv4/260910）<br>环境正常，评测未通过；根因=模型能力/策略 |
