@@ -281,7 +281,7 @@ wandb-shortest-length
 
 ## 六、任务冲突约束
 
-`tasks/finalpool/task_conflict.json` 定义了 4 组互斥任务（共享同一外部账户状态，不能并发执行）：
+`tasks/finalpool/task_conflict.json` 定义了 5 组互斥任务：原有 4 组共享外部账户状态，新增 1 组用于减少 Google Scholar 请求叠加。
 
 ```
 set-conf-cr-ddl              / student-interview
@@ -290,7 +290,9 @@ woocommerce-customer-survey  / woocommerce-product-recall
 canvas-submit-late-work      / canvas-do-quiz
 ```
 
-本仓库的 108 任务全集完整覆盖这 8 个任务（历史环境的 73 子集只覆盖了其中 4 个），所以并发跑时这 4 组约束全部生效。
+第 5 组为 Google Scholar：`academic-pdf-report`、`add-bibtex`、`cvpr-research`、`find-alita-paper`、`llm-training-dataset`、`logical-datasets-collection`、`profile-update-online`。
+
+本仓库的 108 任务全集完整覆盖这 15 个任务。同一次 `run_parallel.py` 调度会让每个互斥组内的完整任务串行执行，等待锁时不占 worker。Scholar 组有 6 个 B 任务和 1 个 C-remote 任务（`llm-training-dataset`）；分别启动 B 与 C-remote 时，进程内锁不会跨批次协调，需错开 Scholar 任务或合并到同一批次。串行不保证消除 Scholar 限流。
 
 ---
 

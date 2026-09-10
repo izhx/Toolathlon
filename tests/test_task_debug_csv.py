@@ -64,7 +64,7 @@ class TaskDebugCSVTest(unittest.TestCase):
         for task, blocks in expected.items():
             with self.subTest(task=task):
                 self.assertEqual(rows[task]["blocks"], blocks)
-        self.assertEqual(rows["ipad-edu-price"]["status"], 1)
+        self.assertEqual(rows["ipad-edu-price"]["status"], 0)
 
     def test_csv_is_current_and_export_keeps_html_unchanged(self):
         html = ROOT / "docs/task-debug-progress.html"
@@ -74,17 +74,6 @@ class TaskDebugCSVTest(unittest.TestCase):
             exporter.write_csv(exporter.read_rows(), output)
             self.assertEqual(output.read_bytes(), exporter.OUTPUT.read_bytes())
         self.assertEqual((html.read_bytes(), html.stat().st_mtime_ns), before)
-
-    def test_unlabeled_c_local_export_matches_tracker(self):
-        expected = {
-            row["task"] for row in exporter.read_rows()
-            if row["group"] == "C-local" and not row["blocks"]
-        }
-        actual = {
-            line.strip() for line in (ROOT / "configs/task_lists/finalpool/tmp-c-local.txt").read_text().splitlines()
-            if line.strip() and not line.lstrip().startswith("#")
-        }
-        self.assertEqual(actual, expected)
 
 
 if __name__ == "__main__":

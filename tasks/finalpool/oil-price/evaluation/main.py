@@ -12,6 +12,7 @@ import requests
 
 from utils.mcp.tool_servers import MCPServerManager, call_tool_with_retry, ToolCallError
 from utils.evaluation.retry import grade_with_retry
+from utils.app_specific.notion.urls import notion_page_url
 
 # -------- Search Notion workspace for databases --------
 
@@ -22,7 +23,7 @@ def _find_oil_price_page(token: str) -> Dict | None:
     return {
         "id": duplicated_page_id,
         "title": "Oil Price",
-        "url": f"https://www.notion.so/{duplicated_page_id.replace('-', '')}",
+        "url": notion_page_url(duplicated_page_id),
         "parent_title": "Notion Eval Page"
     }
 

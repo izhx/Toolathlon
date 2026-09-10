@@ -6,6 +6,7 @@ import asyncio
 sys.path.append(os.path.dirname(__file__))
 
 from configs.token_key_session import all_token_key_session
+from utils.app_specific.notion.urls import normalize_notion_url
 # from utils.app_specific.notion_page_duplicator import NotionPageDuplicator
 from utils.general.helper import run_command, print_color
 
@@ -18,8 +19,8 @@ async def main():
                        help="Needed subpage name")
     args = parser.parse_args()
 
-    notion_source_page_url = all_token_key_session.source_notion_page_url
-    notion_eval_page_url = all_token_key_session.eval_notion_page_url
+    notion_source_page_url = normalize_notion_url(all_token_key_session.source_notion_page_url)
+    notion_eval_page_url = normalize_notion_url(all_token_key_session.eval_notion_page_url)
     notion_integration_key = all_token_key_session.notion_integration_key
     notion_integration_key_eval_only = all_token_key_session.notion_integration_key_eval
 
