@@ -6,7 +6,15 @@ name: notion_official
 params:
   command: "npx"
   args:
-    - "mcp-remote"
+    # Pinned: mcp-remote names its config subdirectory after its own version
+    # (0.1.16 -> .mcp-auth/mcp-remote-0.1.16), and 0.3.2+ switched to a fixed
+    # .mcp-auth/mcp-remote-v1 instead.  An unpinned `mcp-remote` therefore lands
+    # in a different, empty config dir whenever npx resolves a new version,
+    # which triggers a fresh OAuth dynamic client registration -- the saved
+    # refresh_token is bound to the old client_id and gets rejected, so every
+    # Notion task hangs waiting for a browser redirect that never comes.
+    # 0.1.16 matches package.json and the task image's baked-in node_modules.
+    - "mcp-remote@0.1.16"
     - "https://mcp.notion.com/mcp"
   env:
     MCP_REMOTE_CONFIG_DIR: "./configs/.mcp-auth"

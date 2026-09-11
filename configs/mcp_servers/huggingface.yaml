@@ -6,7 +6,12 @@ name: huggingface
 params:
   command: "npx"
   args:
-    - "mcp-remote"
+    # Pinned for the same reason as notion_official.yaml: an unpinned
+    # `mcp-remote` changes its .mcp-auth config subdirectory when npx resolves a
+    # new version.  This server authenticates with a bearer header rather than
+    # OAuth, so the blast radius is smaller, but pinning keeps both remote
+    # servers on the version baked into the task image.
+    - "mcp-remote@0.1.16"
     - "https://huggingface.co/mcp"
     - "--header"
     - "Authorization: Bearer ${token.huggingface_token}"
