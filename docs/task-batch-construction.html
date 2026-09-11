@@ -1,0 +1,2116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>任务内容与批量构造评估 · Toolathlon</title>
+  <style>
+    :root { --ink:#20372f; --muted:#64766d; --line:#dce5dd; --green:#17674f; --soft:#edf5ef; --paper:#fff; --canvas:#f5f7f3; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font:14px/1.65 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    main { max-width:1880px; margin:auto; padding:32px; }
+    a { color:var(--green); text-underline-offset:3px; }
+    .eyebrow { font-size:11px; font-weight:750; letter-spacing:1.6px; color:var(--green); }
+    h1 { margin:7px 0 8px; font-size:29px; line-height:1.35; letter-spacing:-.7px; }
+    .intro { margin:0; color:var(--muted); }
+    .heading { display:flex; justify-content:space-between; gap:24px; align-items:center; }
+    .totals { display:flex; flex-wrap:wrap; gap:9px; margin:18px 0; }
+    .total { padding:5px 12px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--muted); font-size:12px; }
+    .total strong { color:var(--ink); margin-right:4px; font-size:16px; font-variant-numeric:tabular-nums; }
+    button,input,select,textarea { font:inherit; }
+    button,select,input[type="search"] { min-height:38px; border:1px solid #c8d6cd; border-radius:6px; background:var(--paper); color:var(--ink); padding:7px 10px; }
+    button { cursor:pointer; white-space:nowrap; }
+    button:hover { border-color:var(--green); background:var(--soft); }
+    button.primary { background:var(--green); border-color:var(--green); color:white; padding:10px 16px; }
+    button.primary:hover { background:#12583f; }
+    :focus-visible { outline:3px solid #8fc9af; outline-offset:2px; }
+    input[type="search"] { width:100%; }
+    input[type="checkbox"] { accent-color:var(--green); width:15px; height:15px; flex-shrink:0; margin:0; }
+    .filters { background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:20px; }
+    .basic-filters { display:grid; grid-template-columns:minmax(240px,1fr) 230px auto; gap:16px; align-items:end; }
+    label.field-label { display:block; margin-bottom:5px; font-size:12px; font-weight:650; }
+    #batch-filter { width:100%; }
+    .mcp-filters { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px; }
+    fieldset { min-width:0; margin:0; border:1px solid var(--line); border-radius:8px; padding:12px; }
+    legend { font-weight:650; padding:0 6px; font-size:13px; }
+    .mcp-head { display:flex; gap:10px; margin-bottom:9px; }
+    .mcp-head select { width:155px; flex-shrink:0; font-size:12px; }
+    .mcp-head input { min-width:0; font-size:12px; }
+    .mcp-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px 10px; max-height:155px; overflow:auto; padding:2px 5px 2px 1px; scrollbar-color:#bfcec3 #f5f7f3; }
+    .mcp-option { display:flex; align-items:center; gap:7px; padding:4px 2px; font-size:12px; cursor:pointer; min-width:0; }
+    .mcp-option span { overflow-wrap:anywhere; }
+    .mcp-option small { color:var(--muted); margin-left:auto; font-variant-numeric:tabular-nums; }
+    .mcp-option:has(input:checked) { color:var(--green); font-weight:650; }
+    .mcp-empty { margin:5px; color:var(--muted); font-size:12px; }
+    .filter-help { color:var(--muted); font-size:12px; margin:12px 0 0; }
+    #active-filters { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .filter-chip { font-size:11px; border-radius:5px; padding:3px 8px; min-height:28px; background:var(--soft); }
+    .filter-chip.exclude { background:#faf0e9; color:#8b4e30; }
+    .rule { margin:16px 0; font-size:12px; color:var(--muted); }
+    summary { cursor:pointer; font-weight:650; color:var(--ink); width:fit-content; }
+    .rule p { margin:7px 0; max-width:1250px; }
+    .result-bar { display:flex; justify-content:space-between; gap:12px; align-items:center; margin:14px 0 9px; flex-wrap:wrap; font-size:12px; }
+    #result-count { font-weight:650; }
+    #notes-status { color:var(--muted); }
+    #filter-warning { color:#94552f; margin:0 0 10px; font-size:12px; }
+    .table-wrap { overflow:auto; max-height:75vh; border:1px solid var(--line); border-radius:9px; background:var(--paper); scrollbar-color:#bfcec3 #f5f7f3; }
+    table { border-collapse:separate; border-spacing:0; table-layout:fixed; width:100%; min-width:1080px; }
+    col.task { width:18%; } col.description { width:45%; } col.batch { width:18%; } col.notes { width:19%; }
+    thead th { position:sticky; top:0; z-index:2; padding:12px 14px; text-align:left; background:#edf2eb; border-bottom:1px solid #cbd8ce; font-size:12px; }
+    tbody th,tbody td { padding:18px 14px; border-bottom:1px solid #e6ece5; vertical-align:top; text-align:left; font-weight:400; overflow-wrap:anywhere; }
+    tbody tr:nth-child(even) { background:#fcfdfb; }
+    tbody tr:last-child > * { border-bottom:0; }
+    tbody tr:hover { background:#f5f9f3; }
+    .task-name { font:600 13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace; text-decoration:none; }
+    .task-name:hover { text-decoration:underline; }
+    .source-links { margin-top:9px; font-size:11px; }
+    .source-links a { color:var(--muted); }
+    .task-summary { margin:0 0 11px; line-height:1.75; }
+    .roles { list-style:none; padding:0; margin:0; font-size:12px; color:#586e61; }
+    .roles li { margin:4px 0; }
+    code { font:11px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace; padding:2px 5px; border-radius:4px; background:#edf2ec; color:#2f6349; overflow-wrap:anywhere; }
+    .batch-yes { display:inline-block; color:var(--green); background:#e5f3e8; border-radius:5px; padding:2px 10px; font-weight:650; }
+    .batch-no { color:#8c5132; font-size:13px; line-height:1.8; }
+    textarea { display:block; width:100%; min-height:105px; padding:10px; resize:vertical; border:1px solid #d5dfd5; border-radius:6px; background:#fffefa; color:var(--ink); font-size:13px; line-height:1.65; }
+    textarea::placeholder { color:#98a599; }
+    .empty { padding:46px 16px; text-align:center; color:var(--muted); }
+    .empty strong { display:block; font-size:16px; color:var(--ink); margin-bottom:5px; }
+    footer { color:var(--muted); font-size:11px; margin-top:13px; display:flex; justify-content:space-between; gap:15px; flex-wrap:wrap; }
+    [hidden] { display:none !important; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    noscript p { background:#fff0dc; padding:16px; }
+    @media (max-width:1300px) { .mcp-options { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:760px) {
+      main { padding:20px 14px; } h1 { font-size:24px; }
+      .heading { align-items:flex-start; flex-direction:column; gap:14px; }
+      .basic-filters { grid-template-columns:1fr; gap:10px; }
+      .basic-filters button { justify-self:start; }
+      .mcp-filters { grid-template-columns:1fr; }
+      .filters { padding:14px; } .table-wrap { max-height:72vh; }
+      .totals { gap:6px; } .total { padding:4px 9px; }
+    }
+    @media print {
+      main { padding:0; } .filters,.heading button,.rule,#notes-status,footer { display:none; }
+      .table-wrap { max-height:none; overflow:visible; border:0; } table { min-width:0; font-size:10px; }
+      thead th { position:static; } textarea { border:0; padding:0; min-height:40px; }
+      tbody tr { break-inside:avoid; } .roles { font-size:9px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">TOOLATHLON · FINALPOOL</div>
+  <div class="heading">
+    <div>
+      <h1>任务内容与批量构造评估</h1>
+      <p class="intro">每个任务一行，查看任务目标、各 MCP 的作用与批量构造判断，并记录你的备注。</p>
+    </div>
+    <button type="button" class="primary" id="download-html" title="下载包含全部任务与当前备注的独立 HTML 文件">下载含备注 HTML</button>
+  </div>
+  <div class="totals" id="totals" aria-label="任务概览"></div>
+  <section class="filters" aria-label="任务筛选">
+    <div class="basic-filters">
+      <div>
+        <label class="field-label" for="keyword">搜索任务</label>
+        <input type="search" id="keyword" placeholder="任务名、任务内容、MCP 用途或备注" autocomplete="off">
+      </div>
+      <div>
+        <label class="field-label" for="batch-filter">是否可以批量构造数据</label>
+        <select id="batch-filter"><option value="all">全部</option><option value="yes">是</option><option value="no">否</option></select>
+      </div>
+      <button type="button" id="reset-filters">清空筛选</button>
+    </div>
+    <div class="mcp-filters">
+      <fieldset>
+        <legend>包含 MCP · 多选</legend>
+        <div class="mcp-head">
+          <label class="sr-only" for="include-mode">包含 MCP 的匹配方式</label>
+          <select id="include-mode"><option value="all">包含全部所选</option><option value="any">包含任一所选</option></select>
+          <label class="sr-only" for="include-search">查找要包含的 MCP</label>
+          <input type="search" id="include-search" placeholder="查找 MCP 名称" autocomplete="off">
+        </div>
+        <div class="mcp-options" id="include-options"></div>
+        <p class="mcp-empty" id="include-empty" hidden>没有匹配的 MCP 名称。</p>
+      </fieldset>
+      <fieldset>
+        <legend>排除 MCP · 多选</legend>
+        <div class="mcp-head">
+          <label class="sr-only" for="exclude-mode">排除 MCP 的匹配方式</label>
+          <select id="exclude-mode"><option value="any">排除含任一所选</option><option value="all">排除含全部所选</option></select>
+          <label class="sr-only" for="exclude-search">查找要排除的 MCP</label>
+          <input type="search" id="exclude-search" placeholder="查找 MCP 名称" autocomplete="off">
+        </div>
+        <div class="mcp-options" id="exclude-options"></div>
+        <p class="mcp-empty" id="exclude-empty" hidden>没有匹配的 MCP 名称。</p>
+      </fieldset>
+    </div>
+    <p class="filter-help">各组条件同时生效，未选择的组不限制。例如：包含 canvas 和 emails，同时排除 google_sheet。框内可滚动或搜索；MCP 后的数字是全部任务中的声明数。</p>
+    <div id="active-filters" aria-label="已选 MCP 条件"></div>
+  </section>
+  <details class="rule">
+    <summary>批量构造的判断口径与数据来源</summary>
+    <p><strong>是：</strong>可以通过生成本地材料、重建本地业务数据，或从现有公开只读数据中选取不同对象来构造相似任务。需要同步调整题面、初始数据和评测答案；只读公网任务仍需缓存、限流或固定数据快照。</p>
+    <p><strong>否：</strong>按当前真实服务链路，初始化或执行需要创建、修改或重置外部平台数据，批量隔离和回收成本较高。这里表示不适合直接大批量扩展；若改用模拟服务或增加专门的隔离方案，需要重新判断。</p>
+    <p>Canvas、邮件、WooCommerce 和 Kubernetes 按本仓库的本地部署判断；“是”以可独立准备与重置环境为前提，并不表示当前共享服务可以直接并发。terminal 与浏览器的网络读写能力按任务操作判断。</p>
+    <p>任务与 MCP 声明来自 <code>tasks/finalpool/*/docs/task.md</code> 和 <code>task_config.json</code>；描述结合工作区材料及必要的初始化脚本。MCP 用途是基于源码的任务作用说明，辅助或备用能力不代表实际轨迹一定调用。筛选按配置声明，不包含本地工具或初始化的间接依赖。</p>
+    <p><code>web_search</code> 保留为可筛选的异常声明名：当前没有同名 MCP 配置，其实现属于本地工具。共 32 个有配置的 MCP 名称及 1 个异常声明名。批量构造判断为静态评估，未运行任务或验证真实服务。核对日期：2026-09-11。</p>
+  </details>
+  <div class="result-bar">
+    <span id="result-count" role="status" aria-live="polite"></span>
+    <span id="notes-status" role="status" aria-live="polite">备注自动保存在当前浏览器；换设备请下载含备注 HTML。</span>
+  </div>
+  <p id="filter-warning" hidden></p>
+  <noscript><p>请启用 JavaScript 以显示任务表、组合筛选并填写备注。</p></noscript>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="任务表，可横向和纵向滚动">
+    <table>
+      <caption class="sr-only">finalpool 任务内容、MCP 作用、批量构造判断及个人备注</caption>
+      <colgroup><col class="task"><col class="description"><col class="batch"><col class="notes"></colgroup>
+      <thead><tr><th scope="col">任务名</th><th scope="col">任务内容简要描述 · 各 MCP 的作用</th><th scope="col">是否可以批量构造数据</th><th scope="col">备注</th></tr></thead>
+      <tbody id="task-rows"></tbody>
+    </table>
+    <div class="empty" id="empty-state" hidden><strong>没有符合条件的任务</strong>可移除部分包含或排除条件，或点击“清空筛选”。</div>
+  </div>
+  <footer><span>数据已内嵌，直接打开 HTML 即可使用。下载时保留全部任务及备注。</span><span>任务名链接到原始说明；“配置”链接到 MCP 声明。链接需保留仓库目录结构。</span></footer>
+</main>
+<script type="application/json" id="task-data">
+[
+  {
+    "name": "ab-testing",
+    "summary": "分析首页 A/B 测试各场景转化率，填写 record.csv；B 胜出则建促销存储桶，否则记录 A 胜出的日志。",
+    "batch": "否：需在真实 BigQuery 准备数据，并创建 Cloud Storage 桶或写入云日志，批量隔离与清理成本高。",
+    "mcps": [
+      "google-cloud",
+      "filesystem"
+    ],
+    "roles": {
+      "google-cloud": "查询 BigQuery 点击流并创建云存储桶或写日志",
+      "filesystem": "读写转化率统计表 record.csv"
+    }
+  },
+  {
+    "name": "academic-pdf-report",
+    "summary": "为论文清单补齐第一作者全名、论文原文中的完整机构，以及作者 Google Scholar 主页，填入原 Excel。",
+    "batch": "是",
+    "mcps": [
+      "playwright_with_chunk",
+      "excel",
+      "terminal",
+      "arxiv_local",
+      "pdf-tools",
+      "fetch"
+    ],
+    "roles": {
+      "playwright_with_chunk": "浏览论文和学者主页核对身份",
+      "excel": "读取论文清单并填回作者与机构信息",
+      "terminal": "辅助下载论文和批量整理表格",
+      "arxiv_local": "检索并下载 arXiv 论文",
+      "pdf-tools": "提取论文首页的作者和机构",
+      "fetch": "抓取论文页面及学者相关网页"
+    }
+  },
+  {
+    "name": "academic-warning",
+    "summary": "结合最新和历史测验成绩识别成绩下降学生，输出名单，并对降幅超过 45% 的学生写严重告警。",
+    "batch": "否：历史成绩需写入 BigQuery，且任务向 Cloud Logging 写告警，批量构造需管理云端数据与日志。",
+    "mcps": [
+      "google-cloud",
+      "excel",
+      "filesystem"
+    ],
+    "roles": {
+      "google-cloud": "查询历史成绩并写入严重级别告警日志",
+      "excel": "辅助读取和整理学生成绩表",
+      "filesystem": "读取最新成绩 CSV 并保存预警名单"
+    }
+  },
+  {
+    "name": "add-bibtex",
+    "summary": "查找五篇指定论文的 BibTeX，优先使用 OpenReview 会议版本，按原有格式追加到 ref.bib。",
+    "batch": "是",
+    "mcps": [
+      "scholarly",
+      "playwright_with_chunk",
+      "filesystem",
+      "terminal",
+      "fetch"
+    ],
+    "roles": {
+      "scholarly": "检索论文与发表版本",
+      "playwright_with_chunk": "访问 OpenReview 或会议页面获取引用",
+      "filesystem": "读取并更新 ref.bib",
+      "terminal": "辅助解析和检查 BibTeX 格式",
+      "fetch": "抓取论文页面及引用文本"
+    }
+  },
+  {
+    "name": "apply-phd-email",
+    "summary": "阅读导师来信，结合个人信息，从工作区找到申请材料并按指定主题发送博士申请邮件。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "memory",
+      "emails",
+      "terminal",
+      "pdf-tools"
+    ],
+    "roles": {
+      "filesystem": "寻找申请材料和待发送附件",
+      "memory": "读取姓名、学号等个人信息",
+      "emails": "读取导师来信并发送带附件的申请邮件",
+      "terminal": "辅助整理和检查申请附件",
+      "pdf-tools": "读取 PDF 材料核对申请内容"
+    }
+  },
+  {
+    "name": "arrange-workspace",
+    "summary": "根据文件内容将工作区整理为学校、工作、娱乐及其指定子目录，归类移动文件。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "terminal",
+      "pdf-tools",
+      "excel"
+    ],
+    "roles": {
+      "filesystem": "遍历文件并创建目录、移动归档",
+      "terminal": "辅助识别文件类型和批量整理",
+      "pdf-tools": "读取 PDF 内容判断分类",
+      "excel": "读取表格内容判断所属类别"
+    }
+  },
+  {
+    "name": "canvas-arrange-exam",
+    "summary": "汇总仍需参加的期末考试，排除已结束、免考或明确无考试课程，保持表头并填写 exam_schedule.xlsx。",
+    "batch": "是",
+    "mcps": [
+      "canvas",
+      "emails",
+      "memory",
+      "terminal"
+    ],
+    "roles": {
+      "canvas": "读取课程、公告和考试安排",
+      "emails": "辅助核对邮件中的考试通知",
+      "memory": "读取学生身份及选课信息",
+      "terminal": "整理考试时间并写入 Excel"
+    }
+  },
+  {
+    "name": "canvas-art-manager",
+    "summary": "根据邮件中的总课表为负责的课程建课，关联教师，配置同课资源共享，发布课纲和时间公告并发布课程。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "canvas",
+      "terminal",
+      "emails"
+    ],
+    "roles": {
+      "filesystem": "读取教师邮箱表和课程大纲",
+      "canvas": "创建课程、安排教师、配置共享并发布大纲公告",
+      "terminal": "解析课表附件并辅助批量处理",
+      "emails": "读取课程安排通知及附件"
+    }
+  },
+  {
+    "name": "canvas-art-quiz",
+    "summary": "在 Canvas 创建艺术史选择题测验，录入四道题、选项、正确答案和分值。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "canvas",
+      "terminal"
+    ],
+    "roles": {
+      "filesystem": "辅助读取课程及学生资料",
+      "canvas": "创建测验并配置题目、答案和评分",
+      "terminal": "辅助整理题目或调用课程相关脚本"
+    }
+  },
+  {
+    "name": "canvas-do-quiz",
+    "summary": "依据个人选课信息找到未完成的 Canvas 测验，作答并确保所有测验完成提交。",
+    "batch": "是",
+    "mcps": [
+      "memory",
+      "canvas"
+    ],
+    "roles": {
+      "memory": "读取学生身份和课程背景",
+      "canvas": "查找未完成测验、读取题目并提交答案"
+    }
+  },
+  {
+    "name": "canvas-homework-grader-python",
+    "summary": "从邮箱取学生最新的 homework2 Python 作业，执行检查；正确记 10 分，否则记 0 分，回填 Canvas。",
+    "batch": "是",
+    "mcps": [
+      "canvas",
+      "filesystem",
+      "terminal",
+      "emails"
+    ],
+    "roles": {
+      "canvas": "定位作业并更新学生成绩",
+      "filesystem": "读取作业要求、学生 ID 表并保存附件",
+      "terminal": "执行学生 Python 文件检查错误",
+      "emails": "查找最新作业邮件并下载附件"
+    }
+  },
+  {
+    "name": "canvas-list-test",
+    "summary": "查找所有必须完成但尚未提交的作业和测验，按截止时间和课程代码排序，填入原有两份 CSV。",
+    "batch": "是",
+    "mcps": [
+      "canvas",
+      "memory"
+    ],
+    "roles": {
+      "canvas": "读取课程、作业、测验及提交状态",
+      "memory": "读取学生身份及个人课程信息"
+    }
+  },
+  {
+    "name": "canvas-new-students-notification",
+    "summary": "核对课程学生汇总表，为未选课的转专业学生注册课程，并只向新增学生私信补偿评分规则。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "terminal",
+      "canvas"
+    ],
+    "roles": {
+      "filesystem": "读取工作区学生汇总表",
+      "terminal": "解析表格并比对新增学生名单",
+      "canvas": "查询选课、注册学生并发送私信"
+    }
+  },
+  {
+    "name": "canvas-submit-late-work",
+    "summary": "核对成绩记录，寻找已有但漏交的作业并补交；找到请假证明后给助教发邮件说明第二次作业获准免交。",
+    "batch": "是",
+    "mcps": [
+      "canvas",
+      "memory",
+      "filesystem",
+      "emails"
+    ],
+    "roles": {
+      "canvas": "读取作业提交记录并补交匹配文件",
+      "memory": "读取学生身份",
+      "filesystem": "检索已写作业、成绩表和请假证明",
+      "emails": "向助教发送说明及请假附件"
+    }
+  },
+  {
+    "name": "cooking-guidance",
+    "summary": "根据现有食材推荐三道菜，保留菜谱原名与用量，填写 cuisine.json，并生成缺少食材的购物清单。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "howtocook"
+    ],
+    "roles": {
+      "filesystem": "读取库存和输出模板，保存菜谱及购物清单",
+      "howtocook": "查询菜谱、原料与精确用量"
+    }
+  },
+  {
+    "name": "course-assistant",
+    "summary": "综合课程 Excel 统计和邮箱中的展示作业，找出未交作业学生，按指定主题发送含姓名与学号的催交邮件。",
+    "batch": "是",
+    "mcps": [
+      "excel",
+      "emails",
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "excel": "读取课程统计和学生信息",
+      "emails": "检查展示作业提交并发送催交邮件",
+      "filesystem": "读取工作区课程表及相关材料",
+      "terminal": "辅助合并提交记录和筛选未交学生"
+    }
+  },
+  {
+    "name": "course-schedule",
+    "summary": "结合个人信息、必修课名单与课表选择白天课程并优先指定教师，排除免修课，按考试时间生成 JSONL。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "memory",
+      "excel",
+      "pdf-tools",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "读取课程名单和格式要求并保存考试安排",
+      "memory": "读取个人信息和免修条件",
+      "excel": "读取课程与考试总表",
+      "pdf-tools": "备用，读取可能出现的 PDF 课程材料",
+      "fetch": "备用，抓取课程说明链接，主任务以本地课表为准"
+    }
+  },
+  {
+    "name": "courses-ta-hws",
+    "summary": "筛选操作系统课程第三次作业，按姓名、学院、学号统一命名，按 C/Rust/Python 分目录，并清理原代码文件。",
+    "batch": "是",
+    "mcps": [
+      "terminal",
+      "excel",
+      "filesystem"
+    ],
+    "roles": {
+      "terminal": "识别作业代码并辅助批量重命名与清理",
+      "excel": "读取学院和学号对应表",
+      "filesystem": "查找作业、建立分类目录并移动文件"
+    }
+  },
+  {
+    "name": "cvpr-research",
+    "summary": "按个人研究方向和求职条件筛选教授，统计 CVPR 2025 发文，输出最匹配且发文最多的三位研究者。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "fetch",
+      "playwright_with_chunk"
+    ],
+    "roles": {
+      "filesystem": "读取个人背景并保存研究者名单",
+      "fetch": "抓取论文列表、机构和教授资料",
+      "playwright_with_chunk": "浏览会议及学者网页核对论文和任职信息"
+    }
+  },
+  {
+    "name": "dataset-license-issue",
+    "summary": "追溯数据集的直接数据或合成模型来源，确定许可证，回复并关闭 GitHub issue，同时更新 Hugging Face 数据集 README。",
+    "batch": "否：需修改 GitHub issue 和 Hugging Face 仓库内容，批量变体涉及两个真实平台的资源复制与重置。",
+    "mcps": [
+      "huggingface",
+      "github",
+      "terminal",
+      "fetch"
+    ],
+    "roles": {
+      "huggingface": "查询数据集及源模型的仓库卡片和许可信息",
+      "github": "读取项目 issue 并回复、关闭",
+      "terminal": "通过 SDK 或命令行辅助更新 Hugging Face README",
+      "fetch": "抓取上游数据与模型的许可证说明"
+    }
+  },
+  {
+    "name": "detect-revised-terms",
+    "summary": "比对新法 PDF 与判决书中完整引用的旧条文，筛选有实质变更的条款，逐项生成对应关系 CSV。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "pdf-tools"
+    ],
+    "roles": {
+      "filesystem": "遍历判决书并写入 revised_terms.csv",
+      "pdf-tools": "提取新旧条文原文并定位实质差异"
+    }
+  },
+  {
+    "name": "dietary-health",
+    "summary": "结合身体信息、饮食清单、菜谱用料和营养表，按给定减脂指南分析休息日碳水与蛋白质摄入，生成报告。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "howtocook",
+      "excel",
+      "terminal"
+    ],
+    "roles": {
+      "filesystem": "读取身体信息、饮食指南和格式，保存 analysis.md",
+      "howtocook": "查询每道菜的原料及用量",
+      "excel": "读取食材营养成分表",
+      "terminal": "辅助汇总营养摄入并计算达标情况"
+    }
+  },
+  {
+    "name": "email-paper-homepage",
+    "summary": "根据录用邮件更新个人主页论文的发表状态，并根据 GitHub 已发布仓库更新代码开源状态。",
+    "batch": "否：需要直接修改 GitHub 个人主页仓库，批量构造需复制并重置远程仓库和邮件关联状态。",
+    "mcps": [
+      "emails",
+      "github"
+    ],
+    "roles": {
+      "emails": "读取论文录用或发表通知",
+      "github": "读取主页和代码仓库，并提交论文状态及代码链接更新"
+    }
+  },
+  {
+    "name": "excel-data-transformation",
+    "summary": "将家电销售表的二维布局转换为示例规定的一维格式，按月份倒序，仅保留有数据月份并生成 Processed.xlsx。",
+    "batch": "是",
+    "mcps": [
+      "excel",
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "excel": "读取源表和示例并写入转换结果",
+      "filesystem": "定位输入工作簿并保存输出",
+      "terminal": "辅助批量重塑数据和按月份排序"
+    }
+  },
+  {
+    "name": "excel-market-research",
+    "summary": "依据 Methodology 中的细分市场与来源映射，计算 2015—2024 年同比增速，按指定列顺序输出 Excel。",
+    "batch": "是",
+    "mcps": [
+      "excel",
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "excel": "读取市场数据与映射表并生成增速工作簿",
+      "filesystem": "管理输入和输出文件",
+      "terminal": "辅助完成年度映射、同比计算和舍入"
+    }
+  },
+  {
+    "name": "experiments-recordings",
+    "summary": "汇总 W\u0026B 实验各基准的最高验证分数，合并同名 run，并计算最佳 step 的可用指标均值，填回 Notion。",
+    "batch": "否：结果需写入真实 Notion 表格，变体需要复制、隔离和重置页面及表格结构。",
+    "mcps": [
+      "notion",
+      "wandb",
+      "terminal",
+      "filesystem"
+    ],
+    "roles": {
+      "notion": "读取目标实验表的表头并更新统计结果",
+      "wandb": "查询历史 run、验证指标与 step 数据",
+      "terminal": "合并同名实验并计算最佳 step",
+      "filesystem": "辅助保存实验导出和中间统计"
+    }
+  },
+  {
+    "name": "fillout-online-forms",
+    "summary": "按记忆中的本人和朋友信息各提交一份迎新活动问卷，未提及项按否处理，选择全天参加。",
+    "batch": "否：浏览器会向真实 Google Forms 提交回答，初始化也会创建表单，批量构造需隔离和清理表单及回答。",
+    "mcps": [
+      "playwright_with_chunk",
+      "memory",
+      "filesystem"
+    ],
+    "roles": {
+      "playwright_with_chunk": "打开并提交两人的 Google Forms 问卷",
+      "memory": "读取本人和朋友的填写信息",
+      "filesystem": "读取工作区中的表单链接"
+    }
+  },
+  {
+    "name": "filter-low-selling-products",
+    "summary": "找出库存超过 90 天且近 30 天销量不足 10 的商品，归入清仓分类，并按模板和顺序通知订阅客户。",
+    "batch": "是",
+    "mcps": [
+      "woocommerce",
+      "filesystem",
+      "emails"
+    ],
+    "roles": {
+      "woocommerce": "查询库存与销量并调整商品分类",
+      "filesystem": "读取订阅者资料及邮件模板",
+      "emails": "向订阅客户发送清仓商品通知"
+    }
+  },
+  {
+    "name": "find-alita-paper",
+    "summary": "找到标题含 Alita、首次发表于指定时间前的 agentic reasoning 论文，下载 arXiv 最新版本并输出标题和代码链接。",
+    "batch": "是",
+    "mcps": [
+      "arxiv_local",
+      "filesystem",
+      "scholarly"
+    ],
+    "roles": {
+      "arxiv_local": "搜索论文并下载最新 PDF",
+      "filesystem": "保存按 arXiv ID 命名的论文文件",
+      "scholarly": "辅助检索并确认论文身份与链接"
+    }
+  },
+  {
+    "name": "flagged-transactions",
+    "summary": "从 BigQuery 提取高净值客户的 2025 年交易，按每位客户的均值加三倍标准差识别异常，按交易 ID 填入审计 Excel。",
+    "batch": "否：执行主要读取云表，但初始化需要重建并灌入真实 BigQuery 数据，批量变体仍有云端隔离成本。",
+    "mcps": [
+      "google-cloud",
+      "excel",
+      "terminal",
+      "filesystem"
+    ],
+    "roles": {
+      "google-cloud": "查询指定客户的 BigQuery 交易记录",
+      "excel": "清除示例并填入异常审计表",
+      "terminal": "计算每位客户的均值、标准差及异常阈值",
+      "filesystem": "读取客户 CSV 并保存审计文件"
+    }
+  },
+  {
+    "name": "game-statistics",
+    "summary": "结算当天玩家得分，生成独立的前 100 名排行榜表，并将所有玩家当天总分与游戏次数写入历史统计表。",
+    "batch": "否：需在 BigQuery 创建排行榜并追加历史记录，批量任务要隔离日期、数据表及写入状态。",
+    "mcps": [
+      "google-cloud",
+      "terminal"
+    ],
+    "roles": {
+      "google-cloud": "查询当天游戏数据、创建排行榜并写入历史统计",
+      "terminal": "辅助汇总玩家得分、排名与游戏次数"
+    }
+  },
+  {
+    "name": "gdp-cr5-analysis",
+    "summary": "读取 GDP2022，按世界银行七大区域计算前五国 GDP 集中度，排序后创建 GDP CR5 Analysis 在线表格。",
+    "batch": "否：需要复制源 Google Sheet 并创建结果表，批量变体涉及真实 Drive/Sheets 资源与配额。",
+    "mcps": [
+      "google_sheet",
+      "playwright_with_chunk",
+      "fetch"
+    ],
+    "roles": {
+      "google_sheet": "读取 GDP 源表并创建分析结果电子表格",
+      "playwright_with_chunk": "浏览世界银行资料核对国家区域归属",
+      "fetch": "抓取区域分类说明"
+    }
+  },
+  {
+    "name": "git-bug-hunt",
+    "summary": "在本地 LUFFY 仓库追踪最早引入 remove_caching_layer 的提交，按模板把提交哈希和完整消息邮件发给作者。",
+    "batch": "是",
+    "mcps": [
+      "git",
+      "terminal",
+      "filesystem",
+      "emails"
+    ],
+    "roles": {
+      "git": "查询本地 Git 历史、diff 和提交作者",
+      "terminal": "辅助搜索变量首次出现的提交",
+      "filesystem": "读取仓库文件及邮件模板",
+      "emails": "向该提交作者发送调查邮件"
+    }
+  },
+  {
+    "name": "git-milestone",
+    "summary": "查询四个指定里程碑 GitHub 仓库 ID，收集名称、作者、星数等元数据，跳过不可访问项并保存 JSON。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "terminal",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "保存 github_info.json",
+      "terminal": "辅助调用 GitHub 只读接口和整理元数据",
+      "fetch": "抓取公开仓库 API 或页面信息"
+    }
+  },
+  {
+    "name": "git-repo",
+    "summary": "读取深度学习论文，在 GitHub 找到星数最多的非官方复现仓库，并更新 result.json。",
+    "batch": "是",
+    "mcps": [
+      "github",
+      "filesystem",
+      "pdf-tools"
+    ],
+    "roles": {
+      "github": "搜索候选复现仓库并比较星数",
+      "filesystem": "读取论文文件并更新结果 JSON",
+      "pdf-tools": "提取论文名称、方法和检索线索"
+    }
+  },
+  {
+    "name": "hk-top-conf",
+    "summary": "统计港大、港中文、港科大在指定三届顶会的第一作者论文，区分 poster、spotlight、oral 并生成排序表。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "terminal",
+      "playwright_with_chunk",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "保存最终 result.md",
+      "terminal": "辅助汇总论文、去重和统计展示类别",
+      "playwright_with_chunk": "浏览会议录用列表与论文机构信息",
+      "fetch": "抓取会议论文及展示类型页面"
+    }
+  },
+  {
+    "name": "huggingface-upload",
+    "summary": "挑选 eval_accuracy 最高的本地模型 checkpoint，补齐 README 中 15 个基准成绩，并上传到指定 Hugging Face 模型仓库。",
+    "batch": "否：需创建并上传真实 Hugging Face 模型仓库，批量变体有模型存储、上传和仓库清理成本。",
+    "mcps": [
+      "filesystem",
+      "terminal",
+      "huggingface"
+    ],
+    "roles": {
+      "filesystem": "扫描 checkpoint、评测结果和 README",
+      "terminal": "比较准确率、更新成绩并通过 SDK/CLI 上传模型",
+      "huggingface": "辅助查询和核验目标 Hub 仓库，上传工具取决于远程配置"
+    }
+  },
+  {
+    "name": "identify-all-songs",
+    "summary": "找到指定 Jin Lyrics 歌单视频，根据歌词识别每首歌曲，按模板生成 songs.md。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "youtube-transcript",
+      "playwright_with_chunk",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "读取输出格式并保存歌曲清单",
+      "youtube-transcript": "获取视频字幕或歌词文本",
+      "playwright_with_chunk": "搜索并浏览目标视频与歌曲资料",
+      "fetch": "抓取辅助歌词和曲目信息"
+    }
+  },
+  {
+    "name": "imagenet",
+    "summary": "从本地多篇图像生成论文提取 ImageNet 256 最佳模型、类别、参数和指标，按 FID 降序生成 LaTeX 表格。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "pdf-tools"
+    ],
+    "roles": {
+      "filesystem": "读取论文清单和表格模板并保存 survey.tex",
+      "pdf-tools": "提取模型说明及 FID、IS、参数量等实验结果"
+    }
+  },
+  {
+    "name": "inter-final-performance-analysis",
+    "summary": "按 UEFA 官方数据填充国米 2023/2025 欧冠决赛表现及差值三张工作表，计算比赛时年龄并保存只读表格链接。",
+    "batch": "否：需向真实 Google Sheets 写入统计结果并提供共享链接，批量构造需要复制和重置在线表格。",
+    "mcps": [
+      "filesystem",
+      "playwright_with_chunk",
+      "google_sheet",
+      "terminal",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "保存 sheet_url.txt 和辅助数据",
+      "playwright_with_chunk": "浏览 UEFA 比赛、阵容及球员资料",
+      "google_sheet": "读取模板并填入三张工作表",
+      "terminal": "计算年龄、统计差值和舍入",
+      "fetch": "抓取 UEFA 官方统计内容"
+    }
+  },
+  {
+    "name": "interview-report",
+    "summary": "综合候选人简历与面试评价，按统一格式为每人生成 Word 报告，并单独保存最佳候选人姓名。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "word"
+    ],
+    "roles": {
+      "filesystem": "读取格式要求、管理输入并保存推荐名单",
+      "word": "读取两份 Word 材料并生成候选人评价文档"
+    }
+  },
+  {
+    "name": "inventory-sync",
+    "summary": "读取各城市仓库 SQLite 中尚未同步的库存，按城市与区域映射更新 WooCommerce 对应商品库存。",
+    "batch": "是",
+    "mcps": [
+      "woocommerce",
+      "filesystem"
+    ],
+    "roles": {
+      "woocommerce": "查询商品及区域信息并写入最新库存",
+      "filesystem": "读取本地仓库数据库和同步相关文件"
+    }
+  },
+  {
+    "name": "investment-decision-analysis",
+    "summary": "按本地 results.xlsx 模板完成金融数据分析，保留预填内容，并在指定 Google Drive 文件夹中创建三个独立表格。",
+    "batch": "否：需要在真实 Google Sheets 创建并填充多个电子表格，批量构造涉及远程资源复制及回收。",
+    "mcps": [
+      "yahoo-finance",
+      "google_sheet",
+      "excel",
+      "filesystem"
+    ],
+    "roles": {
+      "yahoo-finance": "查询所需行情、汇率和金融指标",
+      "google_sheet": "在目标文件夹创建三个独立表格并写入结果",
+      "excel": "读取模板结构及必须保留的预填内容",
+      "filesystem": "定位模板并辅助保存分析材料"
+    }
+  },
+  {
+    "name": "invoice-org",
+    "summary": "检索个人工作区全部发票，提取金额、日期、商户，查询对应日汇率，汇总含税人民币报销总额。",
+    "batch": "是",
+    "mcps": [
+      "pdf-tools",
+      "filesystem",
+      "yahoo-finance",
+      "excel"
+    ],
+    "roles": {
+      "pdf-tools": "提取 PDF 发票中的交易信息",
+      "filesystem": "寻找发票并保存明细 CSV 与总额 JSON",
+      "yahoo-finance": "查询发票日期对应的历史汇率",
+      "excel": "辅助读取表格型发票和整理汇总数据"
+    }
+  },
+  {
+    "name": "ipad-edu-price",
+    "summary": "比较中国内地、香港、新加坡和美国官方教育优惠下指定 iPad 与 Pencil 的合计价格，换算港币并保存最低价地区。",
+    "batch": "是",
+    "mcps": [
+      "yahoo-finance",
+      "playwright_with_chunk",
+      "fetch"
+    ],
+    "roles": {
+      "yahoo-finance": "查询各地货币兑港币汇率",
+      "playwright_with_chunk": "浏览 Apple 各地区教育商店核对售价与优惠",
+      "fetch": "抓取官方价格和教育优惠说明"
+    }
+  },
+  {
+    "name": "k8s-deployment-cleanup",
+    "summary": "查找 dev- 命名空间中版本发布超过 30 天的 Deployment，停止运行，并把按版本时间排序的清理清单邮件告知管理员。",
+    "batch": "是",
+    "mcps": [
+      "k8s",
+      "emails",
+      "pdf-tools",
+      "filesystem"
+    ],
+    "roles": {
+      "k8s": "查询 Deployment 版本信息并停止过期部署",
+      "emails": "向集群负责人发送清理报告",
+      "pdf-tools": "辅助读取版本或管理说明 PDF",
+      "filesystem": "读取集群相关材料并整理清单"
+    }
+  },
+  {
+    "name": "k8s-mysql",
+    "summary": "为集群中的 F1 MySQL 数据库建立持续端口转发，查询历年积分最高车手/车队及符合条件的 1950 年代车手，填写两份 CSV。",
+    "batch": "是",
+    "mcps": [
+      "k8s",
+      "filesystem"
+    ],
+    "roles": {
+      "k8s": "定位数据库、建立 30124 端口转发并辅助执行只读查询",
+      "filesystem": "读取查询要求和模板，保存两份结果 CSV"
+    }
+  },
+  {
+    "name": "k8s-pr-preview-testing",
+    "summary": "将指定 GitHub 分支部署到本地 Kubernetes，配置预览环境，保持主机端口可访问，运行分支测试并保存完整报告。",
+    "batch": "是",
+    "mcps": [
+      "terminal",
+      "filesystem",
+      "playwright_with_chunk",
+      "k8s"
+    ],
+    "roles": {
+      "terminal": "获取分支代码、执行构建与测试脚本",
+      "filesystem": "读取预览配置并保存测试报告",
+      "playwright_with_chunk": "访问本地预览页面验证界面",
+      "k8s": "创建 ConfigMap、部署应用并维护访问通道"
+    }
+  },
+  {
+    "name": "k8s-redis-helm-upgrade",
+    "summary": "将 shared-services 中 Redis Helm chart 精确升级到 22.0.0，保留 values 配置并确保 Pod 正常运行。",
+    "batch": "是",
+    "mcps": [
+      "k8s",
+      "terminal",
+      "filesystem"
+    ],
+    "roles": {
+      "k8s": "检查集群资源、Redis 工作负载及运行状态",
+      "terminal": "执行 Helm 升级并检查配置",
+      "filesystem": "读取 redis-values.yaml 和集群配置文件"
+    }
+  },
+  {
+    "name": "k8s-safety-audit",
+    "summary": "依据本地审计指南检查 Kubernetes 安全配置，沿用前两周的格式，把本周结果追加到在线审计表。",
+    "batch": "否：集群可本地构造，但结果要追加至真实 Google Sheet，批量变体需隔离和重置该在线表。",
+    "mcps": [
+      "k8s",
+      "google_sheet",
+      "filesystem"
+    ],
+    "roles": {
+      "k8s": "查询集群资源与安全配置",
+      "google_sheet": "读取既有审计格式并写入 Week3",
+      "filesystem": "读取 guidelines.md 和审计材料"
+    }
+  },
+  {
+    "name": "landing-task-reminder",
+    "summary": "按新员工分组和培训文档生成任务清单，写入计划完成时间并发入职邮件；对逾期未完成任务发提醒并抄送主管。",
+    "batch": "否：需要在真实 Snowflake 初始化员工数据并更新培训任务和期限，批量隔离与重置成本高。",
+    "mcps": [
+      "emails",
+      "snowflake",
+      "pdf-tools",
+      "filesystem"
+    ],
+    "roles": {
+      "emails": "发送入职任务、逾期提醒并抄送主管",
+      "snowflake": "读取员工及任务状态并更新培训计划",
+      "pdf-tools": "提取培训文档中的任务与时限",
+      "filesystem": "读取本地培训材料并整理任务内容"
+    }
+  },
+  {
+    "name": "language-school",
+    "summary": "查找 QS 计算机全球前十中的美国高校，汇总国际生硕士申请的语言门槛、费用和截止日期，按排名填写 Excel。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "playwright_with_chunk",
+      "excel",
+      "fetch",
+      "terminal"
+    ],
+    "roles": {
+      "filesystem": "读取表格模板并保存申请报告",
+      "playwright_with_chunk": "浏览 QS 排名及学校官方招生页面",
+      "excel": "按原有表头填写语言要求与申请信息",
+      "fetch": "抓取官方申请政策文本",
+      "terminal": "辅助整理日期、排序和写入表格"
+    }
+  },
+  {
+    "name": "latex-prompt-box",
+    "summary": "从代码提取实际 Simple/Complex Prompt，复用 M-STAR 的 LaTeX 框样式，仅修改论文附录 TODO 和必要包/颜色定义。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "arxiv-latex",
+      "terminal"
+    ],
+    "roles": {
+      "filesystem": "读取论文与代码并更新指定 LaTeX 位置",
+      "arxiv-latex": "获取 M-STAR 论文的 LaTeX 源码和框样式",
+      "terminal": "辅助搜索提示词、处理转义并检查 LaTeX"
+    }
+  },
+  {
+    "name": "live-transactions",
+    "summary": "跨表收集可疑交易及用户相关交易，生成 JSON 并上传归档桶，再写入指定结构的严重欺诈告警。",
+    "batch": "否：涉及 BigQuery 数据准备、Cloud Storage 上传和 Cloud Logging 写入，批量变体需要隔离多种云资源。",
+    "mcps": [
+      "google-cloud",
+      "filesystem"
+    ],
+    "roles": {
+      "google-cloud": "跨表查询交易、上传归档并写入严重告警",
+      "filesystem": "保存以交易 ID 命名的调查 JSON"
+    }
+  },
+  {
+    "name": "llm-training-dataset",
+    "summary": "查清 LLaMA 与 GPT-Neo 的预训练数据来源及各自用量，按容量排序，填写在线数据集表并优先附 Hugging Face 链接。",
+    "batch": "否：需要填写真正的 Google Sheet，批量任务需复制、隔离和重置在线数据集表。",
+    "mcps": [
+      "playwright_with_chunk",
+      "google_sheet",
+      "scholarly",
+      "fetch"
+    ],
+    "roles": {
+      "playwright_with_chunk": "浏览模型论文和数据集说明",
+      "google_sheet": "读取并填充预训练数据清单",
+      "scholarly": "检索模型论文与训练数据来源",
+      "fetch": "抓取论文、项目及数据集网页"
+    }
+  },
+  {
+    "name": "logical-datasets-collection",
+    "summary": "调研五个逻辑推理数据集的任务数量、训练集和难度可调性，按指定顺序生成纯 LaTeX 对比表。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "scholarly",
+      "arxiv_local",
+      "pdf-tools",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "保存 datasets.tex",
+      "scholarly": "检索数据集对应论文",
+      "arxiv_local": "搜索并下载论文",
+      "pdf-tools": "提取任务分类、数据划分和难度设定",
+      "fetch": "抓取数据集及项目说明"
+    }
+  },
+  {
+    "name": "machine-operating",
+    "summary": "读取指定时段 IoT 传感器数据，按 Excel 中每种机器的正常范围筛出异常，生成 CSV 并上传云存储。",
+    "batch": "否：需要准备 BigQuery 传感器数据并上传报告到真实云桶，批量任务有云端数据隔离与清理成本。",
+    "mcps": [
+      "google-cloud",
+      "filesystem",
+      "excel"
+    ],
+    "roles": {
+      "google-cloud": "查询实时传感器表并上传异常报告",
+      "filesystem": "读取参数文件并保存 anomaly_report.csv",
+      "excel": "读取机器传感器的最小/最大阈值"
+    }
+  },
+  {
+    "name": "meeting-assign",
+    "summary": "从本地团队日历网页汇总可用时间，选出每周共同的两小时会议时段，并按模板邮件发送给管理员。",
+    "batch": "是",
+    "mcps": [
+      "fetch",
+      "emails",
+      "playwright_with_chunk",
+      "filesystem"
+    ],
+    "roles": {
+      "fetch": "抓取 localhost:30137 的团队日历",
+      "emails": "发送会议时间和参会名单",
+      "playwright_with_chunk": "浏览本地日历并核对可用时段",
+      "filesystem": "读取邮件格式和辅助整理日程"
+    }
+  },
+  {
+    "name": "merge-hf-datasets",
+    "summary": "下载三个指定 Hugging Face 数据集各前 500 条，按统一工具调用格式转换并合并为一个 JSONL。",
+    "batch": "是",
+    "mcps": [
+      "huggingface",
+      "terminal",
+      "filesystem"
+    ],
+    "roles": {
+      "huggingface": "查找三个源数据集及其元信息",
+      "terminal": "下载、转换并合并数据记录",
+      "filesystem": "读取统一格式说明并保存 JSONL"
+    }
+  },
+  {
+    "name": "mrbeast-analysis",
+    "summary": "分析指定时期 MrBeast 超过两分钟的视频，统计发布时间、时长、间隔与四类内容，并填入现有 Excel。",
+    "batch": "是",
+    "mcps": [
+      "youtube",
+      "filesystem",
+      "excel",
+      "youtube-transcript"
+    ],
+    "roles": {
+      "youtube": "查询频道视频列表、发布时间和时长",
+      "filesystem": "管理结果模板与辅助资料",
+      "excel": "填写视频明细、分类及汇总统计",
+      "youtube-transcript": "读取字幕辅助判断内容类别"
+    }
+  },
+  {
+    "name": "music-analysis",
+    "summary": "读取 1940 年代 Billboard 在线榜单，计算歌曲连续上榜及连续前三表现，按年份和指定排序生成多工作表 Excel。",
+    "batch": "否：结果虽保存在本地，但初始化会在真实 Google Drive 复制源表，批量变体需隔离和重置在线源数据。",
+    "mcps": [
+      "excel",
+      "google_sheet",
+      "terminal"
+    ],
+    "roles": {
+      "excel": "读取样例并生成分年统计工作簿",
+      "google_sheet": "读取 Billboard 各年周榜源数据",
+      "terminal": "计算连续周数并完成榜单排序"
+    }
+  },
+  {
+    "name": "nhl-b2b-analysis",
+    "summary": "分析 NHL 2024—2025 赛程，统计各队背靠背比赛及主客场四种组合数量，创建指定名称和表头的在线分析表。",
+    "batch": "否：需要复制源 Google Sheet 并创建结果电子表格，批量任务需管理在线资源与写入配额。",
+    "mcps": [
+      "google_sheet",
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "google_sheet": "读取赛程并创建背靠背统计结果表",
+      "filesystem": "辅助保存赛程导出与计算结果",
+      "terminal": "按球队和连续比赛日期计算四类背靠背次数"
+    }
+  },
+  {
+    "name": "notion-find-job",
+    "summary": "筛选 Notion 求职库中满足薪资、现场办公、职位和 UCLA 距离要求的公司，发送申请邮件并标为 Applied。",
+    "batch": "否：需修改真实 Notion 求职条目的状态，批量构造要复制和重置候选公司数据库。",
+    "mcps": [
+      "google_map",
+      "notion",
+      "emails",
+      "playwright_with_chunk"
+    ],
+    "roles": {
+      "google_map": "查询公司位置及其与 UCLA 的距离",
+      "notion": "读取求职数据库并更新申请状态",
+      "emails": "向符合要求的公司发送求职邮件",
+      "playwright_with_chunk": "辅助核对公司与职位的网页信息"
+    }
+  },
+  {
+    "name": "notion-hr",
+    "summary": "从简历逐字提取候选人信息填入 Notion HR 记录并删除示例；对不再招聘的职位按模板发拒信。",
+    "batch": "否：需要向真实 Notion 写候选人记录并删除示例，批量构造需隔离与重置数据库和页面。",
+    "mcps": [
+      "filesystem",
+      "emails",
+      "notion",
+      "pdf-tools"
+    ],
+    "roles": {
+      "filesystem": "查找简历与招聘相关资料",
+      "emails": "向对应候选人发送职位已满通知",
+      "notion": "查询在招职位、删除示例并更新候选人记录",
+      "pdf-tools": "读取 PDF 简历并提取原文信息"
+    }
+  },
+  {
+    "name": "notion-movies",
+    "summary": "补齐 Notion 电影库的类型、年份、导演和状态，新增指定星战电影，并加入其官方 YouTube 预告链接。",
+    "batch": "否：需要修改真实 Notion 数据库并新建电影页面，批量构造需复制和清理远程页面结构。",
+    "mcps": [
+      "playwright_with_chunk",
+      "notion",
+      "fetch"
+    ],
+    "roles": {
+      "playwright_with_chunk": "浏览电影资料和官方预告页面",
+      "notion": "更新电影属性并创建新电影子页",
+      "fetch": "抓取电影年份、导演等公开资料"
+    }
+  },
+  {
+    "name": "notion-personal-website",
+    "summary": "根据本地 Word 文档完整更新 Colley Whisson 的 Notion 个人主页，包括简介、画作、工作坊、奖项和展览。",
+    "batch": "否：需向真实 Notion 主页写入多节内容，批量变体需要复制并重置页面及子块。",
+    "mcps": [
+      "filesystem",
+      "word",
+      "notion"
+    ],
+    "roles": {
+      "filesystem": "定位个人资料文档",
+      "word": "读取 DOCX 中各章节的详细信息",
+      "notion": "更新个人主页的相应内容区块"
+    }
+  },
+  {
+    "name": "nvidia-market",
+    "summary": "分析 NVIDIA 在 2023Q1—2024Q4 八个季度的机构持股趋势，追溯调整拆股影响，按模板生成 Excel 报告。",
+    "batch": "是",
+    "mcps": [
+      "yahoo-finance",
+      "filesystem",
+      "terminal",
+      "playwright_with_chunk",
+      "excel",
+      "fetch"
+    ],
+    "roles": {
+      "yahoo-finance": "查询 NVIDIA 拆股及可用机构持股数据",
+      "filesystem": "读取模板和历史持仓材料，保存报告",
+      "terminal": "汇总季度持仓并处理拆股调整",
+      "playwright_with_chunk": "浏览历史机构持仓和披露页面",
+      "excel": "填充持股趋势统计表",
+      "fetch": "抓取公开持仓及申报资料"
+    }
+  },
+  {
+    "name": "nvidia-stock-analysis",
+    "summary": "按 data.txt 和 tips.txt 分析 NVIDIA 持股与市场趋势，填满原 Excel 模板并改名为 results.xlsx。",
+    "batch": "是",
+    "mcps": [
+      "yahoo-finance",
+      "filesystem",
+      "terminal",
+      "excel",
+      "web_search",
+      "playwright_with_chunk"
+    ],
+    "roles": {
+      "yahoo-finance": "查询 NVIDIA 行情、股东和市场数据",
+      "filesystem": "读取需求及格式文件并保存报告",
+      "terminal": "辅助清洗、计算和整理金融数据",
+      "excel": "填写并保存结果工作簿",
+      "web_search": "配置中的异常声明名：本意为搜索市场资料，当前无同名 MCP 配置",
+      "playwright_with_chunk": "浏览持股及市场资料页面补充数据"
+    }
+  },
+  {
+    "name": "oil-price",
+    "summary": "获取近十二个月 WTI 与 Brent 月价，分析价差和指标，回测基于 z-score 的策略，填充 Notion 数据表并汇总报告。",
+    "batch": "否：需更新真实 Notion 油价页面和数据表，批量变体需要复制和重置在线结构。",
+    "mcps": [
+      "yahoo-finance",
+      "notion",
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "yahoo-finance": "查询 WTI 与 Brent 历史月度价格",
+      "notion": "读取并填写油价和策略相关表格",
+      "filesystem": "读取技术要求并保存分析材料",
+      "terminal": "计算价差、z-score、策略回测和汇总指标"
+    }
+  },
+  {
+    "name": "paper-checker",
+    "summary": "检查多份 LaTeX 文件中的引用与交叉引用，结合 BibTeX 和标签修复缺失、错名或错误引用。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "filesystem": "读取并修改 tex 与 bib 文件",
+      "terminal": "辅助批量搜索引用、检查跨文件关系和编译错误"
+    }
+  },
+  {
+    "name": "payable-invoice-checker",
+    "summary": "从本地收据更新 Snowflake 的发票与付款表，设置未付款标记的列说明，并给各采购经理发送待处理文件清单。",
+    "batch": "否：需向真实 Snowflake 写入发票及付款数据并修改列说明，批量任务需重建隔离数据库。",
+    "mcps": [
+      "emails",
+      "pdf-tools",
+      "filesystem",
+      "snowflake"
+    ],
+    "roles": {
+      "emails": "向采购经理发送未付发票提醒",
+      "pdf-tools": "提取收据中的金额、付款和采购信息",
+      "filesystem": "遍历收据并整理待处理文件名",
+      "snowflake": "更新两张账务表及 outstanding_flag 列说明"
+    }
+  },
+  {
+    "name": "personal-website-construct",
+    "summary": "在 GitHub fork 并重命名学术主页模板，严格按记忆中的个人资料填充主页，不添加额外内容。",
+    "batch": "否：需 fork、重命名并修改真实 GitHub 仓库，批量构造有仓库数量、命名和清理成本。",
+    "mcps": [
+      "memory",
+      "github"
+    ],
+    "roles": {
+      "memory": "读取个人履历、研究、论文及联系方式",
+      "github": "fork 模板、重命名仓库并更新主页内容"
+    }
+  },
+  {
+    "name": "ppt-analysis",
+    "summary": "根据编译原理课件整理函数式与命令式符号表定义、插入差异和全部原代码，并解释作业要求，生成 NOTE.md。",
+    "batch": "是",
+    "mcps": [
+      "pptx",
+      "filesystem",
+      "pdf-tools"
+    ],
+    "roles": {
+      "pptx": "读取演示文稿中的概念与代码",
+      "filesystem": "读取材料并保存学习笔记",
+      "pdf-tools": "读取 HW.PDF 中的作业说明"
+    }
+  },
+  {
+    "name": "price-comparison",
+    "summary": "结合竞争对手 PDF 报价与内部产品价表，计算产品价差，并按存储要求写入 BigQuery。",
+    "batch": "否：结果需写入真实 BigQuery 表，批量任务需管理目标数据集、表结构和数据重置。",
+    "mcps": [
+      "filesystem",
+      "terminal",
+      "pdf-tools",
+      "google-cloud"
+    ],
+    "roles": {
+      "filesystem": "读取内部价格及格式要求",
+      "terminal": "解析内部表格并匹配产品、计算价差",
+      "pdf-tools": "提取竞争对手 PDF 报价",
+      "google-cloud": "创建或更新价格对比结果表"
+    }
+  },
+  {
+    "name": "privacy-desensitization",
+    "summary": "扫描多格式文档，将电话、社保号、邮箱、信用卡和 IP 等指定信息原位替换为 /hidden/，保存脱敏副本。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "filesystem": "遍历原文档并管理脱敏输出目录",
+      "terminal": "解析多种文档格式、匹配隐私字段并生成保留格式的副本"
+    }
+  },
+  {
+    "name": "profile-update-online",
+    "summary": "查找 B-Star 和 SimpleRL-Zoo 两篇论文的信息，严格沿用现有 publications 的结构更新本地个人主页仓库。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "playwright_with_chunk",
+      "scholarly",
+      "arxiv_local",
+      "pdf-tools"
+    ],
+    "roles": {
+      "filesystem": "读取和更新本地主页文件",
+      "playwright_with_chunk": "浏览论文和项目页面",
+      "scholarly": "检索两篇论文及发表信息",
+      "arxiv_local": "查找和下载 arXiv 论文",
+      "pdf-tools": "提取论文作者、标题等元数据"
+    }
+  },
+  {
+    "name": "quantitative-financial-analysis",
+    "summary": "获取四家公司 2025 年六七月未复权日行情并填入新 Google Sheet，然后在 Notion 写入链接和指定评论。",
+    "batch": "否：需创建并写入 Google Sheet，还要更新真实 Notion 页面及评论，批量变体有跨平台隔离成本。",
+    "mcps": [
+      "filesystem",
+      "yahoo-finance",
+      "google_sheet",
+      "notion",
+      "terminal"
+    ],
+    "roles": {
+      "filesystem": "读取行情格式示例并保存辅助数据",
+      "yahoo-finance": "查询四家公司指定月份的未复权日行情",
+      "google_sheet": "创建电子表格和工作表并写入交易日数据",
+      "notion": "添加行情表链接及指定评论",
+      "terminal": "整理交易日、字段和数据格式"
+    }
+  },
+  {
+    "name": "reimbursement-form-filler",
+    "summary": "仅提取近三个月出租车账单 PDF 的文件名、月份和金额，按要求填写原报销 Excel，保留布局并重命名输出。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "excel",
+      "pdf-tools",
+      "terminal"
+    ],
+    "roles": {
+      "filesystem": "查找账单及报销要求，管理输出文件",
+      "excel": "按原有布局填写部门报销表",
+      "pdf-tools": "提取出租车账单月份和金额",
+      "terminal": "辅助筛选月份、汇总并填充表格"
+    }
+  },
+  {
+    "name": "sales-accounting",
+    "summary": "以指定日期为基准，仅将记忆中上周和上上周的交易补入账本，排除本周交易。",
+    "batch": "是",
+    "mcps": [
+      "memory",
+      "excel",
+      "filesystem"
+    ],
+    "roles": {
+      "memory": "读取用户记录的交易内容和时间",
+      "excel": "读取并补填现有账本",
+      "filesystem": "定位账本并保存更新后的文件"
+    }
+  },
+  {
+    "name": "search-ca-school",
+    "summary": "筛选 CSRankings 指定年份 AI 领域美国前 30 且距洛杉矶指定地标驾车不超过 500 英里的学校，输出排序 JSON。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "google_map",
+      "playwright_with_chunk",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "保存学校、排名和距离结果",
+      "google_map": "计算学校与指定地标的最短驾车距离",
+      "playwright_with_chunk": "设置并读取 CSRankings 年份、领域和地区筛选",
+      "fetch": "抓取学校及排名辅助资料"
+    }
+  },
+  {
+    "name": "set-conf-cr-ddl",
+    "summary": "检查过去一天邮件中的 COML 主会 camera-ready 截止时间，在截止前三小时建立日历提醒。",
+    "batch": "否：需要在真实 Google Calendar 创建事件，批量构造需隔离与清理事件并处理时区和时间冲突。",
+    "mcps": [
+      "emails",
+      "google_calendar"
+    ],
+    "roles": {
+      "emails": "读取近期会议邮件并提取截止时间",
+      "google_calendar": "查询日历并创建提前三小时的提醒事件"
+    }
+  },
+  {
+    "name": "shopping-helper",
+    "summary": "在 Amazon 筛选 400 美元以下黑色真皮或仿皮沙发，推荐三款符合条件的商品并填写 recommend.json。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "playwright_with_chunk"
+    ],
+    "roles": {
+      "filesystem": "读取示例并保存商品推荐 JSON",
+      "playwright_with_chunk": "搜索 Amazon 商品并核对材质、颜色与价格"
+    }
+  },
+  {
+    "name": "sla-timeout-monitor",
+    "summary": "按 SLA 手册识别超出首次响应时限的工单，向负责人发提醒，并向受影响用户发送模板致歉邮件。",
+    "batch": "否：虽主要查询工单，初始化仍会重建真实 Snowflake 库并灌入用户和工单，批量变体需云端隔离。",
+    "mcps": [
+      "emails",
+      "snowflake",
+      "filesystem",
+      "pdf-tools",
+      "terminal"
+    ],
+    "roles": {
+      "emails": "向负责经理发提醒并向用户发致歉邮件",
+      "snowflake": "读取工单、响应时间、服务等级及负责人",
+      "filesystem": "读取本地手册和邮件模板",
+      "pdf-tools": "提取 SLA 时限和通知规则",
+      "terminal": "解压文档并辅助计算超时情况"
+    }
+  },
+  {
+    "name": "stock-build-position",
+    "summary": "按美股、港股、A 股 4:3:3 分配一百万美元，使用最近交易日开盘价和汇率，考虑整股/整手限制，填写建仓计划。",
+    "batch": "是",
+    "mcps": [
+      "excel",
+      "yahoo-finance",
+      "terminal"
+    ],
+    "roles": {
+      "excel": "读取候选股票并填写预算与持仓表",
+      "yahoo-finance": "查询股票开盘价和汇率",
+      "terminal": "计算市场资金分配和整数股数"
+    }
+  },
+  {
+    "name": "student-interview",
+    "summary": "从邮件简历筛选有独立第一作者论文的学生，在未来两天香港工作时间内安排至少 90 分钟面试并同步日历。",
+    "batch": "否：需要在真实 Google Calendar 创建面试日程，批量任务需隔离日历、时段和事件状态。",
+    "mcps": [
+      "emails",
+      "google_calendar"
+    ],
+    "roles": {
+      "emails": "读取申请邮件及学生简历附件",
+      "google_calendar": "查询可用时段并创建面试事件"
+    }
+  },
+  {
+    "name": "subway-planning",
+    "summary": "规划从新加坡 Mobility Gallery 到樟宜机场 MRT 站的纯地铁路线，尽量减少步行并逐行列出沿途所有站。",
+    "batch": "是",
+    "mcps": [
+      "google_map",
+      "filesystem",
+      "playwright_with_chunk",
+      "fetch"
+    ],
+    "roles": {
+      "google_map": "查询起终点、步行接驳和公共交通路线",
+      "filesystem": "保存 routine.txt 站点序列",
+      "playwright_with_chunk": "浏览地铁线路和换乘信息",
+      "fetch": "抓取站点与线路资料"
+    }
+  },
+  {
+    "name": "sync-todo-to-readme",
+    "summary": "以主分支 README 为基线，只应用 main 到 dev 的 Python TODO 增删和行号变化，按规则排序并更新远程 README。",
+    "batch": "否：需直接更新真实 GitHub 仓库的 README，批量变体需要构造并重置远程分支和提交关系。",
+    "mcps": [
+      "git",
+      "github"
+    ],
+    "roles": {
+      "git": "读取分支差异、提交及本地代码中的 TODO 变化",
+      "github": "读取远程仓库文件并提交 README 更新"
+    }
+  },
+  {
+    "name": "task-tracker",
+    "summary": "检查各开发者分支新增任务的完整性，更新 Notion 实现状态，并创建 GitHub finalpool 分支收纳已实现任务。",
+    "batch": "否：需修改 Notion 任务库并新建和写入 GitHub 分支，批量变体需要维护跨平台关联状态。",
+    "mcps": [
+      "github",
+      "notion"
+    ],
+    "roles": {
+      "github": "读取分支提交、检查任务文件并创建 finalpool 分支及内容",
+      "notion": "读取任务要求和状态并更新实现进度"
+    }
+  },
+  {
+    "name": "train-ticket-plan",
+    "summary": "为北京和上海两人安排去曲阜的高铁往返，约束出发时段及到离站时间差，忽略余票，输出任一可行组合。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "rail_12306",
+      "terminal",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "读取 JSON 模板并保存车次方案",
+      "rail_12306": "查询车站、直达车次、经停与时刻",
+      "terminal": "筛选出行日期、时段和两人匹配组合",
+      "fetch": "辅助核对车站官方英文名称和公开时刻信息"
+    }
+  },
+  {
+    "name": "travel-exchange",
+    "summary": "汇总七人土耳其旅行账单，按实际兑换日及兑换路径查询汇率，计算人民币总花费并填写 calculation.json。",
+    "batch": "是",
+    "mcps": [
+      "terminal",
+      "filesystem",
+      "yahoo-finance"
+    ],
+    "roles": {
+      "terminal": "汇总不同账单并计算兑换和总额",
+      "filesystem": "读取旅行支出文件并保存计算结果",
+      "yahoo-finance": "查询实际换汇日期的历史汇率"
+    }
+  },
+  {
+    "name": "travel-expense-reimbursement",
+    "summary": "核对报销材料与发票的完整性和金额；不完整则邮件退回，合格则写入 Snowflake，超限打标并抄送经理通知。",
+    "batch": "否：合格报销需写入真实 Snowflake 表并维护异常标记，批量任务要隔离员工与报销账务数据。",
+    "mcps": [
+      "emails",
+      "snowflake",
+      "pdf-tools",
+      "filesystem"
+    ],
+    "roles": {
+      "emails": "发送补材料或超额通知并抄送主管",
+      "snowflake": "查询报销相关信息并写入报销记录及异常标记",
+      "pdf-tools": "提取报销单与发票的编号、税额、金额和说明",
+      "filesystem": "遍历并匹配本地报销材料与发票"
+    }
+  },
+  {
+    "name": "trip-adviser",
+    "summary": "规划东京站日本桥口附近买咖啡、直达镰仓站并前往历史文化交流馆的路线，优先就近和最短距离。",
+    "batch": "是",
+    "mcps": [
+      "google_map",
+      "fetch",
+      "filesystem",
+      "playwright_with_chunk"
+    ],
+    "roles": {
+      "google_map": "检索附近 Starbucks、车站和目的地并计算路线",
+      "fetch": "抓取交通与场馆说明",
+      "filesystem": "读取格式并保存 travel_plan.json",
+      "playwright_with_chunk": "浏览站口、商店及交通页面核对细节"
+    }
+  },
+  {
+    "name": "trip-itinerary-generator",
+    "summary": "按愿望清单规划巴黎两日步行游，首日仅右岸，兼顾指定日期开放时间与最短路径，输出行程 JSON。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "google_map",
+      "playwright_with_chunk"
+    ],
+    "roles": {
+      "filesystem": "读取景点愿望清单和格式并保存行程",
+      "google_map": "查询景点位置、步行距离和路线",
+      "playwright_with_chunk": "核对指定星期的景点开放时间"
+    }
+  },
+  {
+    "name": "university-course-selection",
+    "summary": "从本地课表选出指定专业课及周一开卷的思政、通识课，每套可行方案单独保存 Excel 并清理无关表格。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "pdf-tools",
+      "terminal",
+      "excel"
+    ],
+    "roles": {
+      "filesystem": "读取课表材料和模板并整理输出",
+      "pdf-tools": "提取 PDF 课表、课程类别与考核方式",
+      "terminal": "枚举满足条件的课程组合并清理文件",
+      "excel": "按模板为每个方案生成工作簿"
+    }
+  },
+  {
+    "name": "update-material-inventory",
+    "summary": "根据 WooCommerce 新付款订单和在线 BOM 扣减原材料库存，再计算最大可生产成品数并同步商店库存。",
+    "batch": "否：需反复写入真实 Google Sheets 原料库存并与商店联动，批量变体要隔离跨系统库存状态。",
+    "mcps": [
+      "google_sheet",
+      "woocommerce"
+    ],
+    "roles": {
+      "google_sheet": "读取 BOM、更新原料库存并计算可生产数量",
+      "woocommerce": "读取新付款订单并同步成品可售库存"
+    }
+  },
+  {
+    "name": "upenn-campus-route",
+    "summary": "从宾大书店出发，访问推荐文档中的每个景点，优化总步行时间并保存逐站路线 JSON。",
+    "batch": "是",
+    "mcps": [
+      "filesystem",
+      "terminal",
+      "google_map",
+      "fetch"
+    ],
+    "roles": {
+      "filesystem": "读取景点推荐和格式并保存路线",
+      "terminal": "辅助计算或比较景点访问顺序",
+      "google_map": "查询景点位置及步行距离、耗时",
+      "fetch": "抓取校园景点说明并核对位置"
+    }
+  },
+  {
+    "name": "verl-dataset",
+    "summary": "从 Hugging Face 找下载量最高的 DeepScaleR 数据集，按给定 Verl 训练格式转换为本地 Parquet。",
+    "batch": "是",
+    "mcps": [
+      "huggingface",
+      "filesystem",
+      "fetch"
+    ],
+    "roles": {
+      "huggingface": "搜索并比较候选 DeepScaleR 数据集",
+      "filesystem": "读取格式要求并保存 verl_deepscaler.parquet",
+      "fetch": "抓取数据集与 Verl 格式资料，辅助下载公开数据"
+    }
+  },
+  {
+    "name": "vlm-history-completer",
+    "summary": "调研在线 VLM 发展史表中的模型，按说明补全技术架构和来源，无法公开确认的信息填 unavailable。",
+    "batch": "否：需要向真实 Google Sheet 补写模型历史，批量构造需复制和重置目标电子表格。",
+    "mcps": [
+      "playwright_with_chunk",
+      "google_sheet",
+      "arxiv_local",
+      "huggingface",
+      "fetch"
+    ],
+    "roles": {
+      "playwright_with_chunk": "浏览模型论文和项目页面",
+      "google_sheet": "读取模型列表并更新架构、来源列",
+      "arxiv_local": "查找和下载模型论文",
+      "huggingface": "查询模型卡及公开仓库资料",
+      "fetch": "抓取架构和来源说明"
+    }
+  },
+  {
+    "name": "wandb-best-score",
+    "summary": "在指定 W\u0026B 项目中选出验证表现最佳的实验及最佳 step，将实验名、step 和得分保存为 CSV。",
+    "batch": "是",
+    "mcps": [
+      "wandb",
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "wandb": "查询实验历史和各 step 的验证指标",
+      "filesystem": "保存 best_experiment.csv",
+      "terminal": "辅助比较实验和 step 得分"
+    }
+  },
+  {
+    "name": "wandb-shortest-length",
+    "summary": "根据 W\u0026B 日志选出回答最短的实验，从 step 0 起每隔 100 步提取熵损失、clip ratio 和平均回答长度，填入 CSV。",
+    "batch": "是",
+    "mcps": [
+      "wandb",
+      "filesystem",
+      "terminal",
+      "excel"
+    ],
+    "roles": {
+      "wandb": "查询各实验的回答长度和训练指标",
+      "filesystem": "读取并保存目标 CSV",
+      "terminal": "比较实验、按 step 间隔筛选指标",
+      "excel": "辅助读取和整理结果表格"
+    }
+  },
+  {
+    "name": "woocommerce-customer-survey",
+    "summary": "查询已完成订单的客户，按本地要求创建 Google Forms 反馈问卷，邮件发送问卷并保存 Drive 链接。",
+    "batch": "否：需要创建真实 Google Form，批量任务要管理问卷、链接与客户对应关系并清理远程表单。",
+    "mcps": [
+      "woocommerce",
+      "emails",
+      "google_forms",
+      "filesystem"
+    ],
+    "roles": {
+      "woocommerce": "查询已完成订单及客户邮箱",
+      "emails": "向对应客户发送反馈问卷",
+      "google_forms": "依据要求创建反馈表单",
+      "filesystem": "读取问卷要求并保存 drive_url.txt"
+    }
+  },
+  {
+    "name": "woocommerce-new-product",
+    "summary": "识别未来 30 天上市的新品并通知订阅新品提醒的客户，同时向所有客户发送折扣商品提醒。",
+    "batch": "是",
+    "mcps": [
+      "woocommerce",
+      "filesystem",
+      "emails"
+    ],
+    "roles": {
+      "woocommerce": "查询新品、折扣商品和客户订阅偏好",
+      "filesystem": "读取本地模板与相关运营材料",
+      "emails": "分别发送新品预订和折扣提醒"
+    }
+  },
+  {
+    "name": "woocommerce-new-welcome",
+    "summary": "找出最近七天完成首单的客户，将姓名和邮箱同步至 BigQuery 客户库，并按模板发送欢迎邮件。",
+    "batch": "否：需将客户信息写入真实 BigQuery CRM 表，批量变体需要隔离商店订单与云端客户数据。",
+    "mcps": [
+      "woocommerce",
+      "filesystem",
+      "terminal",
+      "google-cloud",
+      "emails"
+    ],
+    "roles": {
+      "woocommerce": "查询订单和客户并识别首次成交",
+      "filesystem": "读取欢迎邮件模板",
+      "terminal": "辅助统计首单和七日时间窗口",
+      "google-cloud": "将新客户资料写入 BigQuery",
+      "emails": "向新客户发送欢迎邮件"
+    }
+  },
+  {
+    "name": "woocommerce-product-recall",
+    "summary": "将指定型号商品下架但不删除，找出历史购买者，创建模板要求的 Google Forms 召回表并邮件通知，保存表单信息。",
+    "batch": "否：商店可本地重建，但需要创建真实 Google Form，批量召回变体需隔离和回收远程表单。",
+    "mcps": [
+      "woocommerce",
+      "emails",
+      "google_forms",
+      "filesystem"
+    ],
+    "roles": {
+      "woocommerce": "定位型号、下架商品并查找购买客户",
+      "emails": "发送包含召回表单的通知",
+      "google_forms": "按模板的题序、选项和文字创建召回问卷",
+      "filesystem": "读取邮件及表单模板并保存召回报告"
+    }
+  },
+  {
+    "name": "woocommerce-stock-alert",
+    "summary": "找出库存低于安全阈值的全部商品，更新 Google Sheets 采购申请清单，并按模板邮件通知采购经理。",
+    "batch": "否：需要更新真实 Google Sheets 采购清单，批量任务要隔离和重置在线采购记录。",
+    "mcps": [
+      "woocommerce",
+      "google_sheet",
+      "emails",
+      "filesystem"
+    ],
+    "roles": {
+      "woocommerce": "读取商品库存及安全阈值",
+      "google_sheet": "写入低库存商品采购申请",
+      "emails": "向采购经理发送补货提醒",
+      "filesystem": "读取采购经理邮箱和通知模板"
+    }
+  },
+  {
+    "name": "woocommerce-update-cover",
+    "summary": "依据订单销量找出每个商品最畅销的变体，将该变体图片设置为商品主图。",
+    "batch": "是",
+    "mcps": [
+      "woocommerce"
+    ],
+    "roles": {
+      "woocommerce": "统计变体销量并更新商品封面图片"
+    }
+  },
+  {
+    "name": "yahoo-analysis",
+    "summary": "用后续四、五、六个月股价表现评估 NVIDIA 与 Apple 近两年分析师评级准确性，按指南填写并重命名报告。",
+    "batch": "是",
+    "mcps": [
+      "yahoo-finance",
+      "filesystem",
+      "terminal"
+    ],
+    "roles": {
+      "yahoo-finance": "查询历史分析师评级和股票价格",
+      "filesystem": "读取分析指南与模板并保存 results.md",
+      "terminal": "匹配评级后的观察窗口并统计准确性"
+    }
+  },
+  {
+    "name": "youtube-repo",
+    "summary": "筛选指定 YouTube 播放列表中的机器学习技术视频，找到技术原始 GitHub 仓库，汇总项目、链接和主要功能。",
+    "batch": "是",
+    "mcps": [
+      "youtube",
+      "youtube-transcript",
+      "filesystem",
+      "fetch",
+      "github"
+    ],
+    "roles": {
+      "youtube": "查询播放列表、视频元信息及内容线索",
+      "youtube-transcript": "获取视频字幕识别技术项目",
+      "filesystem": "保存 ml_tech.md",
+      "fetch": "抓取项目说明与视频相关链接",
+      "github": "搜索并核对技术的原始仓库和功能"
+    }
+  }
+]
+</script>
+<script type="application/json" id="saved-notes">{}</script>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const tasks = JSON.parse($('task-data').textContent);
+  const names = new Set(tasks.map(task => task.name));
+  const storageKey = 'toolathlon:finalpool:batch-construction:notes:v1';
+  const counts = new Map();
+  tasks.forEach(task => task.mcps.forEach(mcp => counts.set(mcp, (counts.get(mcp) || 0) + 1)));
+  const mcps = [...counts.keys()].sort();
+  const selected = { include: new Set(), exclude: new Set() };
+  const rowElements = new Map();
+  const noteElements = new Map();
+  const choices = { include: new Map(), exclude: new Map() };
+  let notes = {};
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+  function mergeNotes(incoming) {
+    if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return;
+    for (const [name, entry] of Object.entries(incoming)) {
+      if (!names.has(name) || !entry || typeof entry.text !== 'string' || !Number.isFinite(entry.updatedAt)) continue;
+      if (!notes[name] || entry.updatedAt >= notes[name].updatedAt) {
+        notes[name] = { text: entry.text, updatedAt: entry.updatedAt };
+      }
+    }
+  }
+  mergeNotes(JSON.parse($('saved-notes').textContent));
+  try { mergeNotes(JSON.parse(localStorage.getItem(storageKey) || '{}')); }
+  catch { $('notes-status').textContent = '无法读取浏览器备注存储；当前备注可通过下载 HTML 备份。'; }
+
+  function saveNote(name, text) {
+    let storageReadable = true;
+    try { mergeNotes(JSON.parse(localStorage.getItem(storageKey) || '{}')); }
+    catch { storageReadable = false; }
+    notes[name] = { text, updatedAt: Math.max(Date.now(), (notes[name]?.updatedAt || 0) + 1) };
+    try {
+      if (!storageReadable) throw new Error('Storage unavailable');
+      localStorage.setItem(storageKey, JSON.stringify(notes));
+      $('notes-status').textContent = '备注已保存在当前浏览器；换设备请下载含备注 HTML。';
+    } catch {
+      $('notes-status').textContent = '浏览器未能保存备注，请下载含备注 HTML 备份当前内容。';
+    }
+  }
+
+  const yesTotal = tasks.filter(task => task.batch === '是').length;
+  for (const [value, label] of [[tasks.length, '个任务'], [mcps.length, '个 MCP 声明名称'], [yesTotal, '项可批量构造'], [tasks.length - yesTotal, '项附原因']]) {
+    const node = element('span', 'total');
+    node.append(element('strong', '', String(value)), document.createTextNode(label));
+    $('totals').append(node);
+  }
+
+  for (const group of ['include', 'exclude']) {
+    const fragment = document.createDocumentFragment();
+    for (const mcp of mcps) {
+      const label = element('label', 'mcp-option');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = mcp;
+      checkbox.setAttribute('aria-label', `${group === 'include' ? '包含' : '排除'} ${mcp}`);
+      const displayName = mcp === 'web_search' ? 'web_search *' : mcp;
+      if (mcp === 'web_search') label.title = '异常声明名：当前无同名 MCP 配置';
+      label.append(checkbox, element('span', '', displayName), element('small', '', String(counts.get(mcp))));
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) selected[group].add(mcp); else selected[group].delete(mcp);
+        applyFilters();
+      });
+      choices[group].set(mcp, { label, checkbox });
+      fragment.append(label);
+    }
+    $(`${group}-options`).append(fragment);
+    $(`${group}-search`).addEventListener('input', () => filterChoices(group));
+    $(`${group}-mode`).addEventListener('change', applyFilters);
+    filterChoices(group);
+  }
+
+  const fragment = document.createDocumentFragment();
+  for (const task of tasks) {
+    const row = document.createElement('tr');
+    row.dataset.task = task.name;
+    const nameCell = element('th');
+    nameCell.scope = 'row';
+    const taskLink = element('a', 'task-name', task.name);
+    taskLink.href = `../tasks/finalpool/${encodeURIComponent(task.name)}/docs/task.md`;
+    const links = element('div', 'source-links');
+    const configLink = element('a', '', '配置 ↗');
+    configLink.href = `../tasks/finalpool/${encodeURIComponent(task.name)}/task_config.json`;
+    for (const link of [taskLink, configLink]) { link.target = '_blank'; link.rel = 'noopener'; }
+    links.append(configLink);
+    nameCell.append(taskLink, links);
+    const descriptionCell = element('td');
+    descriptionCell.append(element('p', 'task-summary', task.summary));
+    const roles = element('ul', 'roles');
+    for (const mcp of task.mcps) {
+      const role = element('li');
+      role.append(element('code', '', mcp), document.createTextNode(`：${task.roles[mcp]}`));
+      roles.append(role);
+    }
+    descriptionCell.append(roles);
+    const batchCell = element('td');
+    batchCell.append(element('span', task.batch === '是' ? 'batch-yes' : 'batch-no', task.batch));
+    const noteCell = element('td');
+    const textarea = document.createElement('textarea');
+    textarea.rows = 3;
+    textarea.placeholder = '填写备注…';
+    textarea.setAttribute('aria-label', `${task.name} 的备注`);
+    textarea.value = notes[task.name]?.text || '';
+    textarea.addEventListener('input', () => saveNote(task.name, textarea.value));
+    textarea.addEventListener('change', applyFilters);
+    noteCell.append(textarea);
+    row.append(nameCell, descriptionCell, batchCell, noteCell);
+    rowElements.set(task.name, row);
+    noteElements.set(task.name, textarea);
+    fragment.append(row);
+  }
+  $('task-rows').append(fragment);
+
+  function filterChoices(group) {
+    const query = $(`${group}-search`).value.trim().toLowerCase();
+    let visible = 0;
+    for (const [mcp, choice] of choices[group]) {
+      choice.label.hidden = !mcp.toLowerCase().includes(query);
+      if (!choice.label.hidden) visible++;
+    }
+    $(`${group}-empty`).hidden = visible > 0;
+  }
+
+  function applyFilters() {
+    const keyword = $('keyword').value.trim().toLowerCase();
+    const batch = $('batch-filter').value;
+    const include = [...selected.include];
+    const exclude = [...selected.exclude];
+    const includeMode = $('include-mode').value;
+    const excludeMode = $('exclude-mode').value;
+    let visible = 0;
+    let visibleYes = 0;
+    for (const task of tasks) {
+      const contains = mcp => task.mcps.includes(mcp);
+      const included = include.length === 0 || (includeMode === 'all' ? include.every(contains) : include.some(contains));
+      const excluded = exclude.length > 0 && (excludeMode === 'all' ? exclude.every(contains) : exclude.some(contains));
+      const batchMatch = batch === 'all' || (task.batch === '是' ? batch === 'yes' : batch === 'no');
+      const searchText = [task.name, task.summary, task.batch, ...task.mcps, ...Object.values(task.roles), notes[task.name]?.text || ''].join(' ').toLowerCase();
+      const show = included && !excluded && batchMatch && (!keyword || searchText.includes(keyword));
+      rowElements.get(task.name).hidden = !show;
+      if (show) { visible++; if (task.batch === '是') visibleYes++; }
+    }
+    $('result-count').textContent = `显示 ${visible} / ${tasks.length} 个任务 · 是 ${visibleYes} · 否 ${visible - visibleYes}`;
+    $('empty-state').hidden = visible > 0;
+    const overlapping = include.filter(mcp => selected.exclude.has(mcp));
+    $('filter-warning').hidden = overlapping.length === 0;
+    $('filter-warning').textContent = overlapping.length ? `包含与排除中同时选择了 ${overlapping.join('、')}；按当前“全部/任一”方式组合计算，可能没有匹配任务。` : '';
+    $('active-filters').replaceChildren();
+    for (const group of ['include', 'exclude']) {
+      for (const mcp of [...selected[group]].sort()) {
+        const chip = element('button', `filter-chip ${group}`, `${group === 'include' ? '包含' : '排除'} ${mcp} ×`);
+        chip.type = 'button';
+        chip.setAttribute('aria-label', `移除${group === 'include' ? '包含' : '排除'}条件 ${mcp}`);
+        chip.addEventListener('click', () => {
+          selected[group].delete(mcp);
+          choices[group].get(mcp).checkbox.checked = false;
+          applyFilters();
+        });
+        $('active-filters').append(chip);
+      }
+    }
+  }
+
+  $('keyword').addEventListener('input', applyFilters);
+  $('batch-filter').addEventListener('change', applyFilters);
+  $('reset-filters').addEventListener('click', () => {
+    $('keyword').value = '';
+    $('batch-filter').value = 'all';
+    $('include-mode').value = 'all';
+    $('exclude-mode').value = 'any';
+    for (const group of ['include', 'exclude']) {
+      selected[group].clear();
+      $(`${group}-search`).value = '';
+      choices[group].forEach(choice => { choice.checkbox.checked = false; });
+      filterChoices(group);
+    }
+    applyFilters();
+  });
+
+  window.addEventListener('storage', event => {
+    if (event.key !== storageKey || !event.newValue) return;
+    try { mergeNotes(JSON.parse(event.newValue)); } catch { return; }
+    for (const [name, textarea] of noteElements) {
+      if (document.activeElement !== textarea) textarea.value = notes[name]?.text || '';
+    }
+    applyFilters();
+  });
+
+  $('download-html').addEventListener('click', () => {
+    try {
+      const copy = document.documentElement.cloneNode(true);
+      copy.querySelector('#saved-notes').textContent = JSON.stringify(notes).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+      for (const id of ['task-rows', 'include-options', 'exclude-options', 'totals', 'active-filters']) copy.querySelector(`#${id}`).replaceChildren();
+      const blob = new Blob(['<!doctype html>\n', copy.outerHTML, '\n'], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'task-batch-construction-with-notes.html';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      $('notes-status').textContent = '已生成含备注 HTML 下载；包含全部任务，当前筛选不影响备份。';
+    } catch {
+      $('notes-status').textContent = '未能生成下载，请保留当前页面并重试。';
+    }
+  });
+  applyFilters();
+})();
+</script>
+</body>
+</html>
