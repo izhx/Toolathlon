@@ -323,8 +323,8 @@ C-remote,跑通,0,sync-todo-to-readme,✅ PASS（run dsv4/260910）,—,"3.3 B �
 C-remote,跑通,0,train-ticket-plan,✅ PASS（run dsv4/260910）,🟡 偶发：MCP server 启动超时（rail_12306）,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
 C-remote,跑通,0,verl-dataset,"✅ FAIL（run dsv4/260910）
 环境正常，评测未通过；根因=模型能力/策略",🔴 必现：Hugging Face 读取或 SSL 握手超时,3.1 稳定可跑：GLM-5.3 两轮均 PASS,
-C-remote,不通,Google,vlm-history-completer,"🟠 NO_EVAL（run dsv4/260910）
-`playwright_with_chunk` 分块器崩溃：`Separator is not found, and chunk exceed the limit`（jsdom/parse5）；两次独立运行同点复现，agent 结束但评测无结论；根因=工具链缺陷",—,"第 4 节未验证：无历史实跑记录
+C-remote,不通,Google,vlm-history-completer,"🟠 NO_EVAL（run dsv4/260910）→ 已修复待重跑
+原记录归因有误（非 `playwright_with_chunk` 分块器崩溃）：`Separator is not found, and chunk exceed the limit` 由 `run_parallel.py` 用 asyncio `readline()`（默认 64 KiB 上限）读合流日志时，被 `npx-fetch`/jsdom 打到 stderr 的超长无换行 CSS dump 撑爆，异常在评测阶段前掐死进程；agent 实际已完成（`traj_log` 显示 Sheet K/L 列已写入并回读校验）。两次同点复现是确定性的，与网络无关。根因=harness 日志读取缺陷，已改为分块读取，详见 [run-log-stream-limit-bug.md](run-log-stream-limit-bug.md)",—,"第 4 节未验证：无历史实跑记录
 Google 依赖：Sheets 表格 + Drive 文件夹（`google_sheet`）
 凭据：OAuth `configs/google_credentials.json`；需 Sheets/Drive 权限，预处理直接读取 token 等 6 个字段（见认证说明）
 使用阶段：预处理准备文件夹/表格，agent 经 MCP 读写，评测读取结果；`google_sheets_folder_id` 由任务配置指定",原记录（Google）：Google 凭据缺 token；已核对预处理代码

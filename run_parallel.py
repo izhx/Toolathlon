@@ -1,5 +1,6 @@
 import asyncio
 import argparse
+import codecs
 import shortuuid
 import os
 import json
@@ -14,6 +15,11 @@ import time
 from datetime import datetime
 from pathlib import Path
 import random
+
+# Size of each read from a task subprocess' merged stdout/stderr stream.  Reads are
+# chunk-based (not line-based) so that arbitrarily long newline-free output cannot
+# overrun asyncio's StreamReader limit and abort the run.
+LOG_STREAM_CHUNK_SIZE = 65536
 
 
 async def run_command_async(command: str, log_file: str, timeout_seconds: int = 1800, scheduler: 'AsyncTaskScheduler' = None):
@@ -46,16 +52,32 @@ async def run_command_async(command: str, log_file: str, timeout_seconds: int = 
                 scheduler.active_processes.add(process)
             active_processes.add(process)
             
-            # Stream output to log file
+            # Stream output to log file.
+            #
+            # Deliberately chunk-based rather than line-based: StreamReader.readline()
+            # raises ValueError("Separator is not found, and chunk exceed the limit")
+            # when a single line exceeds the reader's 64 KiB limit, which used to kill
+            # the whole task run.  Some MCP servers legitimately emit very long
+            # newline-free output (e.g. npx-fetch's jsdom dumps a whole minified CSS
+            # stylesheet into a "Could not parse CSS stylesheet" error on stderr), so
+            # the log reader must never assume newlines exist.
             async def write_output():
+                decoder = codecs.getincrementaldecoder('utf-8')(errors='ignore')
                 while True:
-                    line = await process.stdout.readline()
-                    if not line:
+                    chunk = await process.stdout.read(LOG_STREAM_CHUNK_SIZE)
+                    if not chunk:
                         break
-                    line_decoded = line.decode('utf-8', errors='ignore')
-                    f.write(line_decoded)
+                    # Incremental decoding keeps multi-byte characters intact when a
+                    # UTF-8 sequence straddles a chunk boundary.
+                    text = decoder.decode(chunk)
+                    if text:
+                        f.write(text)
+                        f.flush()
+                tail = decoder.decode(b'', final=True)
+                if tail:
+                    f.write(tail)
                     f.flush()
-            
+
             # Wait for process (and output streaming) to complete, up to timeout
             try:
                 await asyncio.wait_for(write_output(), timeout=timeout_seconds)
